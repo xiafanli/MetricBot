@@ -35,7 +35,7 @@
                 ></el-input>
               </el-form-item>
               <el-form-item>
-                <el-button type="primary" class="login-btn" @click="submitForm">登录</el-button>
+                <el-button type="primary" class="login-btn" :loading="loading" @click="submitForm">登录</el-button>
               </el-form-item>
             </el-form>
           </div>
@@ -49,8 +49,12 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
+import { useUserStore } from '@/stores/user'
+import { toLoginSuccess } from '@/utils/utils'
 
 const router = useRouter()
+const userStore = useUserStore()
+const loading = ref(false)
 const loginForm = ref({
   username: '',
   password: '',
@@ -63,13 +67,20 @@ const rules = {
 
 const loginFormRef = ref()
 
-const submitForm = () => {
-  loginFormRef.value.validate((valid: boolean) => {
+const submitForm = async () => {
+  loginFormRef.value.validate(async (valid: boolean) => {
     if (valid) {
-      // 这里暂时只做简单的登录验证，实际项目中应该调用API
-      ElMessage.success('登录成功！')
-      // 登录成功后跳转到首页
-      router.push('/')
+      loading.value = true
+      try {
+        await userStore.login(loginForm.value)
+        ElMessage.success('登录成功！')
+        toLoginSuccess(router)
+      } catch (error: any) {
+        const errorMsg = error.response?.data?.detail || '登录失败，请检查用户名和密码'
+        ElMessage.error(errorMsg)
+      } finally {
+        loading.value = false
+      }
     }
   })
 }

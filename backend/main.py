@@ -2,6 +2,7 @@ __version__ = "0.1.0"
 
 from fastapi import FastAPI, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
+from apps.auth.router import router as auth_router
 
 # 创建API路由
 api_router = APIRouter(prefix="/api/v1")
@@ -29,6 +30,7 @@ def health_check():
 
 
 # 注册API路由
+api_router.include_router(auth_router)
 app.include_router(api_router)
 
 
