@@ -1,0 +1,27 @@
+[project]
+name = "prometheusbot"
+version = "0.1.0"
+description = "PrometheusBot - A chatbot for Prometheus monitoring"
+requires-python = ">=3.6"
+dependencies = [
+    "fastapi<0.69.0,>=0.68.0",
+    "uvicorn<0.16.0,>=0.15.0",
+    "pydantic<2.0.0,>=1.8.0",
+    "python-dotenv<1.0.0,>=0.19.0",
+    "httpx<0.20.0,>=0.19.0",
+    "pyyaml<6.0.0,>=5.4.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest<8.0.0,>=7.4.0",
+    "ruff<1.0.0,>=0.2.0",
+    "black<25.0.0,>=24.0.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["."]

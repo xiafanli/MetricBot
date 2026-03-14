@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: prometheusbot-backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - HOST=0.0.0.0
+      - PORT=8000
+      # 可以在这里添加Prometheus相关配置
+      # - PROMETHEUS_URL=http://your-prometheus-url:9090
+    networks:
+      - prometheusbot-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: prometheusbot-frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - prometheusbot-network
+
+networks:
+  prometheusbot-network:
+    driver: bridge
