@@ -11,7 +11,7 @@ const apiClient = axios.create({
 // 请求拦截器
 apiClient.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('access_token')
+    const token = localStorage.getItem('user.token')
     if (token) {
       config.headers.Authorization = `Bearer ${token}`
     }
@@ -29,10 +29,16 @@ apiClient.interceptors.response.use(
   },
   (error) => {
     console.error('API Error:', error)
-    if (error.response?.status === 401) {
-      localStorage.removeItem('access_token')
-      localStorage.removeItem('user_info')
-      window.location.href = '/login'
+    // 只在非登录请求时处理 401 错误，避免影响登录流程
+    if (error.response?.status === 401 && !error.config?.url?.includes('/auth/login')) {
+      // 清除用户相关的存储
+      const keys = ['user.token', 'user.uid', 'user.username', 'user.email', 'user.isActive', 'user.isSuperuser', 'user.exp']
+      keys.forEach(key => localStorage.removeItem(key))
+
+      // 只有在当前不在登录页时才重定向
+      if (window.location.pathname !== '/login') {
+        window.location.href = '/login'
+      }
     }
     return Promise.reject(error)
   }

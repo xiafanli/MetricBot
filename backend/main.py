@@ -7,7 +7,7 @@ from apps.auth.router import router as auth_router
 # 创建API路由
 api_router = APIRouter(prefix="/api/v1")
 
-app = FastAPI(title="PrometheusBot", description="A chatbot for Prometheus monitoring", version=__version__)
+app = FastAPI(title="Metric Bot", description="智能运维监控平台", version=__version__)
 
 # 配置CORS
 app.add_middleware(
@@ -21,7 +21,7 @@ app.add_middleware(
 
 @app.get("/")
 def read_root():
-    return {"message": "Welcome to PrometheusBot!"}
+    return {"message": "Welcome to Metric Bot!"}
 
 
 @api_router.get("/health")

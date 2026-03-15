@@ -429,3 +429,1212 @@ strong {
 .datetime-variables.datetime-variables {
   color: #3370ff;
 }
+
+/* 配置中心表单样式统一 */
+.config-form {
+  :deep(.el-form-item__label) {
+    color: rgba(255, 255, 255, 0.8);
+  }
+
+  :deep(.el-input__wrapper),
+  :deep(.el-select .el-input__wrapper),
+  :deep(.el-textarea__inner) {
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 215, 0, 0.15);
+    box-shadow: none;
+    color: white;
+    transition: all 0.3s ease;
+
+    &.is-focus {
+      border-color: rgba(255, 215, 0, 0.5);
+      box-shadow: 0 0 0 2px rgba(255, 215, 0, 0.1);
+    }
+
+    .el-input__inner {
+      color: white;
+    }
+  }
+
+  :deep(.el-input-number) {
+    .el-input__wrapper {
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid rgba(255, 215, 0, 0.15);
+      box-shadow: none;
+    }
+  }
+
+  :deep(.el-switch) {
+    --el-switch-on-color: #ffd700;
+    --el-switch-off-color: rgba(255, 255, 255, 0.2);
+  }
+
+  :deep(.el-slider) {
+    .el-slider__runway {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .el-slider__bar {
+      background: linear-gradient(135deg, #ffd700 0%, #f72585 100%);
+    }
+
+    .el-slider__button {
+      border: 2px solid #ffd700;
+      background: #0a0a0a;
+    }
+
+    .el-slider__button-wrapper {
+      &:hover {
+        .el-slider__button {
+          transform: scale(1.2);
+        }
+      }
+    }
+  }
+}
+
+/* 配置中心卡片样式统一 */
+.config-card {
+  border-radius: 12px;
+  background: rgba(26, 26, 46, 0.8);
+  border: 1px solid rgba(255, 215, 0, 0.15);
+  padding: 24px;
+  margin-bottom: 16px;
+  transition: all 0.3s ease;
+
+  &:hover {
+    border-color: rgba(255, 215, 0, 0.3);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  }
+}
+
+/* 配置中心按钮样式统一 */
+.config-button {
+  color: rgba(255, 215, 0, 0.6);
+
+  &:hover {
+    color: #ffd700;
+  }
+}
+
+.config-button.delete-btn:hover {
+  color: #ef4444;
+}
+
+/* Element Plus Dialog 深色主题适配 */
+.el-dialog {
+  --el-bg-color: rgba(26, 26, 46, 0.95);
+  --el-text-color-primary: white;
+  --el-text-color-regular: rgba(255, 255, 255, 0.8);
+  --el-border-color: rgba(255, 215, 0, 0.2);
+}
+
+:deep(.el-dialog) {
+  background: rgba(26, 26, 46, 0.95);
+  border: 1px solid rgba(255, 215, 0, 0.2);
+
+  .el-dialog__header {
+    border-bottom: 1px solid rgba(255, 215, 0, 0.1);
+  }
+
+  .el-dialog__title {
+    color: white;
+  }
+
+  .el-dialog__body {
+    color: rgba(255, 255, 255, 0.8);
+  }
+
+  .el-dialog__footer {
+    border-top: 1px solid rgba(255, 215, 0, 0.1);
+  }
+}
+
+/* Element Plus Tag 深色主题适配 */
+:deep(.el-tag) {
+  background: rgba(255, 215, 0, 0.1);
+  border-color: rgba(255, 215, 0, 0.3);
+  color: #ffd700;
+}
+
+:deep(.el-tag--success) {
+  background: rgba(34, 197, 94, 0.1);
+  border-color: rgba(34, 197, 94, 0.3);
+  color: #22c55e;
+}
+
+:deep(.el-tag--danger) {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.3);
+  color: #ef4444;
+}
+
+:deep(.el-tag--warning) {
+  background: rgba(245, 158, 11, 0.1);
+  border-color: rgba(245, 158, 11, 0.3);
+  color: #f59e0b;
+}
+
+/* Element Plus Select Dropdown 深色主题适配 */
+:deep(.el-select-dropdown) {
+  background: rgba(26, 26, 46, 0.95);
+  border: 1px solid rgba(255, 215, 0, 0.2);
+
+  .el-select-dropdown__item {
+    color: rgba(255, 255, 255, 0.8);
+
+    &:hover {
+      background: rgba(255, 215, 0, 0.1);
+    }
+
+    &.is-selected {
+      color: #ffd700;
+      background: rgba(255, 215, 0, 0.1);
+    }
+  }
+}
+
+/* Element Plus Button 深色主题适配 */
+:deep(.el-button--primary) {
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.8) 0%, rgba(247, 37, 133, 0.8) 100%);
+  border-color: transparent;
+  color: #0a0a0a;
+  font-weight: 600;
+
+  &:hover {
+    opacity: 0.9;
+    box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+/* 配置中心统一的颜色变量 */
+:root {
+  --config-primary: #ffd700;
+  --config-primary-light: rgba(255, 215, 0, 0.1);
+  --config-primary-hover: rgba(255, 215, 0, 0.3);
+  --config-primary-active: rgba(255, 215, 0, 0.5);
+  --config-bg-dark: rgba(26, 26, 46, 0.8);
+  --config-border: rgba(255, 215, 0, 0.15);
+  --config-border-hover: rgba(255, 215, 0, 0.3);
+}
+
+/* 配置中心统一的间距和布局 */
+.config-section {
+  margin-bottom: 24px;
+}
+
+.config-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: white;
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--config-border);
+}
+
+.config-subtitle {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.6);
+  margin-bottom: 12px;
+}
+
+/* 配置中心表单统一间距 */
+.config-form {
+  .el-form-item {
+    margin-bottom: 20px;
+  }
+}
+
+/* 配置中心表格样式优化 */
+:deep(.el-table) {
+  background: var(--config-bg-dark);
+  border: 1px solid var(--config-border);
+
+  th {
+    background: var(--config-bg-dark);
+    color: rgba(255, 255, 255, 0.9);
+    border-bottom: 1px solid var(--config-border);
+  }
+
+  td {
+    background: transparent;
+    color: rgba(255, 255, 255, 0.8);
+    border-bottom: 1px solid var(--config-border);
+  }
+
+  tr:hover > td {
+    background: var(--config-primary-light);
+  }
+
+  .el-table__inner-wrapper::before {
+    display: none;
+  }
+}
+
+:deep(.el-button--primary.is-disabled) {
+  opacity: 0.5;
+  cursor: not-allowed;
+
+  &:hover {
+    transform: none;
+    box-shadow: none;
+  }
+}
+
+/* Element Plus Button Text 深色主题适配 */
+:deep(.el-button.is-text) {
+  color: rgba(255, 215, 0, 0.6);
+
+  &:hover {
+    color: #ffd700;
+    background: rgba(255, 215, 0, 0.1);
+  }
+
+  &:focus {
+    background: rgba(255, 215, 0, 0.1);
+  }
+}
+
+/* Element Plus Button Circle 深色主题适配 */
+:deep(.el-button.is-circle) {
+  background: rgba(255, 215, 0, 0.05);
+  border: 1px solid rgba(255, 215, 0, 0.2);
+  color: #ffd700;
+
+  &:hover {
+    background: rgba(255, 215, 0, 0.1);
+    border-color: rgba(255, 215, 0, 0.4);
+    box-shadow: 0 2px 8px rgba(255, 215, 0, 0.2);
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+}
+
+/* Element Plus Input Deep Select 深色主题适配 */
+.el-select {
+  width: 100%;
+}
+
+.el-select__wrapper {
+  background: rgba(0, 0, 0, 0.3) !important;
+  border: 1px solid rgba(255, 215, 0, 0.2) !important;
+  box-shadow: none !important;
+  border-radius: 8px;
+  padding: 4px 12px;
+  min-height: 32px;
+
+  &:hover {
+    border-color: rgba(255, 215, 0, 0.3) !important;
+    box-shadow: none !important;
+  }
+
+  &.is-focus {
+    border-color: rgba(255, 215, 0, 0.5) !important;
+    box-shadow: 0 0 0 2px rgba(255, 215, 0, 0.1) !important;
+  }
+
+  .el-select__placeholder {
+    color: rgba(255, 255, 255, 0.4) !important;
+  }
+
+  .el-select__selected-item {
+    color: white !important;
+  }
+
+  .el-select__suffix {
+    .el-select__caret {
+      color: rgba(255, 215, 0, 0.6) !important;
+    }
+  }
+
+  .el-tag {
+    background: rgba(255, 215, 0, 0.15) !important;
+    border: 1px solid rgba(255, 215, 0, 0.3) !important;
+    color: white !important;
+  }
+}
+
+.el-select .el-input__wrapper {
+  background: rgba(0, 0, 0, 0.3) !important;
+  border: 1px solid rgba(255, 215, 0, 0.2) !important;
+  box-shadow: none !important;
+  border-radius: 8px;
+  padding: 1px 11px;
+
+  &:hover {
+    border-color: rgba(255, 215, 0, 0.3) !important;
+  }
+
+  &.is-focus {
+    border-color: rgba(255, 215, 0, 0.5) !important;
+    box-shadow: 0 0 0 2px rgba(255, 215, 0, 0.1) !important;
+  }
+
+  .el-input__inner {
+    color: white !important;
+    height: 30px;
+    line-height: 30px;
+
+    &::placeholder {
+      color: rgba(255, 255, 255, 0.4);
+    }
+  }
+
+  .el-input__suffix {
+    .el-select__caret {
+      color: rgba(255, 215, 0, 0.6) !important;
+    }
+  }
+
+  .el-select__placeholder {
+    color: rgba(255, 255, 255, 0.4) !important;
+  }
+}
+
+/* Element Plus Slider 深色主题适配 */
+:deep(.el-slider) {
+  .el-slider__runway {
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  .el-slider__bar {
+    background: linear-gradient(135deg, #ffd700 0%, #f72585 100%);
+  }
+
+  .el-slider__button {
+    border: 2px solid #ffd700;
+    background: #0a0a0a;
+  }
+
+  .el-slider__button-wrapper {
+    &:hover {
+      .el-slider__button {
+        transform: scale(1.2);
+      }
+    }
+  }
+}
+
+/* Element Plus Input Number 深色主题适配 */
+.el-input-number {
+  .el-input__wrapper {
+    background: rgba(0, 0, 0, 0.3) !important;
+    border: 1px solid rgba(255, 215, 0, 0.2) !important;
+    box-shadow: none !important;
+    padding-left: 40px;
+    padding-right: 40px;
+
+    &.is-focus {
+      border-color: rgba(255, 215, 0, 0.5) !important;
+      box-shadow: 0 0 0 2px rgba(255, 215, 0, 0.1) !important;
+    }
+
+    .el-input__inner {
+      color: white !important;
+    }
+  }
+
+  .el-input-number__decrease,
+  .el-input-number__increase {
+    background: rgba(0, 0, 0, 0.3) !important;
+    border-left: 1px solid rgba(255, 215, 0, 0.2) !important;
+    border-right: 1px solid rgba(255, 215, 0, 0.2) !important;
+    color: rgba(255, 215, 0, 0.8) !important;
+
+    &:hover {
+      background: rgba(255, 215, 0, 0.1) !important;
+      color: #ffd700 !important;
+    }
+  }
+
+  .el-input-number__decrease {
+    border-right: none;
+    border-left: 1px solid rgba(255, 215, 0, 0.2) !important;
+  }
+
+  .el-input-number__increase {
+    border-left: none;
+    border-right: 1px solid rgba(255, 215, 0, 0.2) !important;
+  }
+}
+
+/* Element Plus Menu 深色主题适配 */
+:deep(.el-menu) {
+  background: transparent;
+  border-right: none;
+
+  .el-menu-item {
+    background: transparent;
+    color: rgba(255, 255, 255, 0.6);
+
+    &:hover {
+      background: rgba(255, 215, 0, 0.1);
+      color: white;
+    }
+
+    &.is-active {
+      background: linear-gradient(135deg, rgba(255, 215, 0, 0.15) 0%, rgba(247, 37, 133, 0.15) 100%);
+      color: white;
+      border-left: 2px solid #ffd700;
+    }
+  }
+
+  .el-sub-menu__title {
+    background: transparent;
+    color: rgba(255, 255, 255, 0.6);
+
+    &:hover {
+      background: rgba(255, 215, 0, 0.1);
+      color: white;
+    }
+  }
+
+  .el-sub-menu .el-menu-item {
+    background: transparent;
+
+    &:hover {
+      background: rgba(255, 215, 0, 0.1);
+    }
+  }
+
+  .el-sub-menu__title.is-active {
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.15) 0%, rgba(247, 37, 133, 0.15) 100%);
+    color: white;
+    border-left: 2px solid #ffd700;
+  }
+}
+
+/* Element Plus Dialog 深色主题全局样式 */
+.el-dialog {
+  background: rgba(26, 26, 46, 0.98) !important;
+  border: 1px solid rgba(255, 215, 0, 0.2) !important;
+  border-radius: 12px !important;
+
+  .el-dialog__header {
+    background: rgba(0, 0, 0, 0.3);
+    border-bottom: 1px solid rgba(255, 215, 0, 0.15);
+    border-radius: 12px 12px 0 0;
+    padding: 16px 20px;
+    margin-right: 0;
+  }
+
+  .el-dialog__title {
+    color: white !important;
+    font-weight: 600;
+  }
+
+  .el-dialog__headerbtn {
+    top: 16px;
+    right: 16px;
+
+    .el-dialog__close {
+      color: rgba(255, 255, 255, 0.6);
+
+      &:hover {
+        color: #ffd700;
+      }
+    }
+  }
+
+  .el-dialog__body {
+    background: transparent;
+    color: rgba(255, 255, 255, 0.85);
+    padding: 20px;
+  }
+
+  .el-dialog__footer {
+    background: rgba(0, 0, 0, 0.2);
+    border-top: 1px solid rgba(255, 215, 0, 0.15);
+    border-radius: 0 0 12px 12px;
+    padding: 16px 20px;
+  }
+}
+
+/* Element Plus Dropdown 深色主题全局样式 */
+.el-dropdown-menu {
+  background: rgba(26, 26, 46, 0.98) !important;
+  border: 1px solid rgba(255, 215, 0, 0.2) !important;
+  border-radius: 8px !important;
+  padding: 8px 0 !important;
+
+  .el-dropdown-menu__item {
+    color: rgba(255, 255, 255, 0.8) !important;
+    padding: 10px 16px;
+
+    &:hover {
+      background: rgba(255, 215, 0, 0.1) !important;
+      color: white !important;
+    }
+
+    .el-icon {
+      color: rgba(255, 215, 0, 0.6);
+      margin-right: 8px;
+    }
+  }
+
+  .el-dropdown-menu__item--divided {
+    border-top: 1px solid rgba(255, 215, 0, 0.15);
+    margin-top: 8px;
+    padding-top: 16px;
+  }
+}
+
+/* Element Plus Select Dropdown 深色主题全局样式 */
+.el-select-dropdown {
+  background: rgba(26, 26, 46, 0.98) !important;
+  border: 1px solid rgba(255, 215, 0, 0.2) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5) !important;
+
+  .el-select-dropdown__item {
+    color: rgba(255, 255, 255, 0.8) !important;
+    padding: 0 16px;
+    height: 34px;
+    line-height: 34px;
+    display: flex;
+    align-items: center;
+    transition: none;
+
+    &:hover {
+      background: rgba(255, 215, 0, 0.1) !important;
+      color: white !important;
+    }
+
+    &.is-selected {
+      color: #ffd700 !important;
+      background: rgba(255, 215, 0, 0.15) !important;
+      font-weight: 600;
+    }
+
+    &.is-hovering {
+      background: rgba(255, 215, 0, 0.1) !important;
+    }
+  }
+
+  .el-select-dropdown__empty {
+    color: rgba(255, 255, 255, 0.5) !important;
+    padding: 16px;
+  }
+
+  .el-popper__arrow {
+    &::before {
+      background: rgba(26, 26, 46, 0.98);
+      border: 1px solid rgba(255, 215, 0, 0.2);
+    }
+  }
+}
+
+.el-select-dropdown__wrap {
+  max-height: 274px;
+}
+
+/* Element Plus Popover 深色主题全局样式 */
+.el-popover {
+  background: rgba(26, 26, 46, 0.98) !important;
+  border: 1px solid rgba(255, 215, 0, 0.2) !important;
+
+  .el-popover__title {
+    color: white !important;
+  }
+}
+
+/* Element Plus Tooltip 深色主题 */
+.el-tooltip__popper {
+  background: rgba(26, 26, 46, 0.95) !important;
+  border: 1px solid rgba(255, 215, 0, 0.2) !important;
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+
+/* Element Plus Button 默认样式 */
+.el-button {
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+
+  &--primary {
+    background: linear-gradient(135deg, #ffd700 0%, #ff6b35 100%) !important;
+    border: none !important;
+    color: #0a0a0a !important;
+
+    &:hover {
+      opacity: 0.9;
+      box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
+    }
+
+    &:active {
+      opacity: 1;
+    }
+  }
+
+  &--default {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid rgba(255, 215, 0, 0.2) !important;
+    color: rgba(255, 255, 255, 0.8) !important;
+
+    &:hover {
+      background: rgba(255, 215, 0, 0.1) !important;
+      border-color: rgba(255, 215, 0, 0.4) !important;
+      color: white !important;
+    }
+  }
+
+  &--success {
+    background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%) !important;
+    border: none !important;
+    color: white !important;
+  }
+
+  &--danger {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
+    border: none !important;
+    color: white !important;
+  }
+
+  &--warning {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%) !important;
+    border: none !important;
+    color: #0a0a0a !important;
+  }
+}
+
+/* Element Plus Input 深色主题全局样式 */
+.el-input {
+  .el-input__wrapper {
+    background: rgba(0, 0, 0, 0.3) !important;
+    border: 1px solid rgba(255, 215, 0, 0.2) !important;
+    box-shadow: none !important;
+    border-radius: 8px;
+    padding: 1px 11px;
+
+    &:hover {
+      border-color: rgba(255, 215, 0, 0.3) !important;
+    }
+
+    &.is-focus {
+      border-color: rgba(255, 215, 0, 0.5) !important;
+      box-shadow: 0 0 0 2px rgba(255, 215, 0, 0.1) !important;
+    }
+
+    .el-input__inner {
+      color: white !important;
+      height: 30px;
+      line-height: 30px;
+
+      &::placeholder {
+        color: rgba(255, 255, 255, 0.4);
+      }
+    }
+  }
+}
+
+/* Element Plus Textarea 深色主题全局样式 */
+.el-textarea {
+  .el-textarea__inner {
+    background: rgba(0, 0, 0, 0.3) !important;
+    border: 1px solid rgba(255, 215, 0, 0.2) !important;
+    box-shadow: none !important;
+    border-radius: 8px;
+    color: white !important;
+
+    &:hover {
+      border-color: rgba(255, 215, 0, 0.3) !important;
+    }
+
+    &:focus {
+      border-color: rgba(255, 215, 0, 0.5) !important;
+      box-shadow: 0 0 0 2px rgba(255, 215, 0, 0.1) !important;
+    }
+
+    &::placeholder {
+      color: rgba(255, 255, 255, 0.4);
+    }
+  }
+}
+
+/* Element Plus Form 深色主题全局样式 */
+.el-form {
+  .el-form-item__label {
+    color: rgba(255, 255, 255, 0.8) !important;
+  }
+
+  .el-form-item__error {
+    color: #ef4444 !important;
+  }
+}
+
+/* Element Plus Checkbox 深色主题全局样式 */
+.el-checkbox {
+  .el-checkbox__label {
+    color: rgba(255, 255, 255, 0.8) !important;
+  }
+
+  .el-checkbox__inner {
+    background: rgba(0, 0, 0, 0.3);
+    border-color: rgba(255, 215, 0, 0.3);
+  }
+
+  &.is-checked {
+    .el-checkbox__inner {
+      background: #ffd700;
+      border-color: #ffd700;
+    }
+
+    .el-checkbox__label {
+      color: white !important;
+    }
+  }
+}
+
+/* Element Plus Radio 深色主题全局样式 */
+.el-radio {
+  .el-radio__label {
+    color: rgba(255, 255, 255, 0.8) !important;
+  }
+
+  .el-radio__inner {
+    background: rgba(0, 0, 0, 0.3);
+    border-color: rgba(255, 215, 0, 0.3);
+  }
+
+  &.is-checked {
+    .el-radio__inner {
+      background: #ffd700;
+      border-color: #ffd700;
+    }
+
+    .el-radio__label {
+      color: white !important;
+    }
+  }
+}
+
+/* Element Plus Switch 深色主题全局样式 */
+.el-switch {
+  .el-switch__core {
+    background: rgba(255, 255, 255, 0.2) !important;
+    border-color: rgba(255, 215, 0, 0.3) !important;
+  }
+
+  &.is-checked {
+    .el-switch__core {
+      background: #ffd700 !important;
+      border-color: #ffd700 !important;
+    }
+  }
+}
+
+/* Element Plus Message Box 深色主题全局样式 */
+.el-message-box {
+  background: rgba(26, 26, 46, 0.98) !important;
+  border: 1px solid rgba(255, 215, 0, 0.2) !important;
+  border-radius: 12px !important;
+
+  .el-message-box__title {
+    color: white !important;
+  }
+
+  .el-message-box__content {
+    color: rgba(255, 255, 255, 0.8) !important;
+  }
+
+  .el-message-box__headerbtn {
+    .el-message-box__close {
+      color: rgba(255, 255, 255, 0.6);
+
+      &:hover {
+        color: #ffd700;
+      }
+    }
+  }
+}
+
+/* Element Plus Message 深色主题全局样式 */
+.el-message {
+  background: rgba(26, 26, 46, 0.98) !important;
+  border: 1px solid rgba(255, 215, 0, 0.2) !important;
+  border-radius: 8px !important;
+
+  .el-message__content {
+    color: rgba(255, 255, 255, 0.85) !important;
+  }
+}
+
+/* Element Plus Notification 深色主题全局样式 */
+.el-notification {
+  background: rgba(26, 26, 46, 0.98) !important;
+  border: 1px solid rgba(255, 215, 0, 0.2) !important;
+  border-radius: 8px !important;
+
+  .el-notification__title {
+    color: white !important;
+  }
+
+  .el-notification__content {
+    color: rgba(255, 255, 255, 0.8) !important;
+  }
+}
+
+/* Element Plus Table 深色主题全局样式 */
+.el-table {
+  background: transparent !important;
+  --el-table-bg-color: transparent;
+  --el-table-tr-bg-color: transparent;
+  --el-table-header-bg-color: rgba(0, 0, 0, 0.3);
+  --el-table-row-hover-bg-color: rgba(255, 215, 0, 0.1);
+  --el-table-border-color: rgba(255, 215, 0, 0.15);
+  --el-table-text-color: rgba(255, 255, 255, 0.8);
+  --el-table-header-text-color: rgba(255, 255, 255, 0.9);
+
+  &::before {
+    display: none;
+  }
+
+  th.el-table__cell {
+    background: rgba(0, 0, 0, 0.3) !important;
+    border-bottom: 1px solid rgba(255, 215, 0, 0.15) !important;
+  }
+
+  td.el-table__cell {
+    border-bottom: 1px solid rgba(255, 215, 0, 0.1) !important;
+  }
+
+  tr {
+    background: transparent !important;
+
+    &:hover > td {
+      background: rgba(255, 215, 0, 0.08) !important;
+    }
+  }
+}
+
+/* Element Plus Pagination 深色主题全局样式 */
+.el-pagination {
+  .el-pagination__total,
+  .el-pagination__jump {
+    color: rgba(255, 255, 255, 0.6) !important;
+  }
+
+  .el-pager li {
+    background: rgba(0, 0, 0, 0.3) !important;
+    color: rgba(255, 255, 255, 0.8) !important;
+
+    &:hover {
+      color: #ffd700 !important;
+    }
+
+    &.is-active {
+      background: rgba(255, 215, 0, 0.2) !important;
+      color: #ffd700 !important;
+    }
+  }
+
+  .btn-prev,
+  .btn-next {
+    background: rgba(0, 0, 0, 0.3) !important;
+    color: rgba(255, 255, 255, 0.6) !important;
+
+    &:hover {
+      color: #ffd700 !important;
+    }
+  }
+}
+
+/* Element Plus Card 深色主题全局样式 */
+.el-card {
+  background: rgba(26, 26, 46, 0.6) !important;
+  border: 1px solid rgba(255, 215, 0, 0.15) !important;
+  border-radius: 12px !important;
+
+  .el-card__header {
+    border-bottom: 1px solid rgba(255, 215, 0, 0.15);
+    color: white;
+  }
+
+  .el-card__body {
+    color: rgba(255, 255, 255, 0.8);
+  }
+}
+
+/* Element Plus Tabs 深色主题全局样式 */
+.el-tabs {
+  .el-tabs__item {
+    color: rgba(255, 255, 255, 0.6) !important;
+
+    &:hover {
+      color: white !important;
+    }
+
+    &.is-active {
+      color: #ffd700 !important;
+    }
+  }
+
+  .el-tabs__active-bar {
+    background: #ffd700 !important;
+  }
+
+  .el-tabs__nav-wrap::after {
+    background: rgba(255, 215, 0, 0.15) !important;
+  }
+}
+
+/* Element Plus Loading 深色主题全局样式 */
+.el-loading-mask {
+  background: rgba(10, 10, 10, 0.8) !important;
+}
+
+.el-loading-spinner {
+  .el-loading-text {
+    color: rgba(255, 255, 255, 0.8) !important;
+  }
+
+  .path {
+    stroke: #ffd700;
+  }
+}
+
+/* Element Plus Empty 深色主题全局样式 */
+.el-empty {
+  .el-empty__description {
+    color: rgba(255, 255, 255, 0.5) !important;
+  }
+}
+
+/* Element Plus Avatar 深色主题全局样式 */
+.el-avatar {
+  background: linear-gradient(135deg, #ffd700 0%, #f72585 100%) !important;
+  color: #0a0a0a !important;
+  font-weight: 600;
+}
+
+/* Element Plus Badge 深色主题全局样式 */
+.el-badge {
+  .el-badge__content {
+    background: #ef4444 !important;
+    border-color: rgba(26, 26, 46, 0.98) !important;
+  }
+}
+
+/* Element Plus Progress 深色主题全局样式 */
+.el-progress {
+  .el-progress-bar__outer {
+    background: rgba(255, 255, 255, 0.1) !important;
+  }
+
+  .el-progress-bar__inner {
+    background: linear-gradient(135deg, #ffd700 0%, #f72585 100%) !important;
+  }
+
+  .el-progress__text {
+    color: rgba(255, 255, 255, 0.8) !important;
+  }
+}
+
+/* Element Plus Drawer 深色主题全局样式 */
+.el-drawer {
+  background: rgba(26, 26, 46, 0.98) !important;
+
+  .el-drawer__header {
+    color: white !important;
+    border-bottom: 1px solid rgba(255, 215, 0, 0.15);
+  }
+
+  .el-drawer__body {
+    color: rgba(255, 255, 255, 0.8) !important;
+  }
+
+  .el-drawer__footer {
+    border-top: 1px solid rgba(255, 215, 0, 0.15);
+  }
+}
+
+/* Element Plus DatePicker 深色主题全局样式 */
+.el-date-editor {
+  .el-input__wrapper {
+    background: rgba(0, 0, 0, 0.3) !important;
+    border: 1px solid rgba(255, 215, 0, 0.2) !important;
+
+    .el-input__inner {
+      color: white !important;
+    }
+  }
+}
+
+.el-picker-panel {
+  background: rgba(26, 26, 46, 0.98) !important;
+  border: 1px solid rgba(255, 215, 0, 0.2) !important;
+
+  .el-date-table th {
+    color: rgba(255, 255, 255, 0.6) !important;
+  }
+
+  .el-date-table td {
+    color: rgba(255, 255, 255, 0.8) !important;
+
+    &:hover {
+      color: #ffd700 !important;
+    }
+
+    &.today {
+      color: #ffd700 !important;
+    }
+
+    &.current {
+      background: rgba(255, 215, 0, 0.2) !important;
+    }
+  }
+}
+
+/* Element Plus TimePicker 深色主题全局样式 */
+.el-time-panel {
+  background: rgba(26, 26, 46, 0.98) !important;
+  border: 1px solid rgba(255, 215, 0, 0.2) !important;
+
+  .el-time-panel__content {
+    color: rgba(255, 255, 255, 0.8) !important;
+  }
+}
+
+/* Element Plus Upload 深色主题全局样式 */
+.el-upload {
+  .el-upload-dragger {
+    background: rgba(0, 0, 0, 0.3) !important;
+    border: 1px dashed rgba(255, 215, 0, 0.3) !important;
+
+    &:hover {
+      border-color: rgba(255, 215, 0, 0.5) !important;
+    }
+
+    .el-icon--upload {
+      color: rgba(255, 215, 0, 0.6);
+    }
+
+    .el-upload__text {
+      color: rgba(255, 255, 255, 0.6);
+
+      em {
+        color: #ffd700;
+      }
+    }
+  }
+}
+
+/* Element Plus Tree 深色主题全局样式 */
+.el-tree {
+  background: transparent !important;
+  color: rgba(255, 255, 255, 0.8) !important;
+
+  .el-tree-node__content:hover {
+    background: rgba(255, 215, 0, 0.1) !important;
+  }
+
+  .el-tree-node.is-current > .el-tree-node__content {
+    background: rgba(255, 215, 0, 0.15) !important;
+    color: #ffd700 !important;
+  }
+}
+
+/* Element Plus Collapse 深色主题全局样式 */
+.el-collapse {
+  border-color: rgba(255, 215, 0, 0.15) !important;
+
+  .el-collapse-item__header {
+    background: transparent !important;
+    color: rgba(255, 255, 255, 0.8) !important;
+    border-color: rgba(255, 215, 0, 0.15) !important;
+  }
+
+  .el-collapse-item__wrap {
+    background: transparent !important;
+    border-color: rgba(255, 215, 0, 0.15) !important;
+  }
+
+  .el-collapse-item__content {
+    color: rgba(255, 255, 255, 0.7) !important;
+  }
+}
+
+/* Element Plus Descriptions 深色主题全局样式 */
+.el-descriptions {
+  .el-descriptions__label {
+    color: rgba(255, 255, 255, 0.6) !important;
+  }
+
+  .el-descriptions__content {
+    color: rgba(255, 255, 255, 0.8) !important;
+  }
+}
+
+/* Element Plus Result 深色主题全局样式 */
+.el-result {
+  .el-result__title {
+    color: white !important;
+  }
+
+  .el-result__subtitle {
+    color: rgba(255, 255, 255, 0.6) !important;
+  }
+}
+
+/* Element Plus Skeleton 深色主题全局样式 */
+.el-skeleton {
+  .el-skeleton__item {
+    background: rgba(255, 255, 255, 0.1) !important;
+  }
+}
+
+/* Element Plus Backtop 深色主题全局样式 */
+.el-backtop {
+  background: rgba(26, 26, 46, 0.98) !important;
+  border: 1px solid rgba(255, 215, 0, 0.2) !important;
+  color: #ffd700 !important;
+
+  &:hover {
+    background: rgba(255, 215, 0, 0.1) !important;
+  }
+}
+
+/* Element Plus Calendar 深色主题全局样式 */
+.el-calendar {
+  background: transparent !important;
+
+  .el-calendar__header {
+    border-color: rgba(255, 215, 0, 0.15) !important;
+  }
+
+  .el-calendar-table td {
+    border-color: rgba(255, 215, 0, 0.1) !important;
+  }
+
+  .el-calendar-day {
+    color: rgba(255, 255, 255, 0.8) !important;
+
+    &:hover {
+      background: rgba(255, 215, 0, 0.1) !important;
+    }
+  }
+}
+
+/* Element Plus InfiniteScroll 深色主题全局样式 */
+.el-infinite-scroll {
+  .el-infinite-scroll__loading {
+    color: rgba(255, 255, 255, 0.6) !important;
+  }
+}
+
+/* Element Plus Scrollbar 深色主题全局样式 */
+.el-scrollbar {
+  .el-scrollbar__thumb {
+    background: rgba(255, 215, 0, 0.3) !important;
+
+    &:hover {
+      background: rgba(255, 215, 0, 0.5) !important;
+    }
+  }
+}

@@ -67,3 +67,4 @@
 后端指的是 backend/ 目录下的文件，
 python使用backends 下面的虚拟环境，要安装新的包的时候，使用aliyun的镜像源。
 SQLBot项目在 SQLBot/ 目录下，作为参考项目使用。
+项目模块规划文档在 PROJECT_MODULES.md，开发前请先阅读了解项目整体规划。

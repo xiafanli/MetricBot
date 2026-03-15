@@ -1,7 +1,7 @@
 [project]
-name = "prometheusbot"
+name = "metric-bot"
 version = "0.1.0"
-description = "PrometheusBot - A chatbot for Prometheus monitoring"
+description = "Metric Bot - 智能运维监控平台"
 requires-python = ">=3.6"
 dependencies = [
     "fastapi<0.69.0,>=0.68.0",
