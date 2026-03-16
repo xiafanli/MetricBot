@@ -1,0 +1,27 @@
+{
+  "timestamp": "2026-03-16T15:26:14.944Z",
+  "results": {
+    "passed": 0,
+    "failed": 2,
+    "errors": [
+      {
+        "name": "获取模型列表",
+        "error": "Request failed with status code 500"
+      },
+      {
+        "name": "创建模型",
+        "error": "read ECONNRESET"
+      }
+    ]
+  },
+  "errors": [
+    {
+      "name": "获取模型列表",
+      "error": "Request failed with status code 500"
+    },
+    {
+      "name": "创建模型",
+      "error": "read ECONNRESET"
+    }
+  ]
+}

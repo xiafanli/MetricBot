@@ -1,6 +1,5 @@
 import os
 from dotenv import load_dotenv
-from sqlalchemy.orm import Session
 from common.core.database import engine, Base, SessionLocal
 from apps.auth.models import User
 from apps.auth.security import get_password_hash

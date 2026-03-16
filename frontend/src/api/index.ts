@@ -77,10 +77,41 @@ function getCurrentUser() {
   return apiClient.get('/auth/me')
 }
 
+// 模型管理相关API
+function getModels(enabledOnly: boolean = false) {
+  return apiClient.get('/models', { params: { enabled_only: enabledOnly } })
+}
+
+function getModel(id: number) {
+  return apiClient.get(`/models/${id}`)
+}
+
+function createModel(data: any) {
+  return apiClient.post('/models', data)
+}
+
+function updateModel(id: number, data: any) {
+  return apiClient.put(`/models/${id}`, data)
+}
+
+function setDefaultModel(id: number) {
+  return apiClient.put(`/models/${id}/default`)
+}
+
+function deleteModel(id: number) {
+  return apiClient.delete(`/models/${id}`)
+}
+
 export const api = {
   healthCheck,
   getRoot,
   login,
   register,
-  getCurrentUser
+  getCurrentUser,
+  getModels,
+  getModel,
+  createModel,
+  updateModel,
+  setDefaultModel,
+  deleteModel
 }

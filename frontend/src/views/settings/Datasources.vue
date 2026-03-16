@@ -397,14 +397,18 @@ const saveDatasource = () => {
 
   .el-button {
     color: rgba(255, 215, 0, 0.6);
+    background: transparent !important;
+    border: none !important;
 
     &:hover {
       color: #ffd700;
+      background: rgba(255, 215, 0, 0.1) !important;
     }
   }
 
   .delete-btn:hover {
-    color: #ef4444;
+    color: #ef4444 !important;
+    background: rgba(239, 68, 68, 0.1) !important;
   }
 }
 

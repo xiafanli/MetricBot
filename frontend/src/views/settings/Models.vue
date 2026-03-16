@@ -18,18 +18,21 @@
         v-for="model in models" 
         :key="model.id" 
         class="model-card"
-        :class="{ disabled: !model.enabled }"
+        :class="{ disabled: !model.is_enabled }"
       >
         <div class="model-header">
-          <div class="model-icon" :style="{ background: model.iconBg }">
-            <span class="icon-text">{{ model.icon }}</span>
+          <div class="model-icon" :style="{ background: getIconBg(model.provider) }">
+            <span class="icon-text">{{ model.provider.charAt(0) }}</span>
           </div>
           <div class="model-info">
-            <div class="model-name">{{ model.name }}</div>
+            <div class="model-name">
+              {{ model.name }}
+              <el-tag v-if="model.is_default" type="success" size="small" effect="dark">默认</el-tag>
+            </div>
             <div class="model-provider">{{ model.provider }}</div>
           </div>
           <el-switch 
-            v-model="model.enabled" 
+            v-model="model.is_enabled" 
             size="small"
             @change="toggleModel(model)"
           />
@@ -37,27 +40,12 @@
         
         <div class="model-params">
           <div class="param-item">
-            <span class="param-label">模型类型</span>
-            <span class="param-value">{{ model.type }}</span>
+            <span class="param-label">基础模型</span>
+            <span class="param-value">{{ model.base_model }}</span>
           </div>
           <div class="param-item">
-            <span class="param-label">温度系数</span>
-            <span class="param-value">{{ model.temperature }}</span>
-          </div>
-          <div class="param-item">
-            <span class="param-label">最大Token</span>
-            <span class="param-value">{{ model.maxTokens }}</span>
-          </div>
-        </div>
-        
-        <div class="model-stats">
-          <div class="stat-item">
-            <span class="stat-value">{{ model.callCount }}</span>
-            <span class="stat-label">调用次数</span>
-          </div>
-          <div class="stat-item">
-            <span class="stat-value">{{ model.avgLatency }}ms</span>
-            <span class="stat-label">平均延迟</span>
+            <span class="param-label">协议类型</span>
+            <span class="param-value">{{ model.protocol }}</span>
           </div>
         </div>
         
@@ -66,9 +54,14 @@
             <el-icon><Edit /></el-icon>
             编辑
           </el-button>
-          <el-button text size="small" @click="testModel(model)">
-            <el-icon><Connection /></el-icon>
-            测试
+          <el-button 
+            v-if="!model.is_default"
+            text 
+            size="small" 
+            @click="setDefault(model)"
+          >
+            <el-icon><Star /></el-icon>
+            设为默认
           </el-button>
           <el-button text size="small" class="delete-btn" @click="deleteModel(model)">
             <el-icon><Delete /></el-icon>
@@ -91,127 +84,112 @@
         <el-form-item label="提供商" required>
           <el-select v-model="modelForm.provider" placeholder="选择提供商">
             <el-option label="OpenAI" value="OpenAI" />
-            <el-option label="Azure OpenAI" value="Azure" />
-            <el-option label="通义千问" value="Qwen" />
-            <el-option label="文心一言" value="Ernie" />
-            <el-option label="智谱AI" value="Zhipu" />
+            <el-option label="Azure" value="Azure" />
+            <el-option label="Anthropic" value="Anthropic" />
+            <el-option label="Qwen" value="Qwen" />
+            <el-option label="Zhipu" value="Zhipu" />
             <el-option label="Ollama" value="Ollama" />
           </el-select>
         </el-form-item>
         
-        <el-form-item label="模型类型" required>
-          <el-input v-model="modelForm.type" placeholder="例如：gpt-4, qwen-max" />
+        <el-form-item label="基础模型" required>
+          <el-input v-model="modelForm.base_model" placeholder="例如：gpt-4, qwen-max" />
         </el-form-item>
         
-        <el-form-item label="API地址">
-          <el-input v-model="modelForm.endpoint" placeholder="自定义API地址（可选）" />
+        <el-form-item label="协议类型">
+          <el-select v-model="modelForm.protocol" placeholder="选择协议">
+            <el-option label="OpenAI" value="openai" />
+            <el-option label="Anthropic" value="anthropic" />
+            <el-option label="Ollama" value="ollama" />
+          </el-select>
+        </el-form-item>
+        
+        <el-form-item label="API域名">
+          <el-input v-model="modelForm.api_domain" placeholder="例如：https://api.openai.com/v1" />
         </el-form-item>
         
         <el-form-item label="API密钥">
-          <el-input v-model="modelForm.apiKey" type="password" placeholder="请输入API密钥" show-password />
-        </el-form-item>
-        
-        <el-form-item label="温度系数">
-          <el-slider v-model="modelForm.temperature" :min="0" :max="2" :step="0.1" show-input />
-        </el-form-item>
-        
-        <el-form-item label="最大Token">
-          <el-input-number v-model="modelForm.maxTokens" :min="100" :max="128000" :step="100" />
+          <el-input v-model="modelForm.api_key" type="password" placeholder="请输入API密钥" show-password />
         </el-form-item>
         
         <el-form-item label="启用状态">
-          <el-switch v-model="modelForm.enabled" />
+          <el-switch v-model="modelForm.is_enabled" />
+        </el-form-item>
+        
+        <el-form-item label="设为默认">
+          <el-switch v-model="modelForm.is_default" />
         </el-form-item>
       </el-form>
       
       <template #footer>
-        <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="saveModel">保存</el-button>
+        <el-button class="cancel-btn" @click="dialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="saveModel" :loading="saving">保存</el-button>
       </template>
     </el-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import {
-  Plus,
-  Edit,
-  Delete,
-  Connection
-} from '@element-plus/icons-vue'
+import { Plus, Edit, Delete, Star } from '@element-plus/icons-vue'
+import { api } from '@/api'
 
 interface Model {
   id: number
   name: string
   provider: string
-  type: string
-  icon: string
-  iconBg: string
-  temperature: number
-  maxTokens: number
-  enabled: boolean
-  callCount: number
-  avgLatency: number
+  base_model: string
+  protocol: string
+  api_key?: string
+  api_domain?: string
+  config?: any
+  is_default: boolean
+  is_enabled: boolean
+  created_at: string
+  updated_at?: string
 }
 
+const models = ref<Model[]>([])
 const dialogVisible = ref(false)
 const isEditing = ref(false)
-
-const models = ref<Model[]>([
-  {
-    id: 1,
-    name: 'GPT-4',
-    provider: 'OpenAI',
-    type: 'gpt-4-turbo',
-    icon: 'G',
-    iconBg: 'linear-gradient(135deg, #10a37f 0%, #1a7f64 100%)',
-    temperature: 0.7,
-    maxTokens: 4096,
-    enabled: true,
-    callCount: 1234,
-    avgLatency: 850
-  },
-  {
-    id: 2,
-    name: '通义千问',
-    provider: 'Qwen',
-    type: 'qwen-max',
-    icon: '通',
-    iconBg: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
-    temperature: 0.8,
-    maxTokens: 8000,
-    enabled: true,
-    callCount: 856,
-    avgLatency: 620
-  },
-  {
-    id: 3,
-    name: '智谱AI',
-    provider: 'Zhipu',
-    type: 'glm-4',
-    icon: '智',
-    iconBg: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
-    temperature: 0.7,
-    maxTokens: 4096,
-    enabled: false,
-    callCount: 0,
-    avgLatency: 0
-  }
-])
+const saving = ref(false)
 
 const modelForm = ref({
   id: 0,
   name: '',
   provider: 'OpenAI',
-  type: '',
-  endpoint: '',
-  apiKey: '',
-  temperature: 0.7,
-  maxTokens: 4096,
-  enabled: true
+  base_model: '',
+  protocol: 'openai',
+  api_key: '',
+  api_domain: '',
+  config: null,
+  is_default: false,
+  is_enabled: true
 })
+
+const providerColors: Record<string, string> = {
+  'OpenAI': 'linear-gradient(135deg, #10a37f 0%, #1a7f64 100%)',
+  'Azure': 'linear-gradient(135deg, #0078d4 0%, #005a9e 100%)',
+  'Anthropic': 'linear-gradient(135deg, #7957d6 0%, #5c3cbf 100%)',
+  'Qwen': 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
+  'Zhipu': 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
+  'Ollama': 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)'
+}
+
+const getIconBg = (provider: string) => {
+  return providerColors[provider] || 'linear-gradient(135deg, #ffd700 0%, #f72585 100%)'
+}
+
+const loadModels = async () => {
+  try {
+    const data = await api.getModels()
+    models.value = (data as Model[]) || []
+  } catch (error) {
+    ElMessage.error('加载模型列表失败')
+    console.error('Load models error:', error)
+  }
+}
 
 const showAddDialog = () => {
   isEditing.value = false
@@ -219,19 +197,24 @@ const showAddDialog = () => {
     id: 0,
     name: '',
     provider: 'OpenAI',
-    type: '',
-    endpoint: '',
-    apiKey: '',
-    temperature: 0.7,
-    maxTokens: 4096,
-    enabled: true
+    base_model: '',
+    protocol: 'openai',
+    api_key: '',
+    api_domain: '',
+    config: null,
+    is_default: false,
+    is_enabled: true
   }
   dialogVisible.value = true
 }
 
 const editModel = (model: Model) => {
   isEditing.value = true
-  modelForm.value = { ...model, endpoint: '', apiKey: '' }
+  modelForm.value = {
+    ...model,
+    api_key: '',
+    config: null
+  }
   dialogVisible.value = true
 }
 
@@ -242,61 +225,66 @@ const deleteModel = async (model: Model) => {
       cancelButtonText: '取消',
       type: 'warning'
     })
-    const index = models.value.findIndex(m => m.id === model.id)
-    if (index > -1) {
-      models.value.splice(index, 1)
-      ElMessage.success('模型已删除')
+    await api.deleteModel(model.id)
+    ElMessage.success('模型已删除')
+    await loadModels()
+  } catch (error) {
+    if (error !== 'cancel') {
+      console.error('Delete model error:', error)
     }
-  } catch {
-    // 取消删除
   }
 }
 
-const toggleModel = (model: Model) => {
-  ElMessage.success(model.enabled ? '模型已启用' : '模型已禁用')
+const toggleModel = async (model: Model) => {
+  try {
+    await api.updateModel(model.id, { is_enabled: model.is_enabled })
+    ElMessage.success(model.is_enabled ? '模型已启用' : '模型已禁用')
+  } catch (error) {
+    model.is_enabled = !model.is_enabled
+    ElMessage.error('操作失败')
+    console.error('Toggle model error:', error)
+  }
 }
 
-const testModel = (model: Model) => {
-  ElMessage.info(`正在测试模型 ${model.name}...`)
-  setTimeout(() => {
-    ElMessage.success('模型连接测试成功！')
-  }, 1500)
+const setDefault = async (model: Model) => {
+  try {
+    await api.setDefaultModel(model.id)
+    ElMessage.success('已设为默认模型')
+    await loadModels()
+  } catch (error) {
+    ElMessage.error('设置默认模型失败')
+    console.error('Set default error:', error)
+  }
 }
 
-const saveModel = () => {
-  if (!modelForm.value.name || !modelForm.value.type) {
+const saveModel = async () => {
+  if (!modelForm.value.name || !modelForm.value.base_model) {
     ElMessage.warning('请填写必填项')
     return
   }
 
-  if (isEditing.value) {
-    const index = models.value.findIndex(m => m.id === modelForm.value.id)
-    if (index > -1) {
-      models.value[index] = {
-        ...models.value[index],
-        ...modelForm.value
-      }
+  saving.value = true
+  try {
+    if (isEditing.value) {
+      await api.updateModel(modelForm.value.id, modelForm.value)
+      ElMessage.success('模型已更新')
+    } else {
+      await api.createModel(modelForm.value)
+      ElMessage.success('模型已添加')
     }
-    ElMessage.success('模型已更新')
-  } else {
-    models.value.push({
-      id: Date.now(),
-      name: modelForm.value.name,
-      provider: modelForm.value.provider,
-      type: modelForm.value.type,
-      icon: modelForm.value.name.charAt(0),
-      iconBg: 'linear-gradient(135deg, #ffd700 0%, #f72585 100%)',
-      temperature: modelForm.value.temperature,
-      maxTokens: modelForm.value.maxTokens,
-      enabled: modelForm.value.enabled,
-      callCount: 0,
-      avgLatency: 0
-    })
-    ElMessage.success('模型已添加')
+    dialogVisible.value = false
+    await loadModels()
+  } catch (error) {
+    ElMessage.error(isEditing.value ? '更新模型失败' : '添加模型失败')
+    console.error('Save model error:', error)
+  } finally {
+    saving.value = false
   }
-  
-  dialogVisible.value = false
 }
+
+onMounted(() => {
+  loadModels()
+})
 </script>
 
 <style lang="less" scoped>
@@ -384,6 +372,9 @@ const saveModel = () => {
   font-size: 16px;
   font-weight: 600;
   color: white;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .model-provider {
@@ -415,43 +406,24 @@ const saveModel = () => {
   color: rgba(255, 255, 255, 0.9);
 }
 
-.model-stats {
-  display: flex;
-  gap: 24px;
-  margin-bottom: 16px;
-}
-
-.stat-item {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.stat-value {
-  font-size: 18px;
-  font-weight: 600;
-  color: #ffd700;
-}
-
-.stat-label {
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.4);
-}
-
 .model-actions {
   display: flex;
   gap: 8px;
 
   .el-button {
     color: rgba(255, 215, 0, 0.6);
+    background: transparent !important;
+    border: none !important;
 
     &:hover {
       color: #ffd700;
+      background: rgba(255, 215, 0, 0.1) !important;
     }
   }
 
   .delete-btn:hover {
-    color: #ef4444;
+    color: #ef4444 !important;
+    background: rgba(239, 68, 68, 0.1) !important;
   }
 }
 
@@ -469,6 +441,18 @@ const saveModel = () => {
 
   :deep(.el-form-item__label) {
     color: rgba(255, 255, 255, 0.8);
+  }
+}
+
+.cancel-btn {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 215, 0, 0.2) !important;
+  color: rgba(255, 255, 255, 0.8) !important;
+
+  &:hover {
+    background: rgba(255, 215, 0, 0.1) !important;
+    border-color: rgba(255, 215, 0, 0.4) !important;
+    color: white !important;
   }
 }
 </style>

@@ -47,8 +47,8 @@
             >
               <el-icon class="nav-icon"><component :is="item.icon" /></el-icon>
               <span class="nav-text">{{ item.title }}</span>
-              <el-icon v-if="item.children" class="nav-arrow" :class="{ rotated: openedMenus.includes(item.path) }">
-                <ArrowDown />
+              <el-icon class="nav-arrow" :class="{ rotated: item.children && openedMenus.includes(item.path) }">
+                <ArrowDown v-if="item.children" />
               </el-icon>
             </div>
             
@@ -347,7 +347,7 @@ const handleCommand = async (command: string) => {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 0 16px;
+  padding: 0 44px;
   height: 44px;
   border-radius: 8px;
   cursor: pointer;
@@ -388,9 +388,15 @@ const handleCommand = async (command: string) => {
   font-size: 12px;
   flex-shrink: 0;
   opacity: 1;
+  width: 12px;
+  visibility: hidden;
 
   &.rotated {
     transform: rotate(180deg);
+  }
+
+  .el-icon {
+    visibility: visible;
   }
 }
 
