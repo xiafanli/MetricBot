@@ -102,6 +102,31 @@ function deleteModel(id: number) {
   return apiClient.delete(`/models/${id}`)
 }
 
+// 监控数据源相关API
+function getDatasources(enabledOnly: boolean = false) {
+  return apiClient.get('/datasources', { params: { enabled_only: enabledOnly } })
+}
+
+function getDatasource(id: number) {
+  return apiClient.get(`/datasources/${id}`)
+}
+
+function createDatasource(data: any) {
+  return apiClient.post('/datasources', data)
+}
+
+function updateDatasource(id: number, data: any) {
+  return apiClient.put(`/datasources/${id}`, data)
+}
+
+function deleteDatasource(id: number) {
+  return apiClient.delete(`/datasources/${id}`)
+}
+
+function testDatasourceConnection(data: any) {
+  return apiClient.post('/datasources/test', data)
+}
+
 export const api = {
   healthCheck,
   getRoot,
@@ -113,5 +138,11 @@ export const api = {
   createModel,
   updateModel,
   setDefaultModel,
-  deleteModel
+  deleteModel,
+  getDatasources,
+  getDatasource,
+  createDatasource,
+  updateDatasource,
+  deleteDatasource,
+  testDatasourceConnection
 }

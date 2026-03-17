@@ -21,16 +21,16 @@
         :class="{ disabled: !ds.enabled }"
       >
         <div class="ds-header">
-          <div class="ds-icon" :style="{ background: ds.iconBg }">
-            <span class="icon-text">{{ ds.icon }}</span>
+          <div class="ds-icon" :style="{ background: getIconBg(ds.type) }">
+            <span class="icon-text">{{ ds.type.charAt(0) }}</span>
           </div>
           <div class="ds-info">
             <div class="ds-name">{{ ds.name }}</div>
             <div class="ds-type">{{ ds.type }}</div>
           </div>
           <div class="ds-status">
-            <el-tag :type="ds.status === '正常' ? 'success' : 'danger'" size="small">
-              {{ ds.status }}
+            <el-tag :type="ds.enabled ? 'success' : 'info'" size="small">
+              {{ ds.enabled ? '已启用' : '已禁用' }}
             </el-tag>
           </div>
         </div>
@@ -41,12 +41,8 @@
             <span class="detail-value">{{ ds.url }}</span>
           </div>
           <div class="detail-item">
-            <span class="detail-label">指标数量</span>
-            <span class="detail-value">{{ ds.metricCount }}</span>
-          </div>
-          <div class="detail-item">
-            <span class="detail-label">最后同步</span>
-            <span class="detail-value">{{ ds.lastSync }}</span>
+            <span class="detail-label">认证方式</span>
+            <span class="detail-value">{{ getAuthTypeText(ds.auth_type) }}</span>
           </div>
         </div>
 
@@ -95,18 +91,18 @@
         </el-form-item>
 
         <el-form-item label="认证方式">
-          <el-select v-model="dsForm.authType" placeholder="选择认证方式">
+          <el-select v-model="dsForm.auth_type" placeholder="选择认证方式">
             <el-option label="无" value="none" />
             <el-option label="Basic Auth" value="basic" />
-            <el-option label="Bearer Token" value="bearer" />
+            <el-option label="Bearer Token" value="token" />
           </el-select>
         </el-form-item>
 
-        <el-form-item v-if="dsForm.authType !== 'none'" label="用户名/Token">
-          <el-input v-model="dsForm.authValue" :placeholder="dsForm.authType === 'basic' ? '用户名' : 'Token'" />
+        <el-form-item v-if="dsForm.auth_type !== 'none'" label="用户名/Token">
+          <el-input v-model="dsForm.auth_value" :placeholder="dsForm.auth_type === 'basic' ? '用户名' : 'Token'" />
         </el-form-item>
 
-        <el-form-item v-if="dsForm.authType === 'basic'" label="密码">
+        <el-form-item v-if="dsForm.auth_type === 'basic'" label="密码">
           <el-input v-model="dsForm.password" type="password" placeholder="密码" show-password />
         </el-form-item>
 
@@ -116,15 +112,24 @@
       </el-form>
 
       <template #footer>
-        <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="saveDatasource">保存</el-button>
+        <el-button 
+          type="info" 
+          @click="testConnectionFromDialog" 
+          :loading="testing"
+          :disabled="!dsForm.url"
+        >
+          <el-icon><Connection /></el-icon>
+          测试连接
+        </el-button>
+        <el-button class="cancel-btn" @click="dialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="saveDatasource" :loading="saving">保存</el-button>
       </template>
     </el-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import {
   Plus,
@@ -133,72 +138,71 @@ import {
   Connection,
   Refresh
 } from '@element-plus/icons-vue'
+import { api } from '@/api'
 
 interface Datasource {
   id: number
   name: string
   type: string
-  icon: string
-  iconBg: string
   url: string
-  status: string
-  metricCount: number
-  lastSync: string
+  auth_type: string
+  auth_value?: string
+  password?: string
+  config?: any
   enabled: boolean
+  created_at: string
+  updated_at?: string
 }
 
 const dialogVisible = ref(false)
 const isEditing = ref(false)
-
-const datasources = ref<Datasource[]>([
-  {
-    id: 1,
-    name: '生产环境 Prometheus',
-    type: 'Prometheus',
-    icon: 'P',
-    iconBg: 'linear-gradient(135deg, #e6522c 0%, #c94a26 100%)',
-    url: 'http://prometheus.prod:9090',
-    status: '正常',
-    metricCount: 1234,
-    lastSync: '2分钟前',
-    enabled: true
-  },
-  {
-    id: 2,
-    name: '测试环境 Zabbix',
-    type: 'Zabbix',
-    icon: 'Z',
-    iconBg: 'linear-gradient(135deg, #d40000 0%, #b30000 100%)',
-    url: 'http://zabbix.test:8080',
-    status: '正常',
-    metricCount: 856,
-    lastSync: '5分钟前',
-    enabled: true
-  },
-  {
-    id: 3,
-    name: '监控大盘 Grafana',
-    type: 'Grafana',
-    icon: 'G',
-    iconBg: 'linear-gradient(135deg, #f46800 0%, #e05a00 100%)',
-    url: 'http://grafana:3000',
-    status: '异常',
-    metricCount: 0,
-    lastSync: '1小时前',
-    enabled: false
-  }
-])
+const saving = ref(false)
+const testing = ref(false)
+const datasources = ref<Datasource[]>([])
 
 const dsForm = ref({
   id: 0,
   name: '',
   type: 'Prometheus',
   url: '',
-  authType: 'none',
-  authValue: '',
+  auth_type: 'none',
+  auth_value: '',
   password: '',
+  config: null,
   enabled: true
 })
+
+const typeColors: Record<string, string> = {
+  'Prometheus': 'linear-gradient(135deg, #e6522c 0%, #c94a26 100%)',
+  'Zabbix': 'linear-gradient(135deg, #d40000 0%, #b30000 100%)',
+  'Grafana': 'linear-gradient(135deg, #f46800 0%, #e05a00 100%)',
+  'Datadog': 'linear-gradient(135deg, #632ca6 0%, #512191 100%)',
+  'HTTP': 'linear-gradient(135deg, #10b981 0%, #059669 100%)'
+}
+
+const authTypeTexts: Record<string, string> = {
+  'none': '无',
+  'basic': 'Basic Auth',
+  'token': 'Bearer Token'
+}
+
+const getIconBg = (type: string) => {
+  return typeColors[type] || 'linear-gradient(135deg, #ffd700 0%, #f72585 100%)'
+}
+
+const getAuthTypeText = (type: string) => {
+  return authTypeTexts[type] || type
+}
+
+const loadDatasources = async () => {
+  try {
+    const data = await api.getDatasources()
+    datasources.value = (data as Datasource[]) || []
+  } catch (error) {
+    ElMessage.error('加载数据源列表失败')
+    console.error('Load datasources error:', error)
+  }
+}
 
 const showAddDialog = () => {
   isEditing.value = false
@@ -207,9 +211,10 @@ const showAddDialog = () => {
     name: '',
     type: 'Prometheus',
     url: '',
-    authType: 'none',
-    authValue: '',
+    auth_type: 'none',
+    auth_value: '',
     password: '',
+    config: null,
     enabled: true
   }
   dialogVisible.value = true
@@ -217,7 +222,11 @@ const showAddDialog = () => {
 
 const editDatasource = (ds: Datasource) => {
   isEditing.value = true
-  dsForm.value = { ...ds, authType: 'none', authValue: '', password: '' }
+  dsForm.value = { 
+    ...ds, 
+    auth_value: '', 
+    password: '' 
+  }
   dialogVisible.value = true
 }
 
@@ -228,13 +237,13 @@ const deleteDatasource = async (ds: Datasource) => {
       cancelButtonText: '取消',
       type: 'warning'
     })
-    const index = datasources.value.findIndex(d => d.id === ds.id)
-    if (index > -1) {
-      datasources.value.splice(index, 1)
-      ElMessage.success('数据源已删除')
+    await api.deleteDatasource(ds.id)
+    ElMessage.success('数据源已删除')
+    await loadDatasources()
+  } catch (error) {
+    if (error !== 'cancel') {
+      console.error('Delete datasource error:', error)
     }
-  } catch {
-    // 取消删除
   }
 }
 
@@ -245,6 +254,28 @@ const testConnection = (ds: Datasource) => {
   }, 1500)
 }
 
+const testConnectionFromDialog = async () => {
+  if (!dsForm.value.url) {
+    ElMessage.warning('请先填写数据源地址')
+    return
+  }
+
+  testing.value = true
+  try {
+    const result = await api.testDatasourceConnection(dsForm.value)
+    if (result.success) {
+      ElMessage.success(result.message)
+    } else {
+      ElMessage.error(result.message)
+    }
+  } catch (error) {
+    ElMessage.error('连接测试失败，请检查地址和配置')
+    console.error('Test connection error:', error)
+  } finally {
+    testing.value = false
+  }
+}
+
 const syncData = (ds: Datasource) => {
   ElMessage.info(`正在同步 ${ds.name} 数据...`)
   setTimeout(() => {
@@ -252,42 +283,34 @@ const syncData = (ds: Datasource) => {
   }, 2000)
 }
 
-const saveDatasource = () => {
+const saveDatasource = async () => {
   if (!dsForm.value.name || !dsForm.value.url) {
     ElMessage.warning('请填写必填项')
     return
   }
 
-  if (isEditing.value) {
-    const index = datasources.value.findIndex(d => d.id === dsForm.value.id)
-    if (index > -1) {
-      datasources.value[index] = {
-        ...datasources.value[index],
-        name: dsForm.value.name,
-        type: dsForm.value.type,
-        url: dsForm.value.url,
-        enabled: dsForm.value.enabled
-      }
+  saving.value = true
+  try {
+    if (isEditing.value) {
+      await api.updateDatasource(dsForm.value.id, dsForm.value)
+      ElMessage.success('数据源已更新')
+    } else {
+      await api.createDatasource(dsForm.value)
+      ElMessage.success('数据源已添加')
     }
-    ElMessage.success('数据源已更新')
-  } else {
-    datasources.value.push({
-      id: Date.now(),
-      name: dsForm.value.name,
-      type: dsForm.value.type,
-      icon: dsForm.value.type.charAt(0),
-      iconBg: 'linear-gradient(135deg, #ffd700 0%, #f72585 100%)',
-      url: dsForm.value.url,
-      status: '正常',
-      metricCount: 0,
-      lastSync: '未同步',
-      enabled: dsForm.value.enabled
-    })
-    ElMessage.success('数据源已添加')
+    dialogVisible.value = false
+    await loadDatasources()
+  } catch (error) {
+    ElMessage.error(isEditing.value ? '更新数据源失败' : '添加数据源失败')
+    console.error('Save datasource error:', error)
+  } finally {
+    saving.value = false
   }
-  
-  dialogVisible.value = false
 }
+
+onMounted(() => {
+  loadDatasources()
+})
 </script>
 
 <style lang="less" scoped>
@@ -371,7 +394,7 @@ const saveDatasource = () => {
   gap: 16px;
   padding: 16px 0;
   border-top: 1px solid rgba(255, 215, 0, 0.1);
-  border-bottom: 1px solid rgba(255, 215, 0, 1);
+  border-bottom: 1px solid rgba(255, 215, 0, 0.1);
   margin-bottom: 16px;
 }
 
@@ -418,11 +441,6 @@ const saveDatasource = () => {
     background: rgba(0, 0, 0, 0.3);
     border: 1px solid rgba(255, 215, 0, 0.2);
     box-shadow: none;
-    transition: all 0.3s ease;
-
-    &.is-focus {
-      border-color: rgba(255, 215, 0, 0.5);
-    }
 
     .el-input__inner {
       color: white;
@@ -431,6 +449,18 @@ const saveDatasource = () => {
 
   :deep(.el-form-item__label) {
     color: rgba(255, 255, 255, 0.8);
+  }
+}
+
+.cancel-btn {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 215, 0, 0.2) !important;
+  color: rgba(255, 255, 255, 0.8) !important;
+
+  &:hover {
+    background: rgba(255, 215, 0, 0.1) !important;
+    border-color: rgba(255, 215, 0, 0.4) !important;
+    color: white !important;
   }
 }
 </style>

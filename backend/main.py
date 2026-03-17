@@ -4,11 +4,13 @@ from fastapi import FastAPI, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
 from apps.auth.router import router as auth_router
 from apps.model.router import router as model_router
+from apps.datasource.router import router as datasource_router
 from common.core.database import engine, Base
 
 # 导入所有模型以确保它们被注册到 Base.metadata
 from apps.auth.models import User
 from apps.model.models import Model
+from apps.datasource.models import Datasource
 
 # 创建所有表
 Base.metadata.create_all(bind=engine)
@@ -41,6 +43,7 @@ def health_check():
 # 注册API路由
 api_router.include_router(auth_router)
 api_router.include_router(model_router)
+api_router.include_router(datasource_router)
 app.include_router(api_router)
 
 
