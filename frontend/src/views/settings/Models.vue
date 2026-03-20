@@ -184,7 +184,7 @@ const getIconBg = (provider: string) => {
 const loadModels = async () => {
   try {
     const data = await api.getModels()
-    models.value = (data as Model[]) || []
+    models.value = ((data as unknown) as Model[]) || []
   } catch (error) {
     ElMessage.error('加载模型列表失败')
     console.error('Load models error:', error)
@@ -211,9 +211,16 @@ const showAddDialog = () => {
 const editModel = (model: Model) => {
   isEditing.value = true
   modelForm.value = {
-    ...model,
+    id: model.id,
+    name: model.name,
+    provider: model.provider,
+    base_model: model.base_model,
+    protocol: model.protocol,
     api_key: '',
-    config: null
+    api_domain: model.api_domain || '',
+    config: null,
+    is_default: model.is_default,
+    is_enabled: model.is_enabled
   }
   dialogVisible.value = true
 }
