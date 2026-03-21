@@ -6,6 +6,8 @@ from apps.auth.router import router as auth_router
 from apps.model.router import router as model_router
 from apps.datasource.router import router as datasource_router
 from apps.alert.router import router as alert_router
+from apps.log.router import router as log_router
+from apps.host.router import router as host_router
 from common.core.database import engine, Base
 
 # 导入所有模型以确保它们被注册到 Base.metadata
@@ -13,6 +15,8 @@ from apps.auth.models import User
 from apps.model.models import Model
 from apps.datasource.models import Datasource
 from apps.alert.models import AlertRule, Alert
+from apps.log.models import LogSource
+from apps.host.models import Host, HostRelation
 
 # 创建所有表
 Base.metadata.create_all(bind=engine)
@@ -47,6 +51,8 @@ api_router.include_router(auth_router)
 api_router.include_router(model_router)
 api_router.include_router(datasource_router)
 api_router.include_router(alert_router)
+api_router.include_router(log_router)
+api_router.include_router(host_router)
 app.include_router(api_router)
 
 

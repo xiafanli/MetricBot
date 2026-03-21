@@ -29,7 +29,7 @@
             <div class="log-type">{{ log.type }}</div>
           </div>
           <div class="log-status">
-            <el-tag :type="log.status === '正常' ? 'success' : 'danger'" size="small">
+            <el-tag :type="log.status === '正常' ? 'success' : 'info'" size="small">
               {{ log.status }}
             </el-tag>
           </div>
@@ -42,15 +42,11 @@
           </div>
           <div class="detail-item">
             <span class="detail-label">索引/表</span>
-            <span class="detail-value">{{ log.index }}</span>
-          </div>
-          <div class="detail-item">
-            <span class="detail-label">日志量</span>
-            <span class="detail-value">{{ log.volume }}</span>
+            <span class="detail-value">{{ log.index_or_table }}</span>
           </div>
           <div class="detail-item">
             <span class="detail-label">保留天数</span>
-            <span class="detail-value">{{ log.retention }}天</span>
+            <span class="detail-value">{{ log.retention_days }}天</span>
           </div>
         </div>
         
@@ -83,9 +79,7 @@
         <el-form-item label="类型" required>
           <el-select v-model="logForm.type" placeholder="选择类型">
             <el-option label="Elasticsearch" value="Elasticsearch" />
-            <el-option label="ClickHouse" value="ClickHouse" />
             <el-option label="StarRocks" value="StarRocks" />
-            <el-option label="Loki" value="Loki" />
           </el-select>
         </el-form-item>
         
@@ -94,7 +88,7 @@
         </el-form-item>
         
         <el-form-item label="索引/表名">
-          <el-input v-model="logForm.index" placeholder="索引或表名" />
+          <el-input v-model="logForm.index_or_table" placeholder="索引名或表名" />
         </el-form-item>
         
         <el-form-item label="用户名">
@@ -106,7 +100,7 @@
         </el-form-item>
         
         <el-form-item label="保留天数">
-          <el-input-number v-model="logForm.retention" :min="1" :max="365" />
+          <el-input-number v-model="logForm.retention_days" :min="1" :max="365" />
         </el-form-item>
         
         <el-form-item label="启用状态">
@@ -115,15 +109,15 @@
       </el-form>
       
       <template #footer>
-        <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="saveLog">保存</el-button>
+        <el-button class="cancel-btn" @click="dialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="saveLog" :loading="saving">保存</el-button>
       </template>
     </el-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import {
   Plus,
@@ -131,6 +125,7 @@ import {
   Delete,
   Connection
 } from '@element-plus/icons-vue'
+import { api } from '@/api'
 
 interface LogSource {
   id: number
@@ -139,69 +134,51 @@ interface LogSource {
   icon: string
   iconBg: string
   url: string
-  index: string
+  index_or_table: string
   status: string
-  volume: string
-  retention: number
+  retention_days: number
   enabled: boolean
+  created_at: string
+  updated_at?: string
 }
 
 const dialogVisible = ref(false)
 const isEditing = ref(false)
+const saving = ref(false)
+const testing = ref(false)
+const logsources = ref<LogSource[]>([])
 
-const logsources = ref<LogSource[]>([
-  {
-    id: 1,
-    name: '应用日志 ES',
-    type: 'Elasticsearch',
-    icon: 'E',
-    iconBg: 'linear-gradient(135deg, #fed10a 0%, #e5b800 100%)',
-    url: 'http://es.prod:9200',
-    index: 'app-logs-*',
-    status: '正常',
-    volume: '50GB/天',
-    retention: 30,
-    enabled: true
-  },
-  {
-    id: 2,
-    name: '系统日志 ClickHouse',
-    type: 'ClickHouse',
-    icon: 'C',
-    iconBg: 'linear-gradient(135deg, #ffcc00 0%, #ff9500 100%)',
-    url: 'http://ck.prod:8123',
-    index: 'sys_logs',
-    status: '正常',
-    volume: '120GB/天',
-    retention: 90,
-    enabled: true
-  },
-  {
-    id: 3,
-    name: 'Kubernetes日志 Loki',
-    type: 'Loki',
-    icon: 'L',
-    iconBg: 'linear-gradient(135deg, #1f62e0 0%, #1a4db8 100%)',
-    url: 'http://loki:3100',
-    index: 'k8s-logs',
-    status: '正常',
-    volume: '80GB/天',
-    retention: 15,
-    enabled: true
-  }
-])
+const typeColors: Record<string, string> = {
+  'Elasticsearch': 'linear-gradient(135deg, #fed10a 0%, #e5b800 100%)',
+  'StarRocks': 'linear-gradient(135deg, #1f62e0 0%, #1a4db8 100%)'
+}
 
 const logForm = ref({
   id: 0,
   name: '',
   type: 'Elasticsearch',
   url: '',
-  index: '',
+  index_or_table: '',
   username: '',
   password: '',
-  retention: 30,
+  retention_days: 30,
   enabled: true
 })
+
+const loadLogSources = async () => {
+  try {
+    const data = await api.getLogSources()
+    logsources.value = (data as LogSource[]).map(item => ({
+      ...item,
+      icon: item.type.charAt(0),
+      iconBg: typeColors[item.type] || 'linear-gradient(135deg, #ffd700 0%, #f72585 100%)',
+      status: item.enabled ? '已启用' : '已禁用'
+    }))
+  } catch (error) {
+    ElMessage.error('加载日志源列表失败')
+    console.error('Load log sources error:', error)
+  }
+}
 
 const showAddDialog = () => {
   isEditing.value = false
@@ -210,10 +187,10 @@ const showAddDialog = () => {
     name: '',
     type: 'Elasticsearch',
     url: '',
-    index: '',
+    index_or_table: '',
     username: '',
     password: '',
-    retention: 30,
+    retention_days: 30,
     enabled: true
   }
   dialogVisible.value = true
@@ -221,7 +198,11 @@ const showAddDialog = () => {
 
 const editLog = (log: LogSource) => {
   isEditing.value = true
-  logForm.value = { ...log, username: '', password: '' }
+  logForm.value = { 
+    ...log, 
+    username: '', 
+    password: '' 
+  }
   dialogVisible.value = true
 }
 
@@ -232,58 +213,69 @@ const deleteLog = async (log: LogSource) => {
       cancelButtonText: '取消',
       type: 'warning'
     })
-    const index = logsources.value.findIndex(l => l.id === log.id)
-    if (index > -1) {
-      logsources.value.splice(index, 1)
-      ElMessage.success('日志源已删除')
+    await api.deleteLogSource(log.id)
+    ElMessage.success('日志源已删除')
+    await loadLogSources()
+  } catch (error) {
+    if (error !== 'cancel') {
+      console.error('Delete log source error:', error)
     }
-  } catch {
-    // 取消删除
   }
 }
 
-const testConnection = (log: LogSource) => {
-  ElMessage.info(`正在测试连接 ${log.name}...`)
-  setTimeout(() => {
-    ElMessage.success('连接测试成功！')
-  }, 1500)
+const testConnection = async (log: LogSource) => {
+  testing.value = true
+  try {
+    const result = await api.testLogSourceConnection({
+      name: log.name,
+      type: log.type,
+      url: log.url,
+      index_or_table: log.index_or_table,
+      username: log.username,
+      password: log.password
+    })
+    
+    if (result.success) {
+      ElMessage.success(result.message)
+    } else {
+      ElMessage.error(result.message)
+    }
+  } catch (error) {
+    ElMessage.error('连接测试失败')
+    console.error('Test connection error:', error)
+  } finally {
+    testing.value = false
+  }
 }
 
-const saveLog = () => {
+const saveLog = async () => {
   if (!logForm.value.name || !logForm.value.url) {
     ElMessage.warning('请填写必填项')
     return
   }
 
-  if (isEditing.value) {
-    const index = logsources.value.findIndex(l => l.id === logForm.value.id)
-    if (index > -1) {
-      logsources.value[index] = {
-        ...logsources.value[index],
-        ...logForm.value,
-        icon: logForm.value.type.charAt(0)
-      }
+  saving.value = true
+  try {
+    if (isEditing.value) {
+      await api.updateLogSource(logForm.value.id, logForm.value)
+      ElMessage.success('日志源已更新')
+    } else {
+      await api.createLogSource(logForm.value)
+      ElMessage.success('日志源已添加')
     }
-    ElMessage.success('日志源已更新')
-  } else {
-    logsources.value.push({
-      id: Date.now(),
-      name: logForm.value.name,
-      type: logForm.value.type,
-      icon: logForm.value.type.charAt(0),
-      iconBg: 'linear-gradient(135deg, #ffd700 0%, #f72585 100%)',
-      url: logForm.value.url,
-      index: logForm.value.index,
-      status: '正常',
-      volume: '0',
-      retention: logForm.value.retention,
-      enabled: logForm.value.enabled
-    })
-    ElMessage.success('日志源已添加')
+    dialogVisible.value = false
+    await loadLogSources()
+  } catch (error) {
+    ElMessage.error(isEditing.value ? '更新日志源失败' : '添加日志源失败')
+    console.error('Save log source error:', error)
+  } finally {
+    saving.value = false
   }
-  
-  dialogVisible.value = false
 }
+
+onMounted(() => {
+  loadLogSources()
+})
 </script>
 
 <style lang="less" scoped>
@@ -379,7 +371,7 @@ const saveLog = () => {
 
 .log-details {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 16px;
   padding: 16px 0;
   border-top: 1px solid rgba(255, 215, 0, 0.1);
@@ -438,6 +430,18 @@ const saveLog = () => {
 
   :deep(.el-form-item__label) {
     color: rgba(255, 255, 255, 0.8);
+  }
+}
+
+.cancel-btn {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 215, 0, 0.2) !important;
+  color: rgba(255, 255, 255, 0.8) !important;
+
+  &:hover {
+    background: rgba(255, 215, 0, 0.1) !important;
+    border-color: rgba(255, 215, 0, 0.4) !important;
+    color: white !important;
   }
 }
 </style>

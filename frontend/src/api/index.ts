@@ -127,6 +127,31 @@ function testDatasourceConnection(data: any) {
   return apiClient.post('/datasources/test', data)
 }
 
+// 日志管理相关API
+function getLogSources(enabledOnly: boolean = false) {
+  return apiClient.get('/logs', { params: { enabled_only: enabledOnly } })
+}
+
+function getLogSource(id: number) {
+  return apiClient.get(`/logs/${id}`)
+}
+
+function createLogSource(data: any) {
+  return apiClient.post('/logs', data)
+}
+
+function updateLogSource(id: number, data: any) {
+  return apiClient.put(`/logs/${id}`, data)
+}
+
+function deleteLogSource(id: number) {
+  return apiClient.delete(`/logs/${id}`)
+}
+
+function testLogSourceConnection(data: any) {
+  return apiClient.post('/logs/test', data)
+}
+
 export const api = {
   healthCheck,
   getRoot,
@@ -144,5 +169,11 @@ export const api = {
   createDatasource,
   updateDatasource,
   deleteDatasource,
-  testDatasourceConnection
+  testDatasourceConnection,
+  getLogSources,
+  getLogSource,
+  createLogSource,
+  updateLogSource,
+  deleteLogSource,
+  testLogSourceConnection
 }
