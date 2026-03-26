@@ -127,6 +127,52 @@ function testDatasourceConnection(data: any) {
   return apiClient.post('/datasources/test', data)
 }
 
+// 主机管理相关API
+function getHosts(enabledOnly: boolean = false) {
+  return apiClient.get('/hosts', { params: { enabled_only: enabledOnly } })
+}
+
+function getHost(id: number) {
+  return apiClient.get(`/hosts/${id}`)
+}
+
+function createHost(data: any) {
+  return apiClient.post('/hosts', data)
+}
+
+function updateHost(id: number, data: any) {
+  return apiClient.put(`/hosts/${id}`, data)
+}
+
+function deleteHost(id: number) {
+  return apiClient.delete(`/hosts/${id}`)
+}
+
+function syncHostsFromPrometheus(data: any) {
+  return apiClient.post('/hosts/sync/prometheus', data)
+}
+
+// 关系管理相关API
+function getHostRelations(hostId: number) {
+  return apiClient.get(`/hosts/${hostId}/relations`)
+}
+
+function getAllRelations() {
+  return apiClient.get('/hosts/relations/all')
+}
+
+function createRelation(data: any) {
+  return apiClient.post('/hosts/relations', data)
+}
+
+function updateRelation(id: number, data: any) {
+  return apiClient.put(`/hosts/relations/${id}`, data)
+}
+
+function deleteRelation(id: number) {
+  return apiClient.delete(`/hosts/relations/${id}`)
+}
+
 // 日志管理相关API
 function getLogSources(enabledOnly: boolean = false) {
   return apiClient.get('/logs', { params: { enabled_only: enabledOnly } })
@@ -175,5 +221,16 @@ export const api = {
   createLogSource,
   updateLogSource,
   deleteLogSource,
-  testLogSourceConnection
+  testLogSourceConnection,
+  getHosts,
+  getHost,
+  createHost,
+  updateHost,
+  deleteHost,
+  syncHostsFromPrometheus,
+  getHostRelations,
+  getAllRelations,
+  createRelation,
+  updateRelation,
+  deleteRelation
 }

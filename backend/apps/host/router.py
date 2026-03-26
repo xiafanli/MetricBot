@@ -1,4 +1,5 @@
 import json
+import httpx
 from typing import List
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
@@ -11,10 +12,14 @@ from apps.host.schemas import (
     HostResponse,
     HostRelationCreate,
     HostRelationUpdate,
-    HostRelationResponse
+    HostRelationResponse,
+    PrometheusSyncRequest,
+    PrometheusSyncPreviewResponse,
+    PrometheusSyncImportResponse
 )
 from apps.auth.security import get_current_active_user
 from apps.auth.models import User
+from apps.datasource.models import Datasource
 
 router = APIRouter(prefix="/hosts", tags=["主机管理"])
 
@@ -233,3 +238,105 @@ def delete_host_relation(
     db.delete(db_rel)
     db.commit()
     return None
+
+
+async def get_prometheus_label_values(url: str, metric: str, label: str,
+                                      auth_type: str, auth_value: str, password: str) -> List[str]:
+    """
+    查询 Prometheus 获取标签值
+    """
+    headers = {}
+    auth = None
+    
+    if auth_type == "basic" and auth_value and password:
+        auth = (auth_value, password)
+    elif auth_type == "token" and auth_value:
+        headers["Authorization"] = f"Bearer {auth_value}"
+    
+    query = f"count({metric}) by ({label})"
+    params = {"query": query}
+    
+    try:
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            response = await client.get(
+                f"{url.rstrip('/')}/api/v1/query",
+                params=params,
+                headers=headers,
+                auth=auth
+            )
+            
+            if response.status_code == 200:
+                result = response.json()
+                if result.get("status") == "success":
+                    values = []
+                    for series in result.get("data", {}).get("result", []):
+                        metric_info = series.get("metric", {})
+                        if label in metric_info:
+                            values.append(metric_info[label])
+                    return sorted(list(set(values)))
+        return []
+    except Exception as e:
+        print(f"Query Prometheus error: {e}")
+        return []
+
+
+@router.post("/sync/prometheus", response_model=PrometheusSyncPreviewResponse)
+async def sync_prometheus(
+    sync_request: PrometheusSyncRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
+):
+    """
+    Prometheus 同步：预览或导入
+    """
+    # 1. 获取数据源
+    datasource = db.query(Datasource).filter(
+        Datasource.id == sync_request.datasource_id,
+        Datasource.type == "Prometheus"
+    ).first()
+    
+    if not datasource:
+        raise HTTPException(status_code=404, detail="Prometheus 数据源不存在")
+    
+    # 2. 查询标签值
+    label_values = await get_prometheus_label_values(
+        datasource.url,
+        sync_request.metric,
+        sync_request.label,
+        datasource.auth_type or "none",
+        datasource.auth_value or "",
+        datasource.password or ""
+    )
+    
+    # 3. 只预览模式
+    if sync_request.preview_only:
+        return PrometheusSyncPreviewResponse(
+            preview=label_values[:10],
+            total=len(label_values)
+        )
+    
+    # 4. 导入模式：创建 Host
+    imported_hosts = []
+    for value in label_values:
+        # 检查是否已存在（by name）
+        existing = db.query(Host).filter(Host.name == value).first()
+        if existing:
+            continue
+        
+        host = Host(
+            name=value,
+            ip=value.split(":")[0] if ":" in value else value,
+            from_type="prometheus",
+            from_name=datasource.name,
+            enabled=True
+        )
+        db.add(host)
+        db.flush()
+        imported_hosts.append(host_to_dict(host))
+    
+    db.commit()
+    
+    return PrometheusSyncImportResponse(
+        imported=len(imported_hosts),
+        hosts=imported_hosts
+    )

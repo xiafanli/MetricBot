@@ -23,6 +23,10 @@ class Host(Base):
     metadata = Column(Text, nullable=True, comment="元数据，JSON格式")
     source = Column(String(100), nullable=True, default="manual", comment="来源：manual/api/auto")
     
+    # 数据来源（新）
+    from_type = Column(String(50), nullable=True, default="manual", comment="来源类型: manual/prometheus/cmdb")
+    from_name = Column(String(255), nullable=True, comment="来源名称")
+    
     enabled = Column(Boolean, default=True, comment="是否启用")
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())

@@ -15,6 +15,8 @@ class HostBase(BaseModel):
     tags: Optional[List[str]] = Field(None, description="标签")
     metadata: Optional[Dict[str, Any]] = Field(None, description="元数据")
     source: Optional[str] = Field("manual", description="来源")
+    from_type: Optional[str] = Field("manual", description="来源类型")
+    from_name: Optional[str] = Field(None, description="来源名称")
     enabled: Optional[bool] = Field(True, description="是否启用")
 
 
@@ -75,3 +77,20 @@ class HostRelationResponse(HostRelationBase):
 
     class Config:
         from_attributes = True
+
+
+class PrometheusSyncRequest(BaseModel):
+    datasource_id: int = Field(..., description="Prometheus 数据源 ID")
+    metric: str = Field(..., description="指标名")
+    label: str = Field(..., description="标签名")
+    preview_only: bool = Field(True, description="只预览不导入")
+
+
+class PrometheusSyncPreviewResponse(BaseModel):
+    preview: List[str] = Field(..., description="预览标签值")
+    total: int = Field(..., description="总数")
+
+
+class PrometheusSyncImportResponse(BaseModel):
+    imported: int = Field(..., description="已导入数量")
+    hosts: List[HostResponse] = Field(..., description="已导入的主机列表")

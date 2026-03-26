@@ -6,36 +6,14 @@
         <span class="page-desc">管理和维护主机信息</span>
       </div>
       <div class="header-right">
-        <el-input
-          v-model="searchKeyword"
-          placeholder="搜索主机..."
-          prefix-icon="Search"
-          clearable
-          class="search-input"
-        />
+        <el-button type="success" @click="showSyncDialog">
+          <el-icon><Prometheus /></el-icon>
+          从 Prometheus 同步
+        </el-button>
         <el-button type="primary" @click="showAddDialog">
           <el-icon><Plus /></el-icon>
           添加主机
         </el-button>
-      </div>
-    </div>
-
-    <div class="stats-row">
-      <div class="stat-item">
-        <div class="stat-value">{{ hostsStats.total }}</div>
-        <div class="stat-label">主机总数</div>
-      </div>
-      <div class="stat-item online">
-        <div class="stat-value">{{ hostsStats.online }}</div>
-        <div class="stat-label">在线</div>
-      </div>
-      <div class="stat-item offline">
-        <div class="stat-value">{{ hostsStats.offline }}</div>
-        <div class="stat-label">离线</div>
-      </div>
-      <div class="stat-item warning">
-        <div class="stat-value">{{ hostsStats.warning }}</div>
-        <div class="stat-label">告警中</div>
       </div>
     </div>
 
@@ -46,47 +24,42 @@
         :header-cell-style="tableHeaderStyle"
         :cell-style="tableCellStyle"
       >
-        <el-table-column prop="hostname" label="主机名" min-width="150">
+        <el-table-column prop="name" label="主机名" min-width="150">
           <template #default="{ row }">
             <div class="hostname-cell">
-              <el-icon :class="['status-dot', row.status]"><Monitor /></el-icon>
-              <span>{{ row.hostname }}</span>
+              <el-icon :class="['status-dot', row.enabled ? 'online' : 'offline']"><Monitor /></el-icon>
+              <span>{{ row.name }}</span>
             </div>
           </template>
         </el-table-column>
         <el-table-column prop="ip" label="IP地址" width="140" />
-        <el-table-column prop="os" label="操作系统" width="140" />
-        <el-table-column prop="cpu" label="CPU" width="100">
+        <el-table-column prop="os" label="操作系统" width="140">
           <template #default="{ row }">
-            <span :class="{ 'text-warning': row.cpu > 80 }">{{ row.cpu }}%</span>
+            {{ row.os }} {{ row.os_version }}
           </template>
         </el-table-column>
-        <el-table-column prop="memory" label="内存" width="100">
-          <template #default="{ row }">
-            <span :class="{ 'text-warning': row.memory > 80 }">{{ row.memory }}%</span>
-          </template>
-        </el-table-column>
-        <el-table-column prop="disk" label="磁盘" width="100">
-          <template #default="{ row }">
-            <span :class="{ 'text-warning': row.disk > 80 }">{{ row.disk }}%</span>
-          </template>
-        </el-table-column>
+        <el-table-column prop="cpu_cores" label="CPU核心" width="100" />
+        <el-table-column prop="memory_gb" label="内存(GB)" width="100" />
+        <el-table-column prop="disk_gb" label="磁盘(GB)" width="100" />
         <el-table-column prop="tags" label="标签" width="180">
           <template #default="{ row }">
-            <el-tag v-for="tag in row.tags.slice(0, 2)" :key="tag" size="small" class="tag-item">
+            <el-tag v-for="tag in (row.tags || []).slice(0, 2)" :key="tag" size="small" class="tag-item">
               {{ tag }}
             </el-tag>
-            <span v-if="row.tags.length > 2" class="more-tags">+{{ row.tags.length - 2 }}</span>
+            <span v-if="(row.tags || []).length > 2" class="more-tags">+{{ (row.tags || []).length - 2 }}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="source" label="来源" width="100" />
+        <el-table-column label="来源" width="120">
+          <template #default="{ row }">
+            <el-tag size="small" :type="row.from_type === 'prometheus' ? 'success' : 'info'">
+              {{ row.from_type || 'manual' }}
+            </el-tag>
+          </template>
+        </el-table-column>
         <el-table-column label="操作" width="150" fixed="right">
           <template #default="{ row }">
             <el-button type="primary" link size="small" @click="editHost(row)">
               编辑
-            </el-button>
-            <el-button type="primary" link size="small" @click="viewHost(row)">
-              详情
             </el-button>
             <el-button type="danger" link size="small" @click="deleteHost(row)">
               删除
@@ -103,23 +76,35 @@
     >
       <el-form :model="hostForm" label-width="100px" class="config-form host-form">
         <el-form-item label="主机名" required>
-          <el-input v-model="hostForm.hostname" placeholder="请输入主机名" />
+          <el-input v-model="hostForm.name" placeholder="请输入主机名" />
         </el-form-item>
         
         <el-form-item label="IP地址" required>
           <el-input v-model="hostForm.ip" placeholder="请输入IP地址" />
         </el-form-item>
         
+        <el-form-item label="主机名(系统)">
+          <el-input v-model="hostForm.hostname" placeholder="例如：server-01" />
+        </el-form-item>
+        
         <el-form-item label="操作系统">
-          <el-input v-model="hostForm.os" placeholder="例如：CentOS 7.9" />
+          <el-input v-model="hostForm.os" placeholder="例如：Ubuntu" />
+        </el-form-item>
+        
+        <el-form-item label="系统版本">
+          <el-input v-model="hostForm.os_version" placeholder="例如：22.04" />
         </el-form-item>
         
         <el-form-item label="CPU核心数">
-          <el-input-number v-model="hostForm.cpuCores" :min="1" :max="256" />
+          <el-input-number v-model="hostForm.cpu_cores" :min="1" :max="256" />
         </el-form-item>
         
-        <el-form-item label="内存大小">
-          <el-input v-model="hostForm.memorySize" placeholder="例如：32GB" />
+        <el-form-item label="内存(GB)">
+          <el-input-number v-model="hostForm.memory_gb" :min="1" :max="1024" />
+        </el-form-item>
+        
+        <el-form-item label="磁盘(GB)">
+          <el-input-number v-model="hostForm.disk_gb" :min="1" :max="10000" />
         </el-form-item>
         
         <el-form-item label="标签">
@@ -132,79 +117,136 @@
           </el-select>
         </el-form-item>
         
-        <el-form-item label="数据来源">
-          <el-select v-model="hostForm.source" placeholder="选择来源">
-            <el-option label="自动同步" value="自动同步" />
-            <el-option label="API上报" value="API上报" />
-            <el-option label="手工录入" value="手工录入" />
-          </el-select>
+        <el-form-item label="启用状态">
+          <el-switch v-model="hostForm.enabled" />
         </el-form-item>
       </el-form>
       
       <template #footer>
-        <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="saveHost">保存</el-button>
+        <el-button class="cancel-btn" @click="dialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="saveHost" :loading="saving">保存</el-button>
+      </template>
+    </el-dialog>
+
+    <el-dialog 
+      v-model="syncDialogVisible" 
+      title="从 Prometheus 同步"
+      width="600px"
+    >
+      <el-form :model="syncForm" label-width="120px" class="config-form">
+        <el-form-item label="选择数据源" required>
+          <el-select v-model="syncForm.datasource_id" placeholder="选择 Prometheus 数据源">
+            <el-option 
+              v-for="ds in prometheusDatasources" 
+              :key="ds.id" 
+              :label="ds.name" 
+              :value="ds.id" 
+            />
+          </el-select>
+        </el-form-item>
+        
+        <el-form-item label="指标名" required>
+          <el-input v-model="syncForm.metric" placeholder="例如：node_cpu_seconds_total" />
+        </el-form-item>
+        
+        <el-form-item label="标签名" required>
+          <el-input v-model="syncForm.label" placeholder="例如：instance" />
+        </el-form-item>
+      </el-form>
+      
+      <div v-if="syncPreview.length > 0" class="preview-section">
+        <div class="preview-title">预览（最多显示 10 条）</div>
+        <div class="preview-list">
+          <el-tag v-for="item in syncPreview" :key="item" class="preview-tag">
+            {{ item }}
+          </el-tag>
+        </div>
+        <div class="preview-total">共 {{ syncPreviewTotal }} 条</div>
+      </div>
+      
+      <template #footer>
+        <el-button @click="cancelSync">取消</el-button>
+        <el-button @click="doPreview" :loading="previewing">预览</el-button>
+        <el-button 
+          v-if="syncPreview.length > 0" 
+          type="primary" 
+          @click="doImport" 
+          :loading="importing"
+        >
+          导入 {{ syncPreviewTotal }} 条
+        </el-button>
       </template>
     </el-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import {
   Plus,
-  Monitor
+  Monitor,
+  Prometheus
 } from '@element-plus/icons-vue'
+import { api } from '@/api'
 
 interface Host {
   id: number
-  hostname: string
+  name: string
   ip: string
-  os: string
-  cpu: number
-  memory: number
-  disk: number
-  tags: string[]
-  source: string
-  status: string
+  hostname?: string
+  os?: string
+  os_version?: string
+  cpu_cores?: number
+  memory_gb?: number
+  disk_gb?: number
+  tags?: string[]
+  from_type: string
+  from_name?: string
+  enabled: boolean
+  created_at: string
+  updated_at?: string
 }
 
-const searchKeyword = ref('')
 const dialogVisible = ref(false)
+const syncDialogVisible = ref(false)
 const isEditing = ref(false)
+const saving = ref(false)
+const previewing = ref(false)
+const importing = ref(false)
+const searchKeyword = ref('')
+const hosts = ref<Host[]>([])
+const prometheusDatasources = ref<any[]>([])
 
-const hostsStats = ref({
-  total: 128,
-  online: 115,
-  offline: 8,
-  warning: 5
-})
-
-const hosts = ref<Host[]>([
-  { id: 1, hostname: 'prod-web-01', ip: '192.168.1.101', os: 'CentOS 7.9', cpu: 45, memory: 62, disk: 35, tags: ['生产环境', 'Web服务'], source: '自动同步', status: 'online' },
-  { id: 2, hostname: 'prod-web-02', ip: '192.168.1.102', os: 'CentOS 7.9', cpu: 78, memory: 85, disk: 42, tags: ['生产环境', 'Web服务'], source: '自动同步', status: 'warning' },
-  { id: 3, hostname: 'prod-db-01', ip: '192.168.1.201', os: 'Ubuntu 20.04', cpu: 32, memory: 71, disk: 68, tags: ['生产环境', '数据库'], source: '自动同步', status: 'online' },
-  { id: 4, hostname: 'prod-cache-01', ip: '192.168.1.301', os: 'CentOS 7.9', cpu: 15, memory: 45, disk: 22, tags: ['生产环境', '缓存'], source: 'API上报', status: 'online' },
-  { id: 5, hostname: 'test-web-01', ip: '192.168.2.101', os: 'CentOS 7.9', cpu: 0, memory: 0, disk: 50, tags: ['测试环境', 'Web服务'], source: '手工录入', status: 'offline' }
-])
+const syncPreview = ref<string[]>([])
+const syncPreviewTotal = ref(0)
 
 const hostForm = ref({
   id: 0,
-  hostname: '',
+  name: '',
   ip: '',
+  hostname: '',
   os: '',
-  cpuCores: 4,
-  memorySize: '',
+  os_version: '',
+  cpu_cores: 4,
+  memory_gb: 16,
+  disk_gb: 100,
   tags: [] as string[],
-  source: '手工录入'
+  enabled: true
+})
+
+const syncForm = ref({
+  datasource_id: 0,
+  metric: '',
+  label: '',
+  preview_only: true
 })
 
 const filteredHosts = computed(() => {
   if (!searchKeyword.value) return hosts.value
   const keyword = searchKeyword.value.toLowerCase()
   return hosts.value.filter(host => 
-    host.hostname.toLowerCase().includes(keyword) ||
+    host.name.toLowerCase().includes(keyword) ||
     host.ip.includes(keyword)
   )
 })
@@ -221,85 +263,152 @@ const tableCellStyle = {
   borderBottom: '1px solid rgba(255, 215, 0, 0.05)'
 }
 
+const loadHosts = async () => {
+  try {
+    const data = await api.getHosts()
+    hosts.value = (data as Host[])
+  } catch (error) {
+    ElMessage.error('加载主机列表失败')
+    console.error('Load hosts error:', error)
+  }
+}
+
+const loadPrometheusDatasources = async () => {
+  try {
+    const data = await api.getDatasources()
+    prometheusDatasources.value = (data as any[]).filter((ds: any) => ds.type === 'Prometheus')
+  } catch (error) {
+    console.error('Load datasources error:', error)
+  }
+}
+
 const showAddDialog = () => {
   isEditing.value = false
   hostForm.value = {
     id: 0,
-    hostname: '',
+    name: '',
     ip: '',
+    hostname: '',
     os: '',
-    cpuCores: 4,
-    memorySize: '',
+    os_version: '',
+    cpu_cores: 4,
+    memory_gb: 16,
+    disk_gb: 100,
     tags: [],
-    source: '手工录入'
+    enabled: true
   }
   dialogVisible.value = true
 }
 
 const editHost = (host: Host) => {
   isEditing.value = true
-  hostForm.value = { ...host, cpuCores: 4, memorySize: '16GB' }
+  hostForm.value = { ...host }
   dialogVisible.value = true
-}
-
-const viewHost = (host: Host) => {
-  ElMessage.info(`查看主机详情: ${host.hostname}`)
 }
 
 const deleteHost = async (host: Host) => {
   try {
-    await ElMessageBox.confirm(`确定要删除主机 "${host.hostname}" 吗？`, '提示', {
+    await ElMessageBox.confirm(`确定要删除主机 "${host.name}" 吗？`, '提示', {
       confirmButtonText: '确定',
       cancelButtonText: '取消',
       type: 'warning'
     })
-    const index = hosts.value.findIndex(h => h.id === host.id)
-    if (index > -1) {
-      hosts.value.splice(index, 1)
-      ElMessage.success('主机已删除')
+    await api.deleteHost(host.id)
+    ElMessage.success('主机已删除')
+    await loadHosts()
+  } catch (error) {
+    if (error !== 'cancel') {
+      console.error('Delete host error:', error)
     }
-  } catch {
-    // 取消删除
   }
 }
 
-const saveHost = () => {
-  if (!hostForm.value.hostname || !hostForm.value.ip) {
+const saveHost = async () => {
+  if (!hostForm.value.name || !hostForm.value.ip) {
     ElMessage.warning('请填写必填项')
     return
   }
 
-  if (isEditing.value) {
-    const index = hosts.value.findIndex(h => h.id === hostForm.value.id)
-    if (index > -1) {
-      hosts.value[index] = {
-        ...hosts.value[index],
-        hostname: hostForm.value.hostname,
-        ip: hostForm.value.ip,
-        os: hostForm.value.os,
-        tags: hostForm.value.tags,
-        source: hostForm.value.source
-      }
+  saving.value = true
+  try {
+    if (isEditing.value) {
+      await api.updateHost(hostForm.value.id, hostForm.value)
+      ElMessage.success('主机已更新')
+    } else {
+      await api.createHost(hostForm.value)
+      ElMessage.success('主机已添加')
     }
-    ElMessage.success('主机已更新')
-  } else {
-    hosts.value.unshift({
-      id: Date.now(),
-      hostname: hostForm.value.hostname,
-      ip: hostForm.value.ip,
-      os: hostForm.value.os,
-      cpu: 0,
-      memory: 0,
-      disk: 0,
-      tags: hostForm.value.tags,
-      source: hostForm.value.source,
-      status: 'offline'
-    })
-    ElMessage.success('主机已添加')
+    dialogVisible.value = false
+    await loadHosts()
+  } catch (error) {
+    ElMessage.error(isEditing.value ? '更新主机失败' : '添加主机失败')
+    console.error('Save host error:', error)
+  } finally {
+    saving.value = false
+  }
+}
+
+const showSyncDialog = () => {
+  syncForm.value = {
+    datasource_id: 0,
+    metric: '',
+    label: '',
+    preview_only: true
+  }
+  syncPreview.value = []
+  syncPreviewTotal.value = 0
+  loadPrometheusDatasources()
+  syncDialogVisible.value = true
+}
+
+const cancelSync = () => {
+  syncPreview.value = []
+  syncDialogVisible.value = false
+}
+
+const doPreview = async () => {
+  if (!syncForm.value.datasource_id || !syncForm.value.metric || !syncForm.value.label) {
+    ElMessage.warning('请填写完整')
+    return
   }
   
-  dialogVisible.value = false
+  previewing.value = true
+  try {
+    const result = await api.syncHostsFromPrometheus({
+      ...syncForm.value,
+      preview_only: true
+    })
+    syncPreview.value = result.preview
+    syncPreviewTotal.value = result.total
+  } catch (error) {
+    ElMessage.error('预览失败')
+    console.error('Preview error:', error)
+  } finally {
+    previewing.value = false
+  }
 }
+
+const doImport = async () => {
+  importing.value = true
+  try {
+    const result = await api.syncHostsFromPrometheus({
+      ...syncForm.value,
+      preview_only: false
+    })
+    ElMessage.success(`成功导入 ${result.imported} 条主机`)
+    syncDialogVisible.value = false
+    await loadHosts()
+  } catch (error) {
+    ElMessage.error('导入失败')
+    console.error('Import error:', error)
+  } finally {
+    importing.value = false
+  }
+}
+
+onMounted(() => {
+  loadHosts()
+})
 </script>
 
 <style lang="less" scoped>
@@ -339,55 +448,6 @@ const saveHost = () => {
   gap: 12px;
 }
 
-.search-input {
-  width: 240px;
-
-  :deep(.el-input__wrapper) {
-    background: rgba(0, 0, 0, 0.3);
-    border: 1px solid rgba(255, 215, 0, 0.2);
-    box-shadow: none;
-    transition: all 0.3s ease;
-
-    &.is-focus {
-      border-color: rgba(255, 215, 0, 0.5);
-    }
-
-    .el-input__inner {
-      color: white;
-    }
-  }
-}
-
-.stats-row {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
-}
-
-.stat-item {
-  padding: 20px;
-  border-radius: 12px;
-  background: rgba(26, 26, 46, 0.6);
-  border: 1px solid rgba(255, 215, 0, 0.1);
-  text-align: center;
-
-  &.online .stat-value { color: #22c55e; }
-  &.offline .stat-value { color: #9ca3af; }
-  &.warning .stat-value { color: #f59e0b; }
-}
-
-.stat-value {
-  font-size: 28px;
-  font-weight: 700;
-  color: white;
-}
-
-.stat-label {
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.5);
-  margin-top: 4px;
-}
-
 .hostname-cell {
   display: flex;
   align-items: center;
@@ -399,12 +459,6 @@ const saveHost = () => {
 
   &.online { color: #22c55e; }
   &.offline { color: #9ca3af; }
-  &.warning { color: #f59e0b; }
-}
-
-.text-warning {
-  color: #f59e0b;
-  font-weight: 600;
 }
 
 .tag-item {
@@ -438,6 +492,51 @@ const saveHost = () => {
 
   :deep(.el-form-item__label) {
     color: rgba(255, 255, 255, 0.8);
+  }
+}
+
+.preview-section {
+  margin-top: 16px;
+  padding: 16px;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 215, 0, 0.1);
+}
+
+.preview-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: white;
+  margin-bottom: 12px;
+}
+
+.preview-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.preview-tag {
+  background: rgba(255, 215, 0, 0.1);
+  border-color: rgba(255, 215, 0, 0.3);
+  color: #ffd700;
+}
+
+.preview-total {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.cancel-btn {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 215, 0, 0.2) !important;
+  color: rgba(255, 255, 255, 0.8) !important;
+
+  &:hover {
+    background: rgba(255, 215, 0, 0.1) !important;
+    border-color: rgba(255, 215, 0, 0.4) !important;
+    color: white !important;
   }
 }
 </style>
