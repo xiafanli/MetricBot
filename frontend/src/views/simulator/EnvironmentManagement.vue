@@ -124,9 +124,11 @@ const tableCellStyle = {
 const loadEnvironments = async () => {
   try {
     const data = await api.getSimulationEnvironments()
-    environments.value = data
+    environments.value = Array.isArray(data) ? data : []
   } catch (error) {
+    console.error('加载环境列表失败:', error)
     ElMessage.error('加载环境列表失败')
+    environments.value = []
   }
 }
 

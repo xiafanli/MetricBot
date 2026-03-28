@@ -60,31 +60,35 @@ class MetricGenerator:
         job_name = f"simulation_env_{env_id}"
         timestamp = int(time.time())
 
+        registry = CollectorRegistry()
+        metrics = {}
+
         for component in components:
             impact = self.get_fault_impact(component)
             component_templates = template_map.get(component.component_type, [])
 
             for template in component_templates:
                 metric_key = f"{component.id}_{template.metric_name}"
+                metric_name = f"{template.component_type}_{template.metric_name}"
 
-                if metric_key not in self.metrics:
+                if metric_key not in metrics:
                     labels = {"component_id": str(component.id), "component_name": component.name, "component_type": component.component_type}
                     if template.labels:
                         labels.update(template.labels)
 
                     if template.metric_type == "gauge":
-                        self.metrics[metric_key] = Gauge(
-                            template.metric_name,
+                        metrics[metric_key] = Gauge(
+                            metric_name,
                             template.description or "",
                             labelnames=list(labels.keys()),
-                            registry=self.registry,
+                            registry=registry,
                         )
                     elif template.metric_type == "counter":
-                        self.metrics[metric_key] = Counter(
-                            template.metric_name,
+                        metrics[metric_key] = Counter(
+                            metric_name,
                             template.description or "",
                             labelnames=list(labels.keys()),
-                            registry=self.registry,
+                            registry=registry,
                         )
 
                 base_value = template.base_value or 0.0
@@ -103,7 +107,7 @@ class MetricGenerator:
 
                 value = self.generate_value(base_value, min_value, max_value, template.fluctuation, fault_factor)
 
-                metric = self.metrics[metric_key]
+                metric = metrics[metric_key]
                 labels = {"component_id": str(component.id), "component_name": component.name, "component_type": component.component_type}
                 if template.labels:
                     labels.update(template.labels)
@@ -114,9 +118,11 @@ class MetricGenerator:
                     metric.labels(**labels).inc(value)
 
         try:
-            if env.pushgateway_url:
-                push_to_gateway(env.pushgateway_url, job=job_name, registry=self.registry)
-            elif self.pushgateway_url:
-                push_to_gateway(self.pushgateway_url, job=job_name, registry=self.registry)
+            push_url = env.pushgateway_url or self.pushgateway_url
+            if push_url:
+                push_to_gateway(push_url, job=job_name, registry=registry)
+                print(f"Successfully pushed metrics to {push_url} for job {job_name}")
         except Exception as e:
             print(f"Failed to push metrics: {e}")
+            import traceback
+            traceback.print_exc()
