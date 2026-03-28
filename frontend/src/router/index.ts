@@ -62,6 +62,12 @@ const routes = [
         name: 'Relations',
         component: () => import('../views/settings/Relations.vue'),
         meta: { title: '关系模型', requiresAuth: true }
+      },
+      {
+        path: 'simulator',
+        name: 'Simulator',
+        component: () => import('../views/simulator/Index.vue'),
+        meta: { title: '生产环境模拟器', requiresAuth: true }
       }
     ]
   }

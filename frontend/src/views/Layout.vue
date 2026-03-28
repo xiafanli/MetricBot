@@ -152,7 +152,8 @@ import {
   SetUp,
   Coin,
   Document,
-  Share
+  Share,
+  DataLine
 } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/user'
 
@@ -174,6 +175,7 @@ const menuItems: MenuItem[] = [
   { path: '/dashboard', title: '监控面板', icon: markRaw(Monitor) },
   { path: '/chat', title: '智能对话', icon: markRaw(ChatDotRound) },
   { path: '/monitor', title: '智能监控', icon: markRaw(Bell) },
+  { path: '/simulator', title: '环境模拟器', icon: markRaw(DataLine) },
   { 
     path: '/settings', 
     title: '配置中心', 
@@ -195,6 +197,7 @@ const pageTitle = computed(() => {
     '/dashboard': '监控面板',
     '/chat': '智能对话',
     '/monitor': '智能监控',
+    '/simulator': '生产环境模拟器',
     '/settings': '配置中心',
     '/settings/models': '模型管理',
     '/settings/datasources': '监控数据源',
