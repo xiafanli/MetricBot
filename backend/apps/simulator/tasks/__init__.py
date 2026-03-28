@@ -1,3 +1,3 @@
-from .scheduler import SimulatorScheduler
+from .scheduler import SimulatorScheduler, scheduler
 
-__all__ = ["SimulatorScheduler"]
+__all__ = ["SimulatorScheduler", "scheduler"]
