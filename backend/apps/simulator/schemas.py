@@ -27,7 +27,7 @@ class SimulationEnvironmentResponse(SimulationEnvironmentBase):
     updated_at: datetime
 
     class Config:
-        from_attributes = True
+        orm_mode = True
 
 
 class SimulationComponentBase(BaseModel):
@@ -55,7 +55,7 @@ class SimulationComponentResponse(SimulationComponentBase):
     created_at: datetime
 
     class Config:
-        from_attributes = True
+        orm_mode = True
 
 
 class ComponentRelationBase(BaseModel):
@@ -74,7 +74,7 @@ class ComponentRelationResponse(ComponentRelationBase):
     created_at: datetime
 
     class Config:
-        from_attributes = True
+        orm_mode = True
 
 
 class MetricTemplateBase(BaseModel):
@@ -105,7 +105,7 @@ class MetricTemplateResponse(MetricTemplateBase):
     created_at: datetime
 
     class Config:
-        from_attributes = True
+        orm_mode = True
 
 
 class LogTemplateBase(BaseModel):
@@ -129,7 +129,7 @@ class LogTemplateResponse(LogTemplateBase):
     created_at: datetime
 
     class Config:
-        from_attributes = True
+        orm_mode = True
 
 
 class FaultScenarioBase(BaseModel):
@@ -156,7 +156,7 @@ class FaultScenarioResponse(FaultScenarioBase):
     created_at: datetime
 
     class Config:
-        from_attributes = True
+        orm_mode = True
 
 
 class FaultInstanceBase(BaseModel):
@@ -183,7 +183,7 @@ class FaultInstanceResponse(FaultInstanceBase):
     created_at: datetime
 
     class Config:
-        from_attributes = True
+        orm_mode = True
 
 
 class PrometheusSyncRequest(BaseModel):

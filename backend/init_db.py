@@ -49,6 +49,8 @@ def init_db():
                 disk_gb=200.0,
                 tags=json.dumps(["web", "production", "nginx"]),
                 source="manual",
+                from_type="manual",
+                from_name="demo",
                 enabled=True
             )
             
@@ -63,6 +65,8 @@ def init_db():
                 disk_gb=1000.0,
                 tags=json.dumps(["database", "production", "mysql"]),
                 source="manual",
+                from_type="manual",
+                from_name="demo",
                 enabled=True
             )
             
@@ -77,6 +81,8 @@ def init_db():
                 disk_gb=100.0,
                 tags=json.dumps(["cache", "production", "redis"]),
                 source="manual",
+                from_type="manual",
+                from_name="demo",
                 enabled=True
             )
             

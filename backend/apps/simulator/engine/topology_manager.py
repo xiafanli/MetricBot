@@ -40,11 +40,11 @@ class TopologyManager:
             existing_host = self.db.query(Host).filter(Host.from_type == "simulator", Host.from_name == f"env_{env_id}", Host.name == component.name).first()
 
             if existing_host:
-                for field, value in host_data.model_dump(exclude_unset=True).items():
+                for field, value in host_data.dict(exclude_unset=True).items():
                     setattr(existing_host, field, value)
                 host = existing_host
             else:
-                host = Host(**host_data.model_dump())
+                host = Host(**host_data.dict())
                 self.db.add(host)
 
             self.db.flush()
@@ -76,7 +76,7 @@ class TopologyManager:
                     existing_relation.relation_type = relation_data.relation_type
                     existing_relation.description = relation_data.description
                 else:
-                    hr = HostRelation(**relation_data.model_dump())
+                    hr = HostRelation(**relation_data.dict())
                     self.db.add(hr)
 
                 imported_relations.append({

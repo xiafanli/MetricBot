@@ -56,7 +56,7 @@ def get_environment(id: int, db: Session = Depends(get_db)):
 
 @router.post("/environments", response_model=SimulationEnvironmentResponse, status_code=status.HTTP_201_CREATED)
 def create_environment(data: SimulationEnvironmentCreate, db: Session = Depends(get_db)):
-    env = SimulationEnvironment(**data.model_dump())
+    env = SimulationEnvironment(**data.dict())
     db.add(env)
     db.commit()
     db.refresh(env)
@@ -69,7 +69,7 @@ def update_environment(id: int, data: SimulationEnvironmentUpdate, db: Session =
     if not env:
         raise HTTPException(status_code=404, detail="Environment not found")
 
-    for field, value in data.model_dump(exclude_unset=True).items():
+    for field, value in data.dict(exclude_unset=True).items():
         setattr(env, field, value)
 
     db.commit()
@@ -138,7 +138,7 @@ def create_component(id: int, data: SimulationComponentCreate, db: Session = Dep
     if not env:
         raise HTTPException(status_code=404, detail="Environment not found")
 
-    component = SimulationComponent(**data.model_dump())
+    component = SimulationComponent(**data.dict())
     db.add(component)
     db.commit()
     db.refresh(component)
@@ -151,7 +151,7 @@ def update_component(id: int, data: SimulationComponentUpdate, db: Session = Dep
     if not component:
         raise HTTPException(status_code=404, detail="Component not found")
 
-    for field, value in data.model_dump(exclude_unset=True).items():
+    for field, value in data.dict(exclude_unset=True).items():
         setattr(component, field, value)
 
     db.commit()
@@ -180,7 +180,7 @@ def create_relation(id: int, data: ComponentRelationCreate, db: Session = Depend
     if not env:
         raise HTTPException(status_code=404, detail="Environment not found")
 
-    relation = ComponentRelation(**data.model_dump())
+    relation = ComponentRelation(**data.dict())
     db.add(relation)
     db.commit()
     db.refresh(relation)
@@ -204,7 +204,7 @@ def get_metric_templates(db: Session = Depends(get_db)):
 
 @router.post("/metric-templates", response_model=MetricTemplateResponse, status_code=status.HTTP_201_CREATED)
 def create_metric_template(data: MetricTemplateCreate, db: Session = Depends(get_db)):
-    template = MetricTemplate(**data.model_dump())
+    template = MetricTemplate(**data.dict())
     db.add(template)
     db.commit()
     db.refresh(template)
@@ -217,7 +217,7 @@ def update_metric_template(id: int, data: MetricTemplateUpdate, db: Session = De
     if not template:
         raise HTTPException(status_code=404, detail="Metric template not found")
 
-    for field, value in data.model_dump(exclude_unset=True).items():
+    for field, value in data.dict(exclude_unset=True).items():
         setattr(template, field, value)
 
     db.commit()
@@ -242,7 +242,7 @@ def get_log_templates(db: Session = Depends(get_db)):
 
 @router.post("/log-templates", response_model=LogTemplateResponse, status_code=status.HTTP_201_CREATED)
 def create_log_template(data: LogTemplateCreate, db: Session = Depends(get_db)):
-    template = LogTemplate(**data.model_dump())
+    template = LogTemplate(**data.dict())
     db.add(template)
     db.commit()
     db.refresh(template)
@@ -255,7 +255,7 @@ def update_log_template(id: int, data: LogTemplateUpdate, db: Session = Depends(
     if not template:
         raise HTTPException(status_code=404, detail="Log template not found")
 
-    for field, value in data.model_dump(exclude_unset=True).items():
+    for field, value in data.dict(exclude_unset=True).items():
         setattr(template, field, value)
 
     db.commit()
@@ -280,7 +280,7 @@ def get_fault_scenarios(db: Session = Depends(get_db)):
 
 @router.post("/fault-scenarios", response_model=FaultScenarioResponse, status_code=status.HTTP_201_CREATED)
 def create_fault_scenario(data: FaultScenarioCreate, db: Session = Depends(get_db)):
-    scenario = FaultScenario(**data.model_dump())
+    scenario = FaultScenario(**data.dict())
     db.add(scenario)
     db.commit()
     db.refresh(scenario)
@@ -293,7 +293,7 @@ def update_fault_scenario(id: int, data: FaultScenarioUpdate, db: Session = Depe
     if not scenario:
         raise HTTPException(status_code=404, detail="Fault scenario not found")
 
-    for field, value in data.model_dump(exclude_unset=True).items():
+    for field, value in data.dict(exclude_unset=True).items():
         setattr(scenario, field, value)
 
     db.commit()
