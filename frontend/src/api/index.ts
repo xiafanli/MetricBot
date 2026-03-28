@@ -246,15 +246,15 @@ function deleteComponent(id: number) {
   return apiClient.delete(`/simulator/components/${id}`)
 }
 
-function getRelations(envId: number) {
+function getSimulatorRelations(envId: number) {
   return apiClient.get(`/simulator/environments/${envId}/relations`)
 }
 
-function createRelation(envId: number, data: any) {
+function createSimulatorRelation(envId: number, data: any) {
   return apiClient.post(`/simulator/environments/${envId}/relations`, data)
 }
 
-function deleteRelation(id: number) {
+function deleteSimulatorRelation(id: number) {
   return apiClient.delete(`/simulator/relations/${id}`)
 }
 
@@ -365,9 +365,9 @@ export const api = {
   createComponent,
   updateComponent,
   deleteComponent,
-  getRelations,
-  createRelation,
-  deleteRelation,
+  getSimulatorRelations,
+  createSimulatorRelation,
+  deleteSimulatorRelation,
   getMetricTemplates,
   createMetricTemplate,
   updateMetricTemplate,
