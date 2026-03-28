@@ -8,6 +8,8 @@ from apps.datasource.router import router as datasource_router
 from apps.alert.router import router as alert_router
 from apps.log.router import router as log_router
 from apps.host.router import router as host_router
+from apps.simulator import router as simulator_router
+from apps.simulator.tasks import scheduler
 from common.core.database import engine, Base
 
 # 导入所有模型以确保它们被注册到 Base.metadata
@@ -17,6 +19,15 @@ from apps.datasource.models import Datasource
 from apps.alert.models import AlertRule, Alert
 from apps.log.models import LogSource
 from apps.host.models import Host, HostRelation
+from apps.simulator.models import (
+    SimulationEnvironment,
+    SimulationComponent,
+    ComponentRelation,
+    MetricTemplate,
+    LogTemplate,
+    FaultScenario,
+    FaultInstance,
+)
 
 # 创建所有表
 Base.metadata.create_all(bind=engine)
@@ -53,7 +64,18 @@ api_router.include_router(datasource_router)
 api_router.include_router(alert_router)
 api_router.include_router(log_router)
 api_router.include_router(host_router)
+api_router.include_router(simulator_router)
 app.include_router(api_router)
+
+
+@app.on_event("startup")
+async def startup_event():
+    scheduler.start()
+
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    scheduler.shutdown()
 
 
 if __name__ == "__main__":
