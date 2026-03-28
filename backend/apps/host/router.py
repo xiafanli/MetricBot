@@ -36,7 +36,7 @@ def host_to_dict(host: Host) -> dict:
         "memory_gb": float(host.memory_gb) if host.memory_gb else None,
         "disk_gb": float(host.disk_gb) if host.disk_gb else None,
         "tags": json.loads(host.tags) if host.tags else None,
-        "metadata": json.loads(host.metadata) if host.metadata else None,
+        "extra_data": json.loads(host.extra_data) if host.extra_data else None,
         "source": host.source,
         "enabled": host.enabled,
         "created_at": host.created_at,
@@ -51,7 +51,7 @@ def host_relation_to_dict(rel: HostRelation) -> dict:
         "target_host_id": rel.target_host_id,
         "relation_type": rel.relation_type,
         "description": rel.description,
-        "metadata": json.loads(rel.metadata) if rel.metadata else None,
+        "extra_data": json.loads(rel.extra_data) if rel.extra_data else None,
         "source": rel.source,
         "created_at": rel.created_at,
         "updated_at": rel.updated_at,
@@ -92,7 +92,7 @@ def create_host(
     current_user: User = Depends(get_current_active_user),
 ):
     tags_json = json.dumps(host.tags) if host.tags else None
-    metadata_json = json.dumps(host.metadata) if host.metadata else None
+    extra_data_json = json.dumps(host.extra_data) if host.extra_data else None
     
     db_host = Host(
         name=host.name,
@@ -104,7 +104,7 @@ def create_host(
         memory_gb=host.memory_gb,
         disk_gb=host.disk_gb,
         tags=tags_json,
-        metadata=metadata_json,
+        extra_data=extra_data_json,
         source=host.source,
         enabled=host.enabled,
     )
@@ -130,8 +130,8 @@ def update_host(
     if "tags" in update_data:
         update_data["tags"] = json.dumps(update_data["tags"]) if update_data["tags"] else None
     
-    if "metadata" in update_data:
-        update_data["metadata"] = json.dumps(update_data["metadata"]) if update_data["metadata"] else None
+    if "extra_data" in update_data:
+        update_data["extra_data"] = json.dumps(update_data["extra_data"]) if update_data["extra_data"] else None
     
     for field, value in update_data.items():
         setattr(db_host, field, value)
@@ -185,14 +185,14 @@ def create_host_relation(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_user),
 ):
-    metadata_json = json.dumps(relation.metadata) if relation.metadata else None
+    extra_data_json = json.dumps(relation.extra_data) if relation.extra_data else None
     
     db_rel = HostRelation(
         source_host_id=relation.source_host_id,
         target_host_id=relation.target_host_id,
         relation_type=relation.relation_type,
         description=relation.description,
-        metadata=metadata_json,
+        extra_data=extra_data_json,
         source=relation.source,
     )
     db.add(db_rel)
@@ -214,8 +214,8 @@ def update_host_relation(
     
     update_data = rel_update.model_dump(exclude_unset=True)
     
-    if "metadata" in update_data:
-        update_data["metadata"] = json.dumps(update_data["metadata"]) if update_data["metadata"] else None
+    if "extra_data" in update_data:
+        update_data["extra_data"] = json.dumps(update_data["extra_data"]) if update_data["extra_data"] else None
     
     for field, value in update_data.items():
         setattr(db_rel, field, value)

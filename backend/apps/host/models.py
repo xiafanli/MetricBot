@@ -20,7 +20,7 @@ class Host(Base):
     
     # 元数据
     tags = Column(Text, nullable=True, comment="标签，JSON数组")
-    metadata = Column(Text, nullable=True, comment="元数据，JSON格式")
+    extra_data = Column(Text, nullable=True, comment="元数据，JSON格式")
     source = Column(String(100), nullable=True, default="manual", comment="来源：manual/api/auto")
     
     # 数据来源（新）
@@ -42,7 +42,7 @@ class HostRelation(Base):
     relation_type = Column(String(100), nullable=False, comment="关系类型: depends_on/calls/connects_to")
     description = Column(Text, nullable=True, comment="关系描述")
     
-    metadata = Column(Text, nullable=True, comment="元数据，JSON格式")
+    extra_data = Column(Text, nullable=True, comment="元数据，JSON格式")
     source = Column(String(100), nullable=True, default="manual", comment="来源：manual/api/auto")
     
     created_at = Column(DateTime(timezone=True), server_default=func.now())

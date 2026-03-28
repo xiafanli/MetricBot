@@ -61,15 +61,15 @@ class TopologyManager:
 
             if source_host_id and target_host_id:
                 relation_data = HostRelationCreate(
-                    source_id=source_host_id,
-                    target_id=target_host_id,
+                    source_host_id=source_host_id,
+                    target_host_id=target_host_id,
                     relation_type=relation.relation_type,
                     description=f"From simulation environment {env_id}",
                 )
 
                 existing_relation = self.db.query(HostRelation).filter(
-                    HostRelation.source_id == source_host_id,
-                    HostRelation.target_id == target_host_id,
+                    HostRelation.source_host_id == source_host_id,
+                    HostRelation.target_host_id == target_host_id,
                 ).first()
 
                 if existing_relation:

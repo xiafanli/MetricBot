@@ -13,7 +13,7 @@ class HostBase(BaseModel):
     memory_gb: Optional[float] = Field(None, description="内存(GB)")
     disk_gb: Optional[float] = Field(None, description="磁盘(GB)")
     tags: Optional[List[str]] = Field(None, description="标签")
-    metadata: Optional[Dict[str, Any]] = Field(None, description="元数据")
+    extra_data: Optional[Dict[str, Any]] = Field(None, description="元数据")
     source: Optional[str] = Field("manual", description="来源")
     from_type: Optional[str] = Field("manual", description="来源类型")
     from_name: Optional[str] = Field(None, description="来源名称")
@@ -34,7 +34,7 @@ class HostUpdate(BaseModel):
     memory_gb: Optional[float] = None
     disk_gb: Optional[float] = None
     tags: Optional[List[str]] = None
-    metadata: Optional[Dict[str, Any]] = None
+    extra_data: Optional[Dict[str, Any]] = None
     source: Optional[str] = None
     enabled: Optional[bool] = None
 
@@ -53,7 +53,7 @@ class HostRelationBase(BaseModel):
     target_host_id: int = Field(..., description="目标主机ID")
     relation_type: str = Field(..., description="关系类型: depends_on/calls/connects_to")
     description: Optional[str] = Field(None, description="关系描述")
-    metadata: Optional[Dict[str, Any]] = Field(None, description="元数据")
+    extra_data: Optional[Dict[str, Any]] = Field(None, description="元数据")
     source: Optional[str] = Field("manual", description="来源")
 
 
@@ -66,7 +66,7 @@ class HostRelationUpdate(BaseModel):
     target_host_id: Optional[int] = None
     relation_type: Optional[str] = None
     description: Optional[str] = None
-    metadata: Optional[Dict[str, Any]] = None
+    extra_data: Optional[Dict[str, Any]] = None
     source: Optional[str] = None
 
 
