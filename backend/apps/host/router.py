@@ -37,7 +37,8 @@ def host_to_dict(host: Host) -> dict:
         "disk_gb": float(host.disk_gb) if host.disk_gb else None,
         "tags": json.loads(host.tags) if host.tags else None,
         "extra_data": json.loads(host.extra_data) if host.extra_data else None,
-        "source": host.source,
+        "from_type": host.from_type,
+        "from_name": host.from_name,
         "enabled": host.enabled,
         "created_at": host.created_at,
         "updated_at": host.updated_at,
@@ -52,7 +53,6 @@ def host_relation_to_dict(rel: HostRelation) -> dict:
         "relation_type": rel.relation_type,
         "description": rel.description,
         "extra_data": json.loads(rel.extra_data) if rel.extra_data else None,
-        "source": rel.source,
         "created_at": rel.created_at,
         "updated_at": rel.updated_at,
     }

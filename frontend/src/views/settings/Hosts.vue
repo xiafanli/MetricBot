@@ -7,7 +7,7 @@
       </div>
       <div class="header-right">
         <el-button type="success" @click="showSyncDialog">
-          <el-icon><Prometheus /></el-icon>
+          <el-icon><Connection /></el-icon>
           从 Prometheus 同步
         </el-button>
         <el-button type="primary" @click="showAddDialog">
@@ -186,7 +186,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import {
   Plus,
   Monitor,
-  Prometheus
+  Connection
 } from '@element-plus/icons-vue'
 import { api } from '@/api'
 
