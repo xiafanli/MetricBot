@@ -29,9 +29,19 @@ const routes = [
       },
       {
         path: 'monitor',
-        name: 'Monitor',
-        component: () => import('../views/Monitor.vue'),
-        meta: { title: '智能监控', requiresAuth: true }
+        redirect: '/alerts/list'
+      },
+      {
+        path: 'alerts/rules',
+        name: 'AlertRules',
+        component: () => import('../views/alert/AlertRules.vue'),
+        meta: { title: '告警规则', requiresAuth: true }
+      },
+      {
+        path: 'alerts/list',
+        name: 'AlertList',
+        component: () => import('../views/alert/AlertList.vue'),
+        meta: { title: '告警列表', requiresAuth: true }
       },
       {
         path: 'settings/models',

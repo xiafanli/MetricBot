@@ -10,6 +10,7 @@ from apps.log.router import router as log_router
 from apps.host.router import router as host_router
 from apps.simulator import router as simulator_router
 from apps.simulator.tasks import scheduler
+from apps.alert.engine import alert_scheduler
 from common.core.database import engine, Base
 
 # 导入所有模型以确保它们被注册到 Base.metadata
@@ -71,11 +72,13 @@ app.include_router(api_router)
 @app.on_event("startup")
 async def startup_event():
     scheduler.start()
+    alert_scheduler.start()
 
 
 @app.on_event("shutdown")
 async def shutdown_event():
     scheduler.shutdown()
+    alert_scheduler.stop()
 
 
 if __name__ == "__main__":

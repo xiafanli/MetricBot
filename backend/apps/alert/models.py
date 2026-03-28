@@ -46,3 +46,35 @@ class Alert(Base):
     datasource_id = Column(Integer, nullable=True, comment="数据源ID")
 
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+
+class AlertEvent(Base):
+    __tablename__ = "alert_events"
+
+    id = Column(Integer, primary_key=True, index=True)
+    title = Column(String(255), nullable=False, comment="事件标题")
+    severity = Column(String(50), nullable=False, comment="严重程度")
+    alert_ids = Column(Text, nullable=True, comment="关联告警ID列表(JSON)")
+    status = Column(String(50), default="active", comment="状态: active/resolved")
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    resolved_at = Column(DateTime(timezone=True), nullable=True, comment="恢复时间")
+
+
+class DiagnosisReport(Base):
+    __tablename__ = "diagnosis_reports"
+
+    id = Column(Integer, primary_key=True, index=True)
+    alert_id = Column(Integer, nullable=False, index=True, comment="告警ID")
+    report = Column(Text, nullable=True, comment="诊断报告内容")
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+
+class DiagnosisConversation(Base):
+    __tablename__ = "diagnosis_conversations"
+
+    id = Column(Integer, primary_key=True, index=True)
+    alert_id = Column(Integer, nullable=False, index=True, comment="告警ID")
+    user_id = Column(Integer, nullable=False, index=True, comment="用户ID")
+    messages = Column(Text, nullable=True, comment="对话消息列表(JSON)")
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())

@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, List
 from datetime import datetime
 
 
@@ -90,3 +90,61 @@ class AlertStatsResponse(BaseModel):
     info: int = Field(0, description="信息")
     resolved: int = Field(0, description="已恢复")
     active: int = Field(0, description="进行中")
+
+
+class AlertEventBase(BaseModel):
+    title: str = Field(..., description="事件标题")
+    severity: str = Field(..., description="严重程度")
+    alert_ids: Optional[List[int]] = Field(None, description="关联告警ID列表")
+    status: str = Field("active", description="状态")
+
+
+class AlertEventCreate(AlertEventBase):
+    pass
+
+
+class AlertEventResponse(AlertEventBase):
+    id: int
+    created_at: datetime
+    resolved_at: Optional[datetime] = None
+
+    class Config:
+        from_attributes = True
+
+
+class DiagnosisReportBase(BaseModel):
+    alert_id: int = Field(..., description="告警ID")
+    report: Optional[str] = Field(None, description="诊断报告")
+
+
+class DiagnosisReportCreate(DiagnosisReportBase):
+    pass
+
+
+class DiagnosisReportResponse(DiagnosisReportBase):
+    id: int
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class DiagnosisChatRequest(BaseModel):
+    message: str = Field(..., description="用户消息")
+
+
+class DiagnosisChatResponse(BaseModel):
+    id: int
+    alert_id: int
+    message: str
+    created_at: datetime
+
+
+class DiagnosisContext(BaseModel):
+    alert_id: int
+    rule_name: str
+    severity: str
+    metric_value: Optional[float]
+    threshold: Optional[float]
+    message: Optional[str]
+    created_at: datetime

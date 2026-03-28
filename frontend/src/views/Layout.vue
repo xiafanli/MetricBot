@@ -169,12 +169,20 @@ const route = useRoute()
 const userStore = useUserStore()
 
 const isCollapsed = ref(false)
-const openedMenus = ref<string[]>(['/settings'])
+const openedMenus = ref<string[]>(['/alerts', '/settings'])
 
 const menuItems: MenuItem[] = [
   { path: '/dashboard', title: '监控面板', icon: markRaw(Monitor) },
   { path: '/chat', title: '智能对话', icon: markRaw(ChatDotRound) },
-  { path: '/monitor', title: '智能监控', icon: markRaw(Bell) },
+  { 
+    path: '/alerts', 
+    title: '智能监控', 
+    icon: markRaw(Bell),
+    children: [
+      { path: '/alerts/rules', title: '告警规则', icon: markRaw(SetUp) },
+      { path: '/alerts/list', title: '告警列表', icon: markRaw(Document) }
+    ]
+  },
   { path: '/simulator', title: '环境模拟器', icon: markRaw(DataLine) },
   { 
     path: '/settings', 
@@ -198,6 +206,8 @@ const pageTitle = computed(() => {
     '/chat': '智能对话',
     '/monitor': '智能监控',
     '/simulator': '生产环境模拟器',
+    '/alerts/rules': '告警规则',
+    '/alerts/list': '告警列表',
     '/settings': '配置中心',
     '/settings/models': '模型管理',
     '/settings/datasources': '监控数据源',

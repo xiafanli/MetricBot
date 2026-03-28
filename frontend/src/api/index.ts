@@ -8,6 +8,8 @@ const apiClient = axios.create({
   }
 })
 
+export default apiClient
+
 // 请求拦截器
 apiClient.interceptors.request.use(
   (config) => {

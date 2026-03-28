@@ -1,10 +1,10 @@
-from typing import List
+from typing import List, Dict, Any
 from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from common.core.database import get_db
-from apps.alert.models import AlertRule, Alert
+from apps.alert.models import AlertRule, Alert, DiagnosisReport
 from apps.alert.schemas import (
     AlertRuleCreate,
     AlertRuleUpdate,
@@ -14,8 +14,12 @@ from apps.alert.schemas import (
     AlertResponse,
     AlertTestRequest,
     AlertTestResponse,
-    AlertStatsResponse
+    AlertStatsResponse,
+    DiagnosisReportResponse,
+    DiagnosisChatRequest,
+    DiagnosisChatResponse
 )
+from apps.alert.diagnosis import DiagnosisAnalyzer
 from apps.auth.security import get_current_active_user
 from apps.auth.models import User
 
@@ -248,3 +252,70 @@ def get_alert_stats(
         resolved=resolved,
         active=active
     )
+
+
+# ==================== AI 诊断 API ====================
+
+@router.post("/{alert_id}/diagnosis", response_model=DiagnosisReportResponse)
+async def generate_diagnosis(
+    alert_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
+):
+    analyzer = DiagnosisAnalyzer(db)
+    report = await analyzer.generate_diagnosis(alert_id)
+    if not report:
+        raise HTTPException(status_code=404, detail="告警不存在")
+    return DiagnosisReportResponse(
+        id=report.id,
+        alert_id=report.alert_id,
+        report=report.report,
+        created_at=report.created_at
+    )
+
+
+@router.get("/{alert_id}/diagnosis", response_model=DiagnosisReportResponse)
+def get_diagnosis(
+    alert_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
+):
+    report = db.query(DiagnosisReport).filter(DiagnosisReport.alert_id == alert_id).order_by(DiagnosisReport.created_at.desc()).first()
+    if not report:
+        raise HTTPException(status_code=404, detail="诊断报告不存在")
+    return DiagnosisReportResponse(
+        id=report.id,
+        alert_id=report.alert_id,
+        report=report.report,
+        created_at=report.created_at
+    )
+
+
+@router.post("/{alert_id}/chat", response_model=DiagnosisChatResponse)
+async def diagnosis_chat(
+    alert_id: int,
+    chat_request: DiagnosisChatRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
+):
+    analyzer = DiagnosisAnalyzer(db)
+    result = await analyzer.chat(alert_id, current_user.id, chat_request.message)
+    if not result:
+        raise HTTPException(status_code=404, detail="告警不存在")
+    return DiagnosisChatResponse(
+        id=result["id"],
+        alert_id=result["alert_id"],
+        message=result["message"],
+        created_at=result["created_at"]
+    )
+
+
+@router.get("/{alert_id}/conversations")
+def get_conversations(
+    alert_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
+):
+    analyzer = DiagnosisAnalyzer(db)
+    messages = analyzer.get_conversation(alert_id, current_user.id)
+    return {"messages": messages}
