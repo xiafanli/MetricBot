@@ -198,6 +198,126 @@ function testLogSourceConnection(data: any) {
   return apiClient.post('/logs/test', data)
 }
 
+function getSimulationEnvironments() {
+  return apiClient.get('/simulator/environments')
+}
+
+function getSimulationEnvironment(id: number) {
+  return apiClient.get(`/simulator/environments/${id}`)
+}
+
+function createSimulationEnvironment(data: any) {
+  return apiClient.post('/simulator/environments', data)
+}
+
+function updateSimulationEnvironment(id: number, data: any) {
+  return apiClient.put(`/simulator/environments/${id}`, data)
+}
+
+function deleteSimulationEnvironment(id: number) {
+  return apiClient.delete(`/simulator/environments/${id}`)
+}
+
+function activateSimulationEnvironment(id: number, data: any) {
+  return apiClient.post(`/simulator/environments/${id}/activate`, data)
+}
+
+function deactivateSimulationEnvironment(id: number) {
+  return apiClient.post(`/simulator/environments/${id}/deactivate`)
+}
+
+function syncEnvironmentToHosts(id: number) {
+  return apiClient.post(`/simulator/environments/${id}/sync-to-hosts`)
+}
+
+function getComponents(envId: number) {
+  return apiClient.get(`/simulator/environments/${envId}/components`)
+}
+
+function createComponent(envId: number, data: any) {
+  return apiClient.post(`/simulator/environments/${envId}/components`, data)
+}
+
+function updateComponent(id: number, data: any) {
+  return apiClient.put(`/simulator/components/${id}`, data)
+}
+
+function deleteComponent(id: number) {
+  return apiClient.delete(`/simulator/components/${id}`)
+}
+
+function getRelations(envId: number) {
+  return apiClient.get(`/simulator/environments/${envId}/relations`)
+}
+
+function createRelation(envId: number, data: any) {
+  return apiClient.post(`/simulator/environments/${envId}/relations`, data)
+}
+
+function deleteRelation(id: number) {
+  return apiClient.delete(`/simulator/relations/${id}`)
+}
+
+function getMetricTemplates() {
+  return apiClient.get('/simulator/metric-templates')
+}
+
+function createMetricTemplate(data: any) {
+  return apiClient.post('/simulator/metric-templates', data)
+}
+
+function updateMetricTemplate(id: number, data: any) {
+  return apiClient.put(`/simulator/metric-templates/${id}`, data)
+}
+
+function deleteMetricTemplate(id: number) {
+  return apiClient.delete(`/simulator/metric-templates/${id}`)
+}
+
+function getLogTemplates() {
+  return apiClient.get('/simulator/log-templates')
+}
+
+function createLogTemplate(data: any) {
+  return apiClient.post('/simulator/log-templates', data)
+}
+
+function updateLogTemplate(id: number, data: any) {
+  return apiClient.put(`/simulator/log-templates/${id}`, data)
+}
+
+function deleteLogTemplate(id: number) {
+  return apiClient.delete(`/simulator/log-templates/${id}`)
+}
+
+function getFaultScenarios() {
+  return apiClient.get('/simulator/fault-scenarios')
+}
+
+function createFaultScenario(data: any) {
+  return apiClient.post('/simulator/fault-scenarios', data)
+}
+
+function updateFaultScenario(id: number, data: any) {
+  return apiClient.put(`/simulator/fault-scenarios/${id}`, data)
+}
+
+function deleteFaultScenario(id: number) {
+  return apiClient.delete(`/simulator/fault-scenarios/${id}`)
+}
+
+function triggerFault(id: number, componentId: number) {
+  return apiClient.post(`/simulator/fault-scenarios/${id}/trigger`, null, { params: { component_id: componentId } })
+}
+
+function getFaultInstances() {
+  return apiClient.get('/simulator/fault-instances')
+}
+
+function getFaultInstance(id: number) {
+  return apiClient.get(`/simulator/fault-instances/${id}`)
+}
+
 export const api = {
   healthCheck,
   getRoot,
@@ -232,5 +352,35 @@ export const api = {
   getAllRelations,
   createRelation,
   updateRelation,
-  deleteRelation
+  deleteRelation,
+  getSimulationEnvironments,
+  getSimulationEnvironment,
+  createSimulationEnvironment,
+  updateSimulationEnvironment,
+  deleteSimulationEnvironment,
+  activateSimulationEnvironment,
+  deactivateSimulationEnvironment,
+  syncEnvironmentToHosts,
+  getComponents,
+  createComponent,
+  updateComponent,
+  deleteComponent,
+  getRelations,
+  createRelation,
+  deleteRelation,
+  getMetricTemplates,
+  createMetricTemplate,
+  updateMetricTemplate,
+  deleteMetricTemplate,
+  getLogTemplates,
+  createLogTemplate,
+  updateLogTemplate,
+  deleteLogTemplate,
+  getFaultScenarios,
+  createFaultScenario,
+  updateFaultScenario,
+  deleteFaultScenario,
+  triggerFault,
+  getFaultInstances,
+  getFaultInstance
 }
