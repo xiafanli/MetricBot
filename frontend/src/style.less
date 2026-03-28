@@ -8,6 +8,12 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 
+  /* 防止文本选择导致光标闪烁 */
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+
   --primary-color: var(--el-color-primary);
   --primary-light: #e8f0fe;
   --secondary-color: #5f6368;
@@ -1637,4 +1643,113 @@ strong {
       background: rgba(255, 215, 0, 0.5) !important;
     }
   }
+}
+
+/* ====================================================
+   优化：允许表单元素文本选择，防止光标闪烁
+   ==================================================== */
+/* 输入框和文本框允许选择文本 */
+.el-input__inner,
+.el-textarea__inner,
+input,
+textarea {
+  -webkit-user-select: text !important;
+  -moz-user-select: text !important;
+  -ms-user-select: text !important;
+  user-select: text !important;
+}
+
+/* 按钮、标签页、菜单项等可交互元素防止文本选择 */
+.el-button,
+.el-tabs__item,
+.el-menu-item,
+.el-dropdown-menu__item,
+.el-select-dropdown__item,
+.nav-item,
+.nav-title,
+.nav-child,
+.collapse-btn,
+.expand-btn,
+.header-btn {
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+  user-select: none !important;
+  -webkit-tap-highlight-color: transparent !important;
+  outline: none !important;
+}
+
+/* 移除点击时的焦点环（但保持键盘可访问性） */
+.el-button:focus:not(:focus-visible),
+.el-tabs__item:focus:not(:focus-visible),
+.el-menu-item:focus:not(:focus-visible),
+button:focus:not(:focus-visible),
+a:focus:not(:focus-visible) {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* 点击时防止光标闪烁 */
+*:active {
+  -webkit-tap-highlight-color: transparent !important;
+}
+
+/* 防止拖拽选中文本导致闪烁 */
+* {
+  -webkit-user-drag: none;
+}
+
+/* 保留链接和输入框的拖拽能力 */
+a,
+input[type="text"],
+input[type="password"],
+textarea {
+  -webkit-user-drag: auto;
+}
+
+/* ====================================================
+   优化：主题一致性补充
+   ==================================================== */
+/* 确保所有容器都有正确的深色背景 */
+body {
+  background: #0a0a0a !important;
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+
+/* 确保主应用容器背景正确 */
+#app {
+  background: transparent !important;
+}
+
+/* 修复 Element Plus Tabs border-card 类型的白色背景问题 */
+.el-tabs--border-card {
+  background: transparent !important;
+  border: none !important;
+
+  > .el-tabs__header {
+    background: rgba(0, 0, 0, 0.3) !important;
+    border-bottom: 1px solid rgba(255, 215, 0, 0.15) !important;
+    margin: 0 !important;
+  }
+
+  .el-tabs__content {
+    background: rgba(0, 0, 0, 0.2) !important;
+    padding: 24px !important;
+  }
+}
+
+/* 优化标签页的 hover 和 active 状态 */
+.el-tabs--border-card .el-tabs__item {
+  &:hover:not(.is-active) {
+    background: rgba(0, 0, 0, 0.2) !important;
+  }
+
+  &.is-active {
+    background: rgba(0, 0, 0, 0.3) !important;
+  }
+}
+
+/* 移除 Element Plus 的默认白色下划线 */
+.el-tabs__nav-wrap::after {
+  display: none !important;
 }
