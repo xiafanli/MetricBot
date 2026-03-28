@@ -67,9 +67,19 @@ const activeTab = ref('environments')
   border: 1px solid rgba(255, 215, 0, 0.1);
   border-radius: 12px;
 
+  :deep(.el-tabs--border-card) {
+    background: transparent;
+    border: none;
+  }
+
   :deep(.el-tabs__header) {
     background: rgba(0, 0, 0, 0.1);
     border-bottom: 1px solid rgba(255, 215, 0, 0.1);
+    margin: 0;
+  }
+
+  :deep(.el-tabs__nav-wrap::after) {
+    display: none;
   }
 
   :deep(.el-tabs__item) {
@@ -77,6 +87,12 @@ const activeTab = ref('environments')
 
     &.is-active {
       color: #ffd700;
+      background: rgba(0, 0, 0, 0.2);
+    }
+
+    &:hover:not(.is-active) {
+      color: rgba(255, 255, 255, 0.9);
+      background: rgba(0, 0, 0, 0.1);
     }
   }
 
@@ -86,6 +102,11 @@ const activeTab = ref('environments')
 
   :deep(.el-tabs__content) {
     padding: 24px;
+    background: rgba(0, 0, 0, 0.2);
+  }
+
+  :deep(.el-tab-pane) {
+    color: white;
   }
 }
 </style>
