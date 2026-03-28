@@ -15,10 +15,11 @@
           </el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="操作" width="300">
+      <el-table-column label="操作" width="350">
         <template #default="{ row }">
           <el-button size="small" @click="handleView(row)">查看</el-button>
           <el-button size="small" @click="handleEdit(row)">编辑</el-button>
+          <el-button size="small" type="danger" @click="handleDelete(row)">删除</el-button>
           <el-button size="small" type="warning" v-if="!row.is_active" @click="handleActivate(row)">
             激活
           </el-button>
@@ -31,12 +32,37 @@
         </template>
       </el-table-column>
     </el-table>
+
+    <el-dialog
+      v-model="dialogVisible"
+      :title="isEdit ? '编辑环境' : '创建环境'"
+      width="500px"
+    >
+      <el-form :model="form" :rules="rules" ref="formRef" label-width="120px">
+        <el-form-item label="环境名称" prop="name">
+          <el-input v-model="form.name" placeholder="请输入环境名称" />
+        </el-form-item>
+        <el-form-item label="描述" prop="description">
+          <el-input v-model="form.description" type="textarea" :rows="3" placeholder="请输入描述" />
+        </el-form-item>
+        <el-form-item label="Pushgateway地址" prop="pushgateway_url">
+          <el-input v-model="form.pushgateway_url" placeholder="http://localhost:9091" />
+        </el-form-item>
+        <el-form-item label="日志路径" prop="log_path">
+          <el-input v-model="form.log_path" placeholder="simulator/logs" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="dialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="handleSubmit">确定</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ElMessage, ElMessageBox, FormInstance, FormRules } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
 import { api } from '@/api'
 
@@ -53,6 +79,23 @@ interface Environment {
 }
 
 const environments = ref<Environment[]>([])
+const dialogVisible = ref(false)
+const isEdit = ref(false)
+const formRef = ref<FormInstance>()
+const currentId = ref<number | null>(null)
+
+const form = ref({
+  name: '',
+  description: '',
+  pushgateway_url: '',
+  log_path: ''
+})
+
+const rules: FormRules = {
+  name: [{ required: true, message: '请输入环境名称', trigger: 'blur' }],
+  pushgateway_url: [{ required: true, message: '请输入Pushgateway地址', trigger: 'blur' }],
+  log_path: [{ required: true, message: '请输入日志路径', trigger: 'blur' }]
+}
 
 const loadEnvironments = async () => {
   try {
@@ -64,7 +107,15 @@ const loadEnvironments = async () => {
 }
 
 const handleCreate = () => {
-  ElMessage.info('创建环境功能待实现')
+  isEdit.value = false
+  currentId.value = null
+  form.value = {
+    name: '',
+    description: '',
+    pushgateway_url: 'http://localhost:9091',
+    log_path: 'simulator/logs'
+  }
+  dialogVisible.value = true
 }
 
 const handleView = (row: Environment) => {
@@ -72,7 +123,53 @@ const handleView = (row: Environment) => {
 }
 
 const handleEdit = (row: Environment) => {
-  ElMessage.info(`编辑环境: ${row.name}`)
+  isEdit.value = true
+  currentId.value = row.id
+  form.value = {
+    name: row.name,
+    description: row.description,
+    pushgateway_url: row.pushgateway_url,
+    log_path: row.log_path
+  }
+  dialogVisible.value = true
+}
+
+const handleDelete = async (row: Environment) => {
+  try {
+    await ElMessageBox.confirm(`确定要删除环境 "${row.name}" 吗?`, '提示', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning'
+    })
+    await api.deleteSimulationEnvironment(row.id)
+    ElMessage.success('删除成功')
+    await loadEnvironments()
+  } catch (error) {
+    if (error !== 'cancel') {
+      ElMessage.error('删除失败')
+    }
+  }
+}
+
+const handleSubmit = async () => {
+  if (!formRef.value) return
+  await formRef.value.validate(async (valid) => {
+    if (valid) {
+      try {
+        if (isEdit.value && currentId.value) {
+          await api.updateSimulationEnvironment(currentId.value, form.value)
+          ElMessage.success('更新成功')
+        } else {
+          await api.createSimulationEnvironment(form.value)
+          ElMessage.success('创建成功')
+        }
+        dialogVisible.value = false
+        await loadEnvironments()
+      } catch (error) {
+        ElMessage.error(isEdit.value ? '更新失败' : '创建失败')
+      }
+    }
+  })
 }
 
 const handleActivate = async (row: Environment) => {
