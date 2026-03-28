@@ -7,6 +7,7 @@ from .models import (
     FaultScenario,
     FaultInstance,
 )
+from .router import router
 
 __all__ = [
     "SimulationEnvironment",
@@ -16,4 +17,5 @@ __all__ = [
     "LogTemplate",
     "FaultScenario",
     "FaultInstance",
+    "router",
 ]
