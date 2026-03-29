@@ -34,8 +34,15 @@ from apps.simulator.schemas import (
     FaultInstanceUpdate,
     FaultInstanceResponse,
     EnvironmentActivateRequest,
+    TopologyGenerateRequest,
+    TopologyGenerateResponse,
+    TopologyTypeResponse,
+    TopologyScaleResponse,
+    TopologyComponentTypeResponse,
+    TopologyIPCheckResponse,
 )
 from apps.simulator.engine import TopologyManager
+from apps.simulator.engine.topology_generator import TopologyGenerator
 from apps.simulator.tasks import scheduler
 
 router = APIRouter(prefix="/simulator", tags=["simulator"])
@@ -330,3 +337,46 @@ def get_fault_instance(id: int, db: Session = Depends(get_db)):
     if not fault:
         raise HTTPException(status_code=404, detail="Fault instance not found")
     return fault
+
+
+@router.post("/environments/generate", response_model=TopologyGenerateResponse, status_code=status.HTTP_201_CREATED)
+def generate_environment(data: TopologyGenerateRequest, db: Session = Depends(get_db)):
+    generator = TopologyGenerator(db)
+    try:
+        result = generator.generate(
+            name=data.name,
+            topology_type=data.topology_type,
+            scale=data.scale,
+            ip_prefix=data.ip_prefix,
+            description=data.description,
+            pushgateway_url=data.pushgateway_url,
+            log_path=data.log_path,
+            include_components=data.include_components,
+        )
+        return result
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.get("/topology/types", response_model=List[TopologyTypeResponse])
+def get_topology_types(db: Session = Depends(get_db)):
+    generator = TopologyGenerator(db)
+    return generator.get_topology_types()
+
+
+@router.get("/topology/scales", response_model=List[TopologyScaleResponse])
+def get_topology_scales(db: Session = Depends(get_db)):
+    generator = TopologyGenerator(db)
+    return generator.get_scales()
+
+
+@router.get("/topology/components", response_model=List[TopologyComponentTypeResponse])
+def get_topology_components(db: Session = Depends(get_db)):
+    generator = TopologyGenerator(db)
+    return generator.get_component_types()
+
+
+@router.post("/topology/check-ip", response_model=TopologyIPCheckResponse)
+def check_ip_prefix(ip_prefix: str, db: Session = Depends(get_db)):
+    generator = TopologyGenerator(db)
+    return generator.check_ip_conflict(ip_prefix)

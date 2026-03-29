@@ -1753,3 +1753,92 @@ body {
 .el-tabs__nav-wrap::after {
   display: none !important;
 }
+
+/* Element Plus Steps 深色主题全局样式 */
+.el-steps {
+  background: transparent !important;
+}
+
+.el-steps--simple {
+  background: rgba(0, 0, 0, 0.3) !important;
+  border-radius: 8px;
+  padding: 13px 20px;
+  border: 1px solid rgba(255, 215, 0, 0.1);
+}
+
+.el-step__title {
+  color: rgba(255, 255, 255, 0.5) !important;
+  font-size: 14px;
+
+  &.is-process {
+    color: #ffd700 !important;
+    font-weight: 600;
+  }
+
+  &.is-success {
+    color: #67c23a !important;
+  }
+
+  &.is-wait {
+    color: rgba(255, 255, 255, 0.4) !important;
+  }
+}
+
+.el-step__head {
+  &.is-process {
+    color: #ffd700;
+    border-color: #ffd700;
+  }
+
+  &.is-success {
+    color: #67c23a;
+    border-color: #67c23a;
+  }
+
+  &.is-wait {
+    color: rgba(255, 255, 255, 0.3);
+    border-color: rgba(255, 255, 255, 0.3);
+  }
+}
+
+.el-step__icon {
+  background: transparent !important;
+}
+
+.el-step__icon-inner {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.el-step.is-process .el-step__icon-inner {
+  color: #ffd700;
+}
+
+.el-step.is-success .el-step__icon-inner {
+  color: #67c23a;
+}
+
+.el-step__arrow {
+  &::before,
+  &::after {
+    background: rgba(255, 255, 255, 0.3);
+  }
+}
+
+.el-step.is-success .el-step__arrow::before,
+.el-step.is-success .el-step__arrow::after {
+  background: #67c23a;
+}
+
+.el-step.is-process .el-step__arrow::before,
+.el-step.is-process .el-step__arrow::after {
+  background: #ffd700;
+}
+
+.el-step__line {
+  background: rgba(255, 255, 255, 0.1) !important;
+}
+
+.el-step__line-inner {
+  background: #ffd700 !important;
+  border-width: 1px !important;
+}

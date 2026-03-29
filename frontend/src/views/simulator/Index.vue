@@ -5,6 +5,12 @@
         <h2 class="page-title">生产环境模拟器</h2>
         <span class="page-desc">模拟真实生产环境的指标、日志和故障场景</span>
       </div>
+      <div class="header-right">
+        <el-button type="primary" @click="goToWizard">
+          <el-icon><Plus /></el-icon>
+          向导生成
+        </el-button>
+      </div>
     </div>
     <div class="config-card">
       <el-tabs v-model="activeTab" type="border-card">
@@ -24,11 +30,18 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { Plus } from '@element-plus/icons-vue'
 import EnvironmentManagement from './EnvironmentManagement.vue'
 import TemplateManagement from './TemplateManagement.vue'
 import FaultManagement from './FaultManagement.vue'
 
+const router = useRouter()
 const activeTab = ref('environments')
+
+const goToWizard = () => {
+  router.push('/simulator/wizard')
+}
 </script>
 
 <style lang="less" scoped>

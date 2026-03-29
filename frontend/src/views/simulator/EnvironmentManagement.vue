@@ -3,80 +3,201 @@
     <div class="page-header">
       <div class="header-left">
         <h2 class="page-title">环境管理</h2>
-        <span class="page-desc">创建和管理模拟生产环境</span>
+        <span class="page-desc">管理模拟生产环境拓扑</span>
       </div>
       <div class="header-right">
-        <el-button type="primary" @click="handleCreate">
+        <el-button v-if="!currentEnvironment" type="primary" @click="handleCreate">
           <el-icon><Plus /></el-icon>
           创建环境
+        </el-button>
+        <el-button v-else type="warning" @click="handleRegenerate">
+          <el-icon><RefreshRight /></el-icon>
+          重新生成
         </el-button>
       </div>
     </div>
 
-    <div class="config-card">
-      <el-table :data="environments" style="width: 100%" :header-cell-style="tableHeaderStyle" :cell-style="tableCellStyle">
-        <el-table-column prop="id" label="ID" width="80" />
-        <el-table-column prop="name" label="环境名称" width="200" />
-        <el-table-column prop="description" label="描述" show-overflow-tooltip />
-        <el-table-column label="状态" width="100">
-          <template #default="{ row }">
-            <el-tag :type="row.is_active ? 'success' : 'info'">
-              {{ row.is_active ? '运行中' : '已停止' }}
-            </el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column label="操作" width="400" fixed="right">
-          <template #default="{ row }">
-            <el-button type="primary" link size="small" @click="handleView(row)">查看</el-button>
-            <el-button type="primary" link size="small" @click="handleEdit(row)">编辑</el-button>
-            <el-button type="danger" link size="small" @click="handleDelete(row)">删除</el-button>
-            <el-button type="warning" link size="small" v-if="!row.is_active" @click="handleActivate(row)">
-              激活
-            </el-button>
-            <el-button type="danger" link size="small" v-if="row.is_active" @click="handleDeactivate(row)">
-              停止
-            </el-button>
-            <el-button type="info" link size="small" @click="handleSyncToHosts(row)">
-              同步到主机
-            </el-button>
-          </template>
-        </el-table-column>
-      </el-table>
+    <div v-if="!currentEnvironment" class="empty-state">
+      <el-empty description="暂无环境，请创建一个模拟环境">
+        <el-button type="primary" @click="handleCreate">创建环境</el-button>
+      </el-empty>
     </div>
 
-    <el-dialog
-      v-model="dialogVisible"
-      :title="isEdit ? '编辑环境' : '创建环境'"
-      width="500px"
-      class="config-dialog"
-    >
-      <el-form :model="form" :rules="rules" ref="formRef" label-width="120px" class="config-form">
-        <el-form-item label="环境名称" prop="name">
-          <el-input v-model="form.name" placeholder="请输入环境名称" />
-        </el-form-item>
-        <el-form-item label="描述" prop="description">
-          <el-input v-model="form.description" type="textarea" :rows="3" placeholder="请输入描述" />
-        </el-form-item>
-        <el-form-item label="Pushgateway地址" prop="pushgateway_url">
-          <el-input v-model="form.pushgateway_url" placeholder="http://localhost:9091" />
-        </el-form-item>
-        <el-form-item label="日志路径" prop="log_path">
-          <el-input v-model="form.log_path" placeholder="simulator/logs" />
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <el-button class="cancel-btn" @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="handleSubmit">确定</el-button>
-      </template>
-    </el-dialog>
+    <div v-else class="topology-view">
+      <div class="topology-header">
+        <div class="header-info">
+          <h3>{{ currentEnvironment.name }}</h3>
+          <span class="env-desc">{{ currentEnvironment.description || '暂无描述' }}</span>
+        </div>
+        <div class="header-actions">
+          <el-tag :type="currentEnvironment.is_active ? 'success' : 'info'" size="large">
+            {{ currentEnvironment.is_active ? '运行中' : '已停止' }}
+          </el-tag>
+          <el-button v-if="!currentEnvironment.is_active" type="success" size="small" @click="handleActivate">
+            激活
+          </el-button>
+          <el-button v-else type="danger" size="small" @click="handleDeactivate">
+            停止
+          </el-button>
+          <el-button type="info" size="small" @click="handleSyncToHosts">
+            同步到主机
+          </el-button>
+        </div>
+      </div>
+
+      <div v-if="topologyComponents.length === 0" class="no-components">
+        <el-empty description="该环境暂无组件" />
+      </div>
+
+      <div v-else class="topology-graph">
+        <div class="layer client-layer">
+          <div class="layer-title">客户端层</div>
+          <div class="layer-nodes">
+            <div
+              v-for="node in getComponentsByLayer(0)"
+              :key="node.id"
+              class="topology-node client-node"
+            >
+              <div class="node-icon">
+                <el-icon><Monitor /></el-icon>
+              </div>
+              <div class="node-info">
+                <span class="node-name">{{ node.name }}</span>
+                <span class="node-ip">{{ node.ip_address }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="layer-arrow">
+          <svg width="100%" height="40">
+            <defs>
+              <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                <polygon points="0 0, 10 3.5, 0 7" fill="rgba(255, 215, 0, 0.5)" />
+              </marker>
+            </defs>
+            <line x1="50%" y1="0" x2="50%" y2="30" stroke="rgba(255, 215, 0, 0.3)" stroke-width="2" marker-end="url(#arrowhead)" />
+          </svg>
+        </div>
+
+        <div class="layer lb-layer">
+          <div class="layer-title">负载均衡层</div>
+          <div class="layer-nodes">
+            <div
+              v-for="node in getComponentsByLayer(1)"
+              :key="node.id"
+              class="topology-node nginx-node"
+            >
+              <div class="node-icon">
+                <el-icon><Connection /></el-icon>
+              </div>
+              <div class="node-info">
+                <span class="node-name">{{ node.name }}</span>
+                <span class="node-ip">{{ node.ip_address }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="layer-arrow">
+          <svg width="100%" height="40">
+            <line x1="50%" y1="0" x2="50%" y2="30" stroke="rgba(255, 215, 0, 0.3)" stroke-width="2" marker-end="url(#arrowhead)" />
+          </svg>
+        </div>
+
+        <div class="layer app-layer">
+          <div class="layer-title">应用层</div>
+          <div class="layer-nodes">
+            <div
+              v-for="node in getComponentsByLayer(2)"
+              :key="node.id"
+              class="topology-node app-node"
+            >
+              <div class="node-icon">
+                <el-icon><DataBoard /></el-icon>
+              </div>
+              <div class="node-info">
+                <span class="node-name">{{ node.name }}</span>
+                <span class="node-ip">{{ node.ip_address }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="layer-arrow">
+          <svg width="100%" height="40">
+            <line x1="50%" y1="0" x2="50%" y2="30" stroke="rgba(255, 215, 0, 0.3)" stroke-width="2" marker-end="url(#arrowhead)" />
+          </svg>
+        </div>
+
+        <div class="layer cache-layer">
+          <div class="layer-title">缓存层</div>
+          <div class="layer-nodes">
+            <div
+              v-for="node in getComponentsByLayer(3)"
+              :key="node.id"
+              class="topology-node cache-node"
+            >
+              <div class="node-icon">
+                <el-icon><Lightning /></el-icon>
+              </div>
+              <div class="node-info">
+                <span class="node-name">{{ node.name }}</span>
+                <span class="node-ip">{{ node.ip_address }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="layer-arrow">
+          <svg width="100%" height="40">
+            <line x1="50%" y1="0" x2="50%" y2="30" stroke="rgba(255, 215, 0, 0.3)" stroke-width="2" marker-end="url(#arrowhead)" />
+          </svg>
+        </div>
+
+        <div class="layer db-layer">
+          <div class="layer-title">数据库层</div>
+          <div class="layer-nodes">
+            <div
+              v-for="node in getComponentsByLayer(4)"
+              :key="node.id"
+              class="topology-node db-node"
+            >
+              <div class="node-icon">
+                <el-icon><Coin /></el-icon>
+              </div>
+              <div class="node-info">
+                <span class="node-name">{{ node.name }}</span>
+                <span class="node-ip">{{ node.ip_address }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="topology-stats">
+        <div class="stat-item">
+          <span class="stat-label">总组件数</span>
+          <span class="stat-value">{{ topologyComponents.length }}</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">连接数</span>
+          <span class="stat-value">{{ topologyRelations.length }}</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Pushgateway</span>
+          <span class="stat-value">{{ currentEnvironment.pushgateway_url }}</span>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import type { FormInstance, FormRules } from 'element-plus'
-import { Plus } from '@element-plus/icons-vue'
+import { Plus, RefreshRight, Monitor, Connection, DataBoard, Lightning, Coin } from '@element-plus/icons-vue'
+import { useRouter } from 'vue-router'
 import { api } from '@/api'
 
 interface Environment {
@@ -91,156 +212,120 @@ interface Environment {
   updated_at: string
 }
 
-const environments = ref<Environment[]>([])
-const dialogVisible = ref(false)
-const isEdit = ref(false)
-const formRef = ref<FormInstance>()
-const currentId = ref<number | null>(null)
-
-const form = ref({
-  name: '',
-  description: '',
-  pushgateway_url: '',
-  log_path: ''
-})
-
-const rules: FormRules = {
-  name: [{ required: true, message: '请输入环境名称', trigger: 'blur' }],
-  pushgateway_url: [{ required: true, message: '请输入Pushgateway地址', trigger: 'blur' }],
-  log_path: [{ required: true, message: '请输入日志路径', trigger: 'blur' }]
+interface Component {
+  id: number
+  name: string
+  component_type: string
+  ip_address: string
+  port: number
+  layer: number
 }
 
-const tableHeaderStyle = {
-  background: 'rgba(255, 215, 0, 0.05)',
-  color: 'rgba(255, 255, 255, 0.9)',
-  borderBottom: '1px solid rgba(255, 215, 0, 0.1)'
+interface Relation {
+  id: number
+  source_id: number
+  target_id: number
+  relation_type: string
 }
 
-const tableCellStyle = {
-  background: 'transparent',
-  color: 'rgba(255, 255, 255, 0.8)',
-  borderBottom: '1px solid rgba(255, 215, 0, 0.05)'
-}
+const router = useRouter()
+const currentEnvironment = ref<Environment | null>(null)
+const topologyComponents = ref<Component[]>([])
+const topologyRelations = ref<Relation[]>([])
 
-const loadEnvironments = async () => {
+const loadEnvironment = async () => {
   try {
     const data = await api.getSimulationEnvironments()
-    environments.value = Array.isArray(data) ? data : []
+    const envs = Array.isArray(data) ? data : []
+    if (envs.length > 0) {
+      currentEnvironment.value = envs[0]
+      await loadTopology(currentEnvironment.value.id)
+    } else {
+      currentEnvironment.value = null
+      topologyComponents.value = []
+      topologyRelations.value = []
+    }
   } catch (error) {
-    console.error('加载环境列表失败:', error)
-    ElMessage.error('加载环境列表失败')
-    environments.value = []
+    console.error('加载环境失败:', error)
+    ElMessage.error('加载环境失败')
   }
+}
+
+const loadTopology = async (envId: number) => {
+  try {
+    const [componentsData, relationsData] = await Promise.all([
+      api.getComponents(envId),
+      api.getSimulatorRelations(envId)
+    ])
+    topologyComponents.value = Array.isArray(componentsData) ? componentsData : []
+    topologyRelations.value = Array.isArray(relationsData) ? relationsData : []
+  } catch (error) {
+    console.error('加载拓扑数据失败:', error)
+    topologyComponents.value = []
+    topologyRelations.value = []
+  }
+}
+
+const getComponentsByLayer = (layer: number) => {
+  return topologyComponents.value.filter(c => c.layer === layer)
 }
 
 const handleCreate = () => {
-  isEdit.value = false
-  currentId.value = null
-  form.value = {
-    name: '',
-    description: '',
-    pushgateway_url: 'http://localhost:9091',
-    log_path: 'simulator/logs'
-  }
-  dialogVisible.value = true
+  router.push('/simulator/wizard')
 }
 
-const handleView = (row: Environment) => {
-  ElMessage.info(`查看环境: ${row.name}`)
-}
-
-const handleEdit = (row: Environment) => {
-  isEdit.value = true
-  currentId.value = row.id
-  form.value = {
-    name: row.name,
-    description: row.description,
-    pushgateway_url: row.pushgateway_url,
-    log_path: row.log_path
-  }
-  dialogVisible.value = true
-}
-
-const handleDelete = async (row: Environment) => {
+const handleRegenerate = async () => {
   try {
-    await ElMessageBox.confirm(`确定要删除环境 "${row.name}" 吗?`, '提示', {
+    await ElMessageBox.confirm('重新生成将删除当前环境及所有组件，确定继续吗？', '警告', {
       confirmButtonText: '确定',
       cancelButtonText: '取消',
       type: 'warning'
     })
-    await api.deleteSimulationEnvironment(row.id)
-    ElMessage.success('删除成功')
-    await loadEnvironments()
+    if (currentEnvironment.value) {
+      await api.deleteSimulationEnvironment(currentEnvironment.value.id)
+      currentEnvironment.value = null
+      topologyComponents.value = []
+      topologyRelations.value = []
+      router.push('/simulator/wizard')
+    }
   } catch (error) {
     if (error !== 'cancel') {
-      ElMessage.error('删除失败')
+      ElMessage.error('操作失败')
     }
   }
 }
 
-const handleSubmit = async () => {
-  if (!formRef.value) return
-  await formRef.value.validate(async (valid) => {
-    if (valid) {
-      try {
-        if (isEdit.value && currentId.value) {
-          await api.updateSimulationEnvironment(currentId.value, form.value)
-          ElMessage.success('更新成功')
-        } else {
-          await api.createSimulationEnvironment(form.value)
-          ElMessage.success('创建成功')
-        }
-        dialogVisible.value = false
-        await loadEnvironments()
-      } catch (error) {
-        ElMessage.error(isEdit.value ? '更新失败' : '创建失败')
-      }
-    }
-  })
-}
-
-const handleActivate = async (row: Environment) => {
+const handleActivate = async () => {
+  if (!currentEnvironment.value) return
   try {
-    await ElMessageBox.confirm(`确定要激活环境 "${row.name}" 吗?`, '提示', {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'warning'
-    })
-    await api.activateSimulationEnvironment(row.id, {})
+    await api.activateSimulationEnvironment(currentEnvironment.value.id, {})
     ElMessage.success('环境激活成功')
-    await loadEnvironments()
+    await loadEnvironment()
   } catch (error) {
-    if (error !== 'cancel') {
-      ElMessage.error('环境激活失败')
-    }
+    ElMessage.error('环境激活失败')
   }
 }
 
-const handleDeactivate = async (row: Environment) => {
+const handleDeactivate = async () => {
+  if (!currentEnvironment.value) return
   try {
-    await ElMessageBox.confirm(`确定要停止环境 "${row.name}" 吗?`, '提示', {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'warning'
-    })
-    await api.deactivateSimulationEnvironment(row.id)
+    await api.deactivateSimulationEnvironment(currentEnvironment.value.id)
     ElMessage.success('环境已停止')
-    await loadEnvironments()
+    await loadEnvironment()
   } catch (error) {
-    if (error !== 'cancel') {
-      ElMessage.error('停止环境失败')
-    }
+    ElMessage.error('停止环境失败')
   }
 }
 
-const handleSyncToHosts = async (row: Environment) => {
+const handleSyncToHosts = async () => {
+  if (!currentEnvironment.value) return
   try {
-    await ElMessageBox.confirm(`确定要将环境 "${row.name}" 同步到主机模型吗?`, '提示', {
+    await ElMessageBox.confirm('确定要将环境同步到主机模型吗？', '提示', {
       confirmButtonText: '确定',
       cancelButtonText: '取消',
       type: 'info'
     })
-    await api.syncEnvironmentToHosts(row.id)
+    await api.syncEnvironmentToHosts(currentEnvironment.value.id)
     ElMessage.success('同步成功')
   } catch (error) {
     if (error !== 'cancel') {
@@ -250,7 +335,7 @@ const handleSyncToHosts = async (row: Environment) => {
 }
 
 onMounted(() => {
-  loadEnvironments()
+  loadEnvironment()
 })
 </script>
 
@@ -291,69 +376,183 @@ onMounted(() => {
   gap: 12px;
 }
 
-.config-card {
+.empty-state {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 215, 0, 0.1);
+  border-radius: 12px;
+}
+
+.topology-view {
   background: rgba(0, 0, 0, 0.2);
   border: 1px solid rgba(255, 215, 0, 0.1);
   border-radius: 12px;
   padding: 24px;
 }
 
-.config-dialog {
-  :deep(.el-dialog__header) {
-    background: rgba(0, 0, 0, 0.1);
-    border-bottom: 1px solid rgba(255, 215, 0, 0.1);
-  }
+.topology-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 24px;
 
-  :deep(.el-dialog__title) {
-    color: white;
-  }
-
-  :deep(.el-dialog__body) {
-    padding: 24px;
-  }
-
-  :deep(.el-dialog__footer) {
-    border-top: 1px solid rgba(255, 215, 0, 0.1);
-    padding: 16px 24px;
-  }
-}
-
-.config-form {
-  :deep(.el-input__wrapper),
-  :deep(.el-select .el-input__wrapper),
-  :deep(.el-textarea__inner) {
-    background: rgba(0, 0, 0, 0.3);
-    border: 1px solid rgba(255, 215, 0, 0.2);
-    box-shadow: none;
-    transition: all 0.3s ease;
-
-    &.is-focus {
-      border-color: rgba(255, 215, 0, 0.5);
+  .header-info {
+    h3 {
+      color: #ffd700;
+      margin: 0 0 8px 0;
+      font-size: 18px;
     }
 
-    .el-input__inner {
-      color: white;
+    .env-desc {
+      color: rgba(255, 255, 255, 0.5);
+      font-size: 14px;
     }
   }
 
-  :deep(.el-textarea__inner) {
-    color: white;
-  }
-
-  :deep(.el-form-item__label) {
-    color: rgba(255, 255, 255, 0.8);
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
   }
 }
 
-.cancel-btn {
-  background: rgba(255, 255, 255, 0.05) !important;
-  border: 1px solid rgba(255, 215, 0, 0.2) !important;
-  color: rgba(255, 255, 255, 0.8) !important;
+.no-components {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 300px;
+}
+
+.topology-graph {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+}
+
+.layer {
+  width: 100%;
+  padding: 16px;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.layer-title {
+  text-align: center;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 14px;
+  margin-bottom: 12px;
+  font-weight: 500;
+}
+
+.layer-nodes {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.layer-arrow {
+  width: 100%;
+  height: 40px;
+  display: flex;
+  justify-content: center;
+}
+
+.topology-node {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  min-width: 180px;
+  transition: all 0.3s;
 
   &:hover {
-    background: rgba(255, 215, 0, 0.1) !important;
-    border-color: rgba(255, 215, 0, 0.4) !important;
-    color: white !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   }
+}
+
+.client-node {
+  background: linear-gradient(135deg, rgba(64, 158, 255, 0.2), rgba(64, 158, 255, 0.1));
+  border: 1px solid rgba(64, 158, 255, 0.3);
+}
+
+.nginx-node {
+  background: linear-gradient(135deg, rgba(103, 194, 58, 0.2), rgba(103, 194, 58, 0.1));
+  border: 1px solid rgba(103, 194, 58, 0.3);
+}
+
+.app-node {
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.2), rgba(255, 215, 0, 0.1));
+  border: 1px solid rgba(255, 215, 0, 0.3);
+}
+
+.cache-node {
+  background: linear-gradient(135deg, rgba(230, 162, 60, 0.2), rgba(230, 162, 60, 0.1));
+  border: 1px solid rgba(230, 162, 60, 0.3);
+}
+
+.db-node {
+  background: linear-gradient(135deg, rgba(144, 147, 153, 0.2), rgba(144, 147, 153, 0.1));
+  border: 1px solid rgba(144, 147, 153, 0.3);
+}
+
+.node-icon {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.3);
+  color: #ffd700;
+  font-size: 20px;
+}
+
+.node-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.node-name {
+  color: white;
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.node-ip {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 12px;
+}
+
+.topology-stats {
+  display: flex;
+  gap: 24px;
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid rgba(255, 215, 0, 0.1);
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.stat-label {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 12px;
+}
+
+.stat-value {
+  color: #ffd700;
+  font-size: 16px;
+  font-weight: 500;
 }
 </style>

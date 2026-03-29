@@ -193,3 +193,79 @@ class PrometheusSyncRequest(BaseModel):
 class EnvironmentActivateRequest(BaseModel):
     pushgateway_url: Optional[str] = None
     log_path: Optional[str] = None
+
+
+class TopologyGenerateRequest(BaseModel):
+    name: str = Field(..., max_length=100, description="环境名称")
+    description: Optional[str] = Field(None, description="环境描述")
+    topology_type: str = Field("standard", description="拓扑类型: standard, microservice, monolithic")
+    scale: str = Field("medium", description="规模: small, medium, large")
+    ip_prefix: str = Field("192.168.1", description="IP前缀")
+    pushgateway_url: str = Field("http://localhost:9091", description="Pushgateway地址")
+    log_path: str = Field("simulator/logs", description="日志路径")
+    include_components: Optional[List[str]] = Field(None, description="包含的组件类型列表")
+
+
+class TopologyComponentResponse(BaseModel):
+    id: int
+    name: str
+    type: str
+    ip: Optional[str] = None
+    layer: int = 0
+
+
+class TopologyRelationResponse(BaseModel):
+    id: int
+    source_id: int
+    target_id: int
+    type: str
+
+
+class TopologyEnvironmentResponse(BaseModel):
+    id: int
+    name: str
+    description: Optional[str] = None
+    is_active: bool = False
+
+
+class TopologyGenerateSummary(BaseModel):
+    total_components: int
+    total_relations: int
+    topology_type: str
+    scale: str
+    ip_prefix: str
+
+
+class TopologyGenerateResponse(BaseModel):
+    environment: TopologyEnvironmentResponse
+    components: List[TopologyComponentResponse]
+    relations: List[TopologyRelationResponse]
+    summary: TopologyGenerateSummary
+
+
+class TopologyTypeResponse(BaseModel):
+    type: str
+    name: str
+    description: str
+    layers: List[str]
+
+
+class TopologyScaleResponse(BaseModel):
+    scale: str
+    name: str
+    description: str
+    config: Dict[str, int]
+
+
+class TopologyComponentTypeResponse(BaseModel):
+    type: str
+    name: str
+    layer: int
+    port: Optional[int] = None
+
+
+class TopologyIPCheckResponse(BaseModel):
+    ip_prefix: str
+    has_conflict: bool
+    existing_count: int
+    message: str

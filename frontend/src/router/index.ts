@@ -78,6 +78,12 @@ const routes = [
         name: 'Simulator',
         component: () => import('../views/simulator/Index.vue'),
         meta: { title: '生产环境模拟器', requiresAuth: true }
+      },
+      {
+        path: 'simulator/wizard',
+        name: 'SimulatorWizard',
+        component: () => import('../views/simulator/TopologyWizard.vue'),
+        meta: { title: '拓扑生成向导', requiresAuth: true }
       }
     ]
   }
