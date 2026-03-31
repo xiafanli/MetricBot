@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime, Boolean, Text, DECIMAL
+from sqlalchemy import Column, Integer, String, DateTime, Boolean, Text, DECIMAL, JSON, Numeric, ForeignKey
 from sqlalchemy.sql import func
 from common.core.database import Base
 
@@ -78,3 +78,77 @@ class DiagnosisConversation(Base):
     messages = Column(Text, nullable=True, comment="对话消息列表(JSON)")
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+
+
+class AlertGroup(Base):
+    __tablename__ = "alert_groups"
+
+    id = Column(Integer, primary_key=True, index=True)
+    group_key = Column(String(255), nullable=False, comment="聚合键")
+    strategy = Column(String(50), nullable=False, comment="聚合策略: time_window/topology/semantic")
+    severity = Column(String(50), nullable=False, comment="最高严重级别")
+    status = Column(String(50), default="active", comment="状态: active/resolved/acknowledged")
+    alert_count = Column(Integer, default=1, comment="告警数量")
+    first_alert_id = Column(Integer, nullable=True, comment="首条告警ID")
+    first_alert_time = Column(DateTime(timezone=True), nullable=True, comment="首条告警时间")
+    last_alert_id = Column(Integer, nullable=True, comment="最后一条告警ID")
+    last_alert_time = Column(DateTime(timezone=True), nullable=True, comment="最后一条告警时间")
+    topology_path = Column(Text, nullable=True, comment="拓扑路径(JSON)")
+    affected_components = Column(JSON, nullable=True, comment="受影响组件列表")
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    resolved_at = Column(DateTime(timezone=True), nullable=True, comment="解决时间")
+
+
+class AlertGroupMember(Base):
+    __tablename__ = "alert_group_members"
+
+    id = Column(Integer, primary_key=True, index=True)
+    group_id = Column(Integer, ForeignKey("alert_groups.id"), nullable=False, comment="聚合组ID")
+    alert_id = Column(Integer, ForeignKey("alert_events.id"), nullable=False, comment="告警ID")
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+
+class AggregationPolicy(Base):
+    __tablename__ = "aggregation_policies"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(255), nullable=False, comment="策略名称")
+    strategy = Column(String(50), nullable=False, comment="策略类型: time_window/topology/semantic")
+    window_seconds = Column(Integer, default=300, comment="时间窗口(秒)")
+    group_by_fields = Column(JSON, nullable=True, comment="分组字段")
+    max_depth = Column(Integer, default=3, comment="最大拓扑深度")
+    similarity_threshold = Column(Numeric(3, 2), default=0.8, comment="相似度阈值")
+    enabled = Column(Boolean, default=True, comment="是否启用")
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+
+class RcaReport(Base):
+    __tablename__ = "rca_reports"
+
+    id = Column(Integer, primary_key=True, index=True)
+    group_id = Column(Integer, ForeignKey("alert_groups.id"), nullable=True, comment="聚合组ID")
+    status = Column(String(50), default="analyzing", comment="状态: analyzing/completed/failed")
+    root_causes = Column(JSON, nullable=True, comment="根因列表")
+    analysis_path = Column(Text, nullable=True, comment="分析路径(JSON)")
+    confidence = Column(Numeric(3, 2), nullable=True, comment="置信度")
+    random_walk_result = Column(JSON, nullable=True, comment="随机游走结果")
+    correlation_result = Column(JSON, nullable=True, comment="时序相关性结果")
+    llm_result = Column(JSON, nullable=True, comment="LLM分析结果")
+    recommendations = Column(JSON, nullable=True, comment="排查建议")
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    completed_at = Column(DateTime(timezone=True), nullable=True, comment="完成时间")
+
+
+class RcaCandidate(Base):
+    __tablename__ = "rca_candidates"
+
+    id = Column(Integer, primary_key=True, index=True)
+    report_id = Column(Integer, ForeignKey("rca_reports.id"), nullable=False, comment="报告ID")
+    component_name = Column(String(255), nullable=True, comment="组件名称")
+    component_type = Column(String(50), nullable=True, comment="组件类型")
+    score = Column(Numeric(5, 4), nullable=True, comment="根因得分")
+    evidence = Column(JSON, nullable=True, comment="支持证据")
+    analysis_method = Column(String(50), nullable=True, comment="分析方法")
+    rank_order = Column(Integer, nullable=True, comment="排名")
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
