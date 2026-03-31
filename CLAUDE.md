@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-PrometheusBot is a Prometheus monitoring query assistant powered by large language models. It consists of a Python FastAPI backend and a Vue 3 TypeScript frontend.
+MetricBot is an intelligent operations monitoring platform powered by large language models. It consists of a Python FastAPI backend and a Vue 3 TypeScript frontend.
 
 ## Architecture
 
@@ -84,7 +84,7 @@ docker-compose down
 - Use `@` alias for `src/` directory imports
 
 ### Important Notes
-- The project includes a separate `SQLBot/` directory - this is a separate project, not part of the main PrometheusBot application
+- The project includes a separate `SQLBot/` directory - this is a separate project, not part of the main MetricBot application
 - The `.trae/rules/project_rules.md` contains additional development guidelines, including a requirement to respond in Chinese and be critically analytical
 - Frontend API proxy is essential for development - it forwards `/api` requests to the backend
 - CORS is configured to allow all origins in development (adjust for production)
