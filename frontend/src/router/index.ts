@@ -44,6 +44,18 @@ const routes = [
         meta: { title: '告警列表', requiresAuth: true }
       },
       {
+        path: 'alerts/groups',
+        name: 'AlertGroups',
+        component: () => import('../views/alert/AlertGroups.vue'),
+        meta: { title: '聚合告警', requiresAuth: true }
+      },
+      {
+        path: 'alerts/policies',
+        name: 'PolicyConfig',
+        component: () => import('../views/alert/PolicyConfig.vue'),
+        meta: { title: '聚合策略配置', requiresAuth: true }
+      },
+      {
         path: 'settings/models',
         name: 'Models',
         component: () => import('../views/settings/Models.vue'),
