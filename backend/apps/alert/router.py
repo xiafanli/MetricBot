@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from common.core.database import get_db
-from apps.alert.models import AlertRule, Alert, DiagnosisReport
+from apps.alert.models import AlertRule, Alert, DiagnosisReport, AlertGroup, AlertGroupMember, AlertEvent, AggregationPolicy, RcaReport, RcaCandidate
 from apps.alert.schemas import (
     AlertRuleCreate,
     AlertRuleUpdate,
@@ -17,7 +17,15 @@ from apps.alert.schemas import (
     AlertStatsResponse,
     DiagnosisReportResponse,
     DiagnosisChatRequest,
-    DiagnosisChatResponse
+    DiagnosisChatResponse,
+    AlertGroupCreate,
+    AlertGroupResponse,
+    AggregationPolicyCreate,
+    AggregationPolicyUpdate,
+    AggregationPolicyResponse,
+    RcaReportCreate,
+    RcaReportResponse,
+    RcaCandidateResponse,
 )
 from apps.alert.diagnosis import DiagnosisAnalyzer
 from apps.auth.security import get_current_active_user
@@ -319,3 +327,268 @@ def get_conversations(
     analyzer = DiagnosisAnalyzer(db)
     messages = analyzer.get_conversation(alert_id, current_user.id)
     return {"messages": messages}
+
+
+# ==================== 告警聚合 API ====================
+
+def alert_group_to_dict(group: AlertGroup) -> dict:
+    affected = None
+    if group.affected_components:
+        import json
+        affected = json.loads(group.affected_components) if isinstance(group.affected_components, str) else group.affected_components
+    return {
+        "id": group.id,
+        "group_key": group.group_key,
+        "strategy": group.strategy,
+        "severity": group.severity,
+        "status": group.status,
+        "alert_count": group.alert_count,
+        "first_alert_id": group.first_alert_id,
+        "first_alert_time": group.first_alert_time,
+        "last_alert_id": group.last_alert_id,
+        "last_alert_time": group.last_alert_time,
+        "affected_components": affected,
+        "created_at": group.created_at,
+        "updated_at": group.updated_at,
+        "resolved_at": group.resolved_at,
+    }
+
+
+@router.get("/groups", response_model=List[AlertGroupResponse])
+def get_alert_groups(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
+    status: str = None,
+    strategy: str = None,
+    limit: int = 100
+):
+    query = db.query(AlertGroup)
+    if status:
+        query = query.filter(AlertGroup.status == status)
+    if strategy:
+        query = query.filter(AlertGroup.strategy == strategy)
+    groups = query.order_by(AlertGroup.created_at.desc()).limit(limit).all()
+    return [alert_group_to_dict(g) for g in groups]
+
+
+@router.get("/groups/{group_id}", response_model=AlertGroupResponse)
+def get_alert_group(
+    group_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
+):
+    group = db.query(AlertGroup).filter(AlertGroup.id == group_id).first()
+    if not group:
+        raise HTTPException(status_code=404, detail="聚合组不存在")
+    return alert_group_to_dict(group)
+
+
+@router.put("/groups/{group_id}/acknowledge", response_model=AlertGroupResponse)
+def acknowledge_alert_group(
+    group_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
+):
+    group = db.query(AlertGroup).filter(AlertGroup.id == group_id).first()
+    if not group:
+        raise HTTPException(status_code=404, detail="聚合组不存在")
+    group.status = "acknowledged"
+    db.commit()
+    db.refresh(group)
+    return alert_group_to_dict(group)
+
+
+@router.put("/groups/{group_id}/resolve", response_model=AlertGroupResponse)
+def resolve_alert_group(
+    group_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
+):
+    group = db.query(AlertGroup).filter(AlertGroup.id == group_id).first()
+    if not group:
+        raise HTTPException(status_code=404, detail="聚合组不存在")
+    group.status = "resolved"
+    group.resolved_at = datetime.now()
+    db.commit()
+    db.refresh(group)
+    return alert_group_to_dict(group)
+
+
+@router.get("/groups/{group_id}/alerts")
+def get_group_alerts(
+    group_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
+):
+    members = db.query(AlertGroupMember).filter(AlertGroupMember.group_id == group_id).all()
+    alert_ids = [m.alert_id for m in members]
+    alerts = db.query(AlertEvent).filter(AlertEvent.id.in_(alert_ids)).all()
+    return {"alerts": [{"id": a.id, "title": a.title, "severity": a.severity, "created_at": a.created_at} for a in alerts]}
+
+
+# ==================== 聚合策略 API ====================
+
+def aggregation_policy_to_dict(policy: AggregationPolicy) -> dict:
+    return {
+        "id": policy.id,
+        "name": policy.name,
+        "strategy": policy.strategy,
+        "window_seconds": policy.window_seconds,
+        "group_by_fields": policy.group_by_fields,
+        "max_depth": policy.max_depth,
+        "similarity_threshold": float(policy.similarity_threshold) if policy.similarity_threshold else 0.8,
+        "enabled": policy.enabled,
+        "created_at": policy.created_at,
+    }
+
+
+@router.get("/policies", response_model=List[AggregationPolicyResponse])
+def get_aggregation_policies(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
+    enabled_only: bool = False
+):
+    query = db.query(AggregationPolicy)
+    if enabled_only:
+        query = query.filter(AggregationPolicy.enabled == True)
+    policies = query.order_by(AggregationPolicy.created_at.desc()).all()
+    return [aggregation_policy_to_dict(p) for p in policies]
+
+
+@router.post("/policies", response_model=AggregationPolicyResponse, status_code=status.HTTP_201_CREATED)
+def create_aggregation_policy(
+    policy: AggregationPolicyCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
+):
+    import json
+    db_policy = AggregationPolicy(
+        name=policy.name,
+        strategy=policy.strategy,
+        window_seconds=policy.window_seconds,
+        group_by_fields=json.dumps(policy.group_by_fields) if policy.group_by_fields else None,
+        max_depth=policy.max_depth,
+        similarity_threshold=policy.similarity_threshold,
+        enabled=policy.enabled,
+    )
+    db.add(db_policy)
+    db.commit()
+    db.refresh(db_policy)
+    return aggregation_policy_to_dict(db_policy)
+
+
+@router.put("/policies/{policy_id}", response_model=AggregationPolicyResponse)
+def update_aggregation_policy(
+    policy_id: int,
+    policy_update: AggregationPolicyUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
+):
+    db_policy = db.query(AggregationPolicy).filter(AggregationPolicy.id == policy_id).first()
+    if not db_policy:
+        raise HTTPException(status_code=404, detail="聚合策略不存在")
+    update_data = policy_update.model_dump(exclude_unset=True)
+    import json
+    if "group_by_fields" in update_data and update_data["group_by_fields"] is not None:
+        update_data["group_by_fields"] = json.dumps(update_data["group_by_fields"])
+    for field, value in update_data.items():
+        setattr(db_policy, field, value)
+    db.commit()
+    db.refresh(db_policy)
+    return aggregation_policy_to_dict(db_policy)
+
+
+@router.delete("/policies/{policy_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_aggregation_policy(
+    policy_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
+):
+    db_policy = db.query(AggregationPolicy).filter(AggregationPolicy.id == policy_id).first()
+    if not db_policy:
+        raise HTTPException(status_code=404, detail="聚合策略不存在")
+    db.delete(db_policy)
+    db.commit()
+    return None
+
+
+# ==================== 根因分析 API ====================
+
+def rca_report_to_dict(report: RcaReport) -> dict:
+    import json
+    root_causes = None
+    if report.root_causes:
+        root_causes = json.loads(report.root_causes) if isinstance(report.root_causes, str) else report.root_causes
+    recommendations = None
+    if report.recommendations:
+        recommendations = json.loads(report.recommendations) if isinstance(report.recommendations, str) else report.recommendations
+    return {
+        "id": report.id,
+        "group_id": report.group_id,
+        "status": report.status,
+        "root_causes": root_causes,
+        "confidence": float(report.confidence) if report.confidence else None,
+        "recommendations": recommendations,
+        "created_at": report.created_at,
+        "completed_at": report.completed_at,
+    }
+
+
+@router.post("/groups/{group_id}/rca", response_model=RcaReportResponse)
+async def generate_rca_report(
+    group_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
+):
+    group = db.query(AlertGroup).filter(AlertGroup.id == group_id).first()
+    if not group:
+        raise HTTPException(status_code=404, detail="聚合组不存在")
+    from apps.alert.rca.engine import RcaEngine
+    from apps.alert.rca.analyzers.random_walk import RandomWalkAnalyzer
+    from apps.alert.rca.analyzers.correlation import CorrelationAnalyzer
+    from apps.alert.rca.analyzers.llm_analyzer import LlmAnalyzer
+    engine = RcaEngine(db)
+    engine.register_analyzer("random_walk", RandomWalkAnalyzer)
+    engine.register_analyzer("correlation", CorrelationAnalyzer)
+    engine.register_analyzer("llm", LlmAnalyzer)
+    report = engine.analyze(group)
+    return rca_report_to_dict(report)
+
+
+@router.get("/groups/{group_id}/rca", response_model=RcaReportResponse)
+def get_rca_report(
+    group_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
+):
+    report = db.query(RcaReport).filter(RcaReport.group_id == group_id).order_by(RcaReport.created_at.desc()).first()
+    if not report:
+        raise HTTPException(status_code=404, detail="根因分析报告不存在")
+    return rca_report_to_dict(report)
+
+
+@router.get("/rca/{report_id}/candidates", response_model=List[RcaCandidateResponse])
+def get_rca_candidates(
+    report_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
+):
+    candidates = db.query(RcaCandidate).filter(RcaCandidate.report_id == report_id).order_by(RcaCandidate.rank_order).all()
+    import json
+    result = []
+    for c in candidates:
+        evidence = None
+        if c.evidence:
+            evidence = json.loads(c.evidence) if isinstance(c.evidence, str) else c.evidence
+        result.append({
+            "id": c.id,
+            "report_id": c.report_id,
+            "component_name": c.component_name,
+            "component_type": c.component_type,
+            "score": float(c.score) if c.score else None,
+            "evidence": evidence,
+            "analysis_method": c.analysis_method,
+            "rank_order": c.rank_order,
+            "created_at": c.created_at,
+        })
+    return result
