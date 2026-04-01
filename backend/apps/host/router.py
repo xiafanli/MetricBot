@@ -25,6 +25,20 @@ router = APIRouter(prefix="/hosts", tags=["主机管理"])
 
 
 def host_to_dict(host: Host) -> dict:
+    tags = None
+    if host.tags:
+        try:
+            tags = json.loads(host.tags)
+        except (json.JSONDecodeError, TypeError):
+            tags = host.tags
+    
+    extra_data = None
+    if host.extra_data:
+        try:
+            extra_data = json.loads(host.extra_data)
+        except (json.JSONDecodeError, TypeError):
+            extra_data = host.extra_data
+    
     return {
         "id": host.id,
         "name": host.name,
@@ -35,8 +49,8 @@ def host_to_dict(host: Host) -> dict:
         "cpu_cores": host.cpu_cores,
         "memory_gb": float(host.memory_gb) if host.memory_gb else None,
         "disk_gb": float(host.disk_gb) if host.disk_gb else None,
-        "tags": json.loads(host.tags) if host.tags else None,
-        "extra_data": json.loads(host.extra_data) if host.extra_data else None,
+        "tags": tags,
+        "extra_data": extra_data,
         "from_type": host.from_type,
         "from_name": host.from_name,
         "enabled": host.enabled,

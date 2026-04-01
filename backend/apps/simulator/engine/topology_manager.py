@@ -1,4 +1,5 @@
 import os
+import json
 from typing import Dict, Any, List, Optional
 from sqlalchemy.orm import Session
 from apps.simulator.models import SimulationEnvironment, SimulationComponent, ComponentRelation
@@ -41,10 +42,19 @@ class TopologyManager:
 
             if existing_host:
                 for field, value in host_data.dict(exclude_unset=True).items():
+                    if field == "tags" and value is not None:
+                        value = json.dumps(value)
+                    elif field == "extra_data" and value is not None:
+                        value = json.dumps(value)
                     setattr(existing_host, field, value)
                 host = existing_host
             else:
-                host = Host(**host_data.dict())
+                host_dict = host_data.dict()
+                if host_dict.get("tags"):
+                    host_dict["tags"] = json.dumps(host_dict["tags"])
+                if host_dict.get("extra_data"):
+                    host_dict["extra_data"] = json.dumps(host_dict["extra_data"])
+                host = Host(**host_dict)
                 self.db.add(host)
 
             self.db.flush()
