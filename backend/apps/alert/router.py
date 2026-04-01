@@ -2,6 +2,7 @@ from typing import List, Dict, Any
 from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
+import json
 
 from common.core.database import get_db
 from apps.alert.models import AlertRule, Alert, DiagnosisReport, AlertGroup, AlertGroupMember, AlertEvent, AggregationPolicy, RcaReport, RcaCandidate
@@ -211,34 +212,7 @@ def get_alerts(
     return [alert_to_dict(a) for a in alerts]
 
 
-@router.get("/{alert_id}", response_model=AlertResponse)
-def get_alert(
-    alert_id: int,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_active_user),
-):
-    alert = db.query(Alert).filter(Alert.id == alert_id).first()
-    if not alert:
-        raise HTTPException(status_code=404, detail="告警不存在")
-    return alert_to_dict(alert)
-
-
-@router.put("/{alert_id}/resolve", response_model=AlertResponse)
-def resolve_alert(
-    alert_id: int,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_active_user),
-):
-    alert = db.query(Alert).filter(Alert.id == alert_id).first()
-    if not alert:
-        raise HTTPException(status_code=404, detail="告警不存在")
-    
-    alert.resolved = True
-    alert.resolved_at = datetime.now()
-    db.commit()
-    db.refresh(alert)
-    return alert_to_dict(alert)
-
+# ==================== 静态路由（必须在动态路由之前） ====================
 
 @router.get("/stats", response_model=AlertStatsResponse)
 def get_alert_stats(
@@ -262,79 +236,11 @@ def get_alert_stats(
     )
 
 
-# ==================== AI 诊断 API ====================
-
-@router.post("/{alert_id}/diagnosis", response_model=DiagnosisReportResponse)
-async def generate_diagnosis(
-    alert_id: int,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_active_user),
-):
-    analyzer = DiagnosisAnalyzer(db)
-    report = await analyzer.generate_diagnosis(alert_id)
-    if not report:
-        raise HTTPException(status_code=404, detail="告警不存在")
-    return DiagnosisReportResponse(
-        id=report.id,
-        alert_id=report.alert_id,
-        report=report.report,
-        created_at=report.created_at
-    )
-
-
-@router.get("/{alert_id}/diagnosis", response_model=DiagnosisReportResponse)
-def get_diagnosis(
-    alert_id: int,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_active_user),
-):
-    report = db.query(DiagnosisReport).filter(DiagnosisReport.alert_id == alert_id).order_by(DiagnosisReport.created_at.desc()).first()
-    if not report:
-        raise HTTPException(status_code=404, detail="诊断报告不存在")
-    return DiagnosisReportResponse(
-        id=report.id,
-        alert_id=report.alert_id,
-        report=report.report,
-        created_at=report.created_at
-    )
-
-
-@router.post("/{alert_id}/chat", response_model=DiagnosisChatResponse)
-async def diagnosis_chat(
-    alert_id: int,
-    chat_request: DiagnosisChatRequest,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_active_user),
-):
-    analyzer = DiagnosisAnalyzer(db)
-    result = await analyzer.chat(alert_id, current_user.id, chat_request.message)
-    if not result:
-        raise HTTPException(status_code=404, detail="告警不存在")
-    return DiagnosisChatResponse(
-        id=result["id"],
-        alert_id=result["alert_id"],
-        message=result["message"],
-        created_at=result["created_at"]
-    )
-
-
-@router.get("/{alert_id}/conversations")
-def get_conversations(
-    alert_id: int,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_active_user),
-):
-    analyzer = DiagnosisAnalyzer(db)
-    messages = analyzer.get_conversation(alert_id, current_user.id)
-    return {"messages": messages}
-
-
 # ==================== 告警聚合 API ====================
 
 def alert_group_to_dict(group: AlertGroup) -> dict:
     affected = None
     if group.affected_components:
-        import json
         affected = json.loads(group.affected_components) if isinstance(group.affected_components, str) else group.affected_components
     return {
         "id": group.id,
@@ -468,7 +374,6 @@ def create_aggregation_policy(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_user),
 ):
-    import json
     db_policy = AggregationPolicy(
         name=policy.name,
         strategy=policy.strategy,
@@ -495,7 +400,6 @@ def update_aggregation_policy(
     if not db_policy:
         raise HTTPException(status_code=404, detail="聚合策略不存在")
     update_data = policy_update.model_dump(exclude_unset=True)
-    import json
     if "group_by_fields" in update_data and update_data["group_by_fields"] is not None:
         update_data["group_by_fields"] = json.dumps(update_data["group_by_fields"])
     for field, value in update_data.items():
@@ -522,7 +426,6 @@ def delete_aggregation_policy(
 # ==================== 根因分析 API ====================
 
 def rca_report_to_dict(report: RcaReport) -> dict:
-    import json
     root_causes = None
     if report.root_causes:
         root_causes = json.loads(report.root_causes) if isinstance(report.root_causes, str) else report.root_causes
@@ -581,7 +484,6 @@ def get_rca_candidates(
     current_user: User = Depends(get_current_active_user),
 ):
     candidates = db.query(RcaCandidate).filter(RcaCandidate.report_id == report_id).order_by(RcaCandidate.rank_order).all()
-    import json
     result = []
     for c in candidates:
         evidence = None
@@ -590,12 +492,110 @@ def get_rca_candidates(
         result.append({
             "id": c.id,
             "report_id": c.report_id,
+            "component_id": c.component_id,
             "component_name": c.component_name,
             "component_type": c.component_type,
             "score": float(c.score) if c.score else None,
-            "evidence": evidence,
-            "analysis_method": c.analysis_method,
             "rank_order": c.rank_order,
+            "evidence": evidence,
             "created_at": c.created_at,
         })
     return result
+
+
+# ==================== 动态路由（必须放在静态路由之后） ====================
+
+@router.get("/{alert_id}", response_model=AlertResponse)
+def get_alert(
+    alert_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
+):
+    alert = db.query(Alert).filter(Alert.id == alert_id).first()
+    if not alert:
+        raise HTTPException(status_code=404, detail="告警不存在")
+    return alert_to_dict(alert)
+
+
+@router.put("/{alert_id}/resolve", response_model=AlertResponse)
+def resolve_alert(
+    alert_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
+):
+    alert = db.query(Alert).filter(Alert.id == alert_id).first()
+    if not alert:
+        raise HTTPException(status_code=404, detail="告警不存在")
+    
+    alert.resolved = True
+    alert.resolved_at = datetime.now()
+    db.commit()
+    db.refresh(alert)
+    return alert_to_dict(alert)
+
+
+# ==================== AI 诊断 API ====================
+
+@router.post("/{alert_id}/diagnosis", response_model=DiagnosisReportResponse)
+async def generate_diagnosis(
+    alert_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
+):
+    analyzer = DiagnosisAnalyzer(db)
+    report = await analyzer.generate_diagnosis(alert_id)
+    if not report:
+        raise HTTPException(status_code=404, detail="告警不存在")
+    return DiagnosisReportResponse(
+        id=report.id,
+        alert_id=report.alert_id,
+        report=report.report,
+        created_at=report.created_at
+    )
+
+
+@router.get("/{alert_id}/diagnosis", response_model=DiagnosisReportResponse)
+def get_diagnosis(
+    alert_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
+):
+    report = db.query(DiagnosisReport).filter(DiagnosisReport.alert_id == alert_id).order_by(DiagnosisReport.created_at.desc()).first()
+    if not report:
+        raise HTTPException(status_code=404, detail="诊断报告不存在")
+    return DiagnosisReportResponse(
+        id=report.id,
+        alert_id=report.alert_id,
+        report=report.report,
+        created_at=report.created_at
+    )
+
+
+@router.post("/{alert_id}/chat", response_model=DiagnosisChatResponse)
+async def diagnosis_chat(
+    alert_id: int,
+    chat_request: DiagnosisChatRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
+):
+    analyzer = DiagnosisAnalyzer(db)
+    result = await analyzer.chat(alert_id, current_user.id, chat_request.message)
+    if not result:
+        raise HTTPException(status_code=404, detail="告警不存在")
+    return DiagnosisChatResponse(
+        id=result["id"],
+        alert_id=result["alert_id"],
+        message=result["message"],
+        created_at=result["created_at"]
+    )
+
+
+@router.get("/{alert_id}/conversations")
+def get_conversations(
+    alert_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
+):
+    analyzer = DiagnosisAnalyzer(db)
+    messages = analyzer.get_conversation(alert_id, current_user.id)
+    return {"messages": messages}
