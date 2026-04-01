@@ -180,7 +180,9 @@ const menuItems: MenuItem[] = [
     icon: markRaw(Bell),
     children: [
       { path: '/alerts/rules', title: '告警规则', icon: markRaw(SetUp) },
-      { path: '/alerts/list', title: '告警列表', icon: markRaw(Document) }
+      { path: '/alerts/list', title: '告警列表', icon: markRaw(Document) },
+      { path: '/alerts/groups', title: '聚合告警', icon: markRaw(Share) },
+      { path: '/alerts/policies', title: '聚合策略', icon: markRaw(Setting) }
     ]
   },
   { path: '/simulator', title: '环境模拟器', icon: markRaw(DataLine) },
@@ -208,6 +210,8 @@ const pageTitle = computed(() => {
     '/simulator': '生产环境模拟器',
     '/alerts/rules': '告警规则',
     '/alerts/list': '告警列表',
+    '/alerts/groups': '聚合告警',
+    '/alerts/policies': '聚合策略配置',
     '/settings': '配置中心',
     '/settings/models': '模型管理',
     '/settings/datasources': '监控数据源',
