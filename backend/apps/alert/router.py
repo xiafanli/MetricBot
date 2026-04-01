@@ -429,12 +429,19 @@ def get_group_alerts(
 # ==================== 聚合策略 API ====================
 
 def aggregation_policy_to_dict(policy: AggregationPolicy) -> dict:
+    group_by_fields = None
+    if policy.group_by_fields:
+        try:
+            group_by_fields = json.loads(policy.group_by_fields) if isinstance(policy.group_by_fields, str) else policy.group_by_fields
+        except (json.JSONDecodeError, TypeError):
+            group_by_fields = policy.group_by_fields
+    
     return {
         "id": policy.id,
         "name": policy.name,
         "strategy": policy.strategy,
         "window_seconds": policy.window_seconds,
-        "group_by_fields": policy.group_by_fields,
+        "group_by_fields": group_by_fields,
         "max_depth": policy.max_depth,
         "similarity_threshold": float(policy.similarity_threshold) if policy.similarity_threshold else 0.8,
         "enabled": policy.enabled,

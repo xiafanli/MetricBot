@@ -128,7 +128,7 @@ const loadPolicies = async () => {
   loading.value = true
   try {
     const response = await apiClient.get('/alerts/policies')
-    policies.value = response.data
+    policies.value = response
   } catch (error) {
     ElMessage.error('加载策略失败')
   } finally {
@@ -171,11 +171,15 @@ const submitForm = async () => {
   await formRef.value.validate()
   submitting.value = true
   try {
+    const submitData = { ...form.value }
+    if (!isEdit.value) {
+      delete submitData.id
+    }
     if (isEdit.value) {
-      await apiClient.put(`/alerts/policies/${form.value.id}`, form.value)
+      await apiClient.put(`/alerts/policies/${form.value.id}`, submitData)
       ElMessage.success('更新成功')
     } else {
-      await apiClient.post('/alerts/policies', form.value)
+      await apiClient.post('/alerts/policies', submitData)
       ElMessage.success('创建成功')
     }
     dialogVisible.value = false

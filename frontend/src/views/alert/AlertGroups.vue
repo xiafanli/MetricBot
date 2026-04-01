@@ -199,8 +199,7 @@ const loadGroups = async () => {
     const params: any = {}
     if (filterStatus.value) params.status = filterStatus.value
     if (filterStrategy.value) params.strategy = filterStrategy.value
-    const response = await apiClient.get('/alerts/groups', { params })
-    groups.value = response.data
+    groups.value = await apiClient.get('/alerts/groups', { params })
   } catch (error) {
     ElMessage.error('加载聚合告警失败')
   } finally {
@@ -214,7 +213,7 @@ const viewDetail = async (group: AlertGroup) => {
   alertsLoading.value = true
   try {
     const response = await apiClient.get(`/alerts/groups/${group.id}/alerts`)
-    groupAlerts.value = response.data.alerts
+    groupAlerts.value = response.alerts
   } catch (error) {
     ElMessage.error('加载关联告警失败')
   } finally {
@@ -226,8 +225,8 @@ const analyzeRca = async (group: AlertGroup) => {
   try {
     ElMessage.info('正在生成根因分析报告...')
     const response = await apiClient.post(`/alerts/groups/${group.id}/rca`)
-    rcaReport.value = response.data
-    await loadCandidates(response.data.id)
+    rcaReport.value = response
+    await loadCandidates(response.id)
     rcaVisible.value = true
   } catch (error) {
     ElMessage.error('根因分析失败')
@@ -237,8 +236,7 @@ const analyzeRca = async (group: AlertGroup) => {
 const loadCandidates = async (reportId: number) => {
   candidatesLoading.value = true
   try {
-    const response = await apiClient.get(`/alerts/rca/${reportId}/candidates`)
-    rcaCandidates.value = response.data
+    rcaCandidates.value = await apiClient.get(`/alerts/rca/${reportId}/candidates`)
   } catch (error) {
     ElMessage.error('加载根因候选失败')
   } finally {
