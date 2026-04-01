@@ -87,7 +87,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { ElMessage, ElMessageBox, type FormInstance } from 'element-plus'
-import axios from 'axios'
+import apiClient from '@/api'
 
 interface Policy {
   id: number
@@ -127,7 +127,7 @@ const rules = {
 const loadPolicies = async () => {
   loading.value = true
   try {
-    const response = await axios.get('/api/v1/alerts/policies')
+    const response = await apiClient.get('/alerts/policies')
     policies.value = response.data
   } catch (error) {
     ElMessage.error('加载策略失败')
@@ -172,10 +172,10 @@ const submitForm = async () => {
   submitting.value = true
   try {
     if (isEdit.value) {
-      await axios.put(`/api/v1/alerts/policies/${form.value.id}`, form.value)
+      await apiClient.put(`/alerts/policies/${form.value.id}`, form.value)
       ElMessage.success('更新成功')
     } else {
-      await axios.post('/api/v1/alerts/policies', form.value)
+      await apiClient.post('/alerts/policies', form.value)
       ElMessage.success('创建成功')
     }
     dialogVisible.value = false
@@ -189,7 +189,7 @@ const submitForm = async () => {
 
 const togglePolicy = async (policy: Policy) => {
   try {
-    await axios.put(`/api/v1/alerts/policies/${policy.id}`, { enabled: policy.enabled })
+    await apiClient.put(`/alerts/policies/${policy.id}`, { enabled: policy.enabled })
     ElMessage.success('状态已更新')
   } catch (error) {
     ElMessage.error('更新失败')
@@ -204,7 +204,7 @@ const deletePolicy = async (policy: Policy) => {
       cancelButtonText: '取消',
       type: 'warning',
     })
-    await axios.delete(`/api/v1/alerts/policies/${policy.id}`)
+    await apiClient.delete(`/alerts/policies/${policy.id}`)
     ElMessage.success('删除成功')
     loadPolicies()
   } catch (error) {

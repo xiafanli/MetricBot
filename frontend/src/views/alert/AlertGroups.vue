@@ -141,7 +141,7 @@
 <script setup lang="ts">
 import { ref, onMounted, watch } from 'vue'
 import { ElMessage } from 'element-plus'
-import axios from 'axios'
+import apiClient from '@/api'
 
 interface AlertGroup {
   id: number
@@ -199,7 +199,7 @@ const loadGroups = async () => {
     const params: any = {}
     if (filterStatus.value) params.status = filterStatus.value
     if (filterStrategy.value) params.strategy = filterStrategy.value
-    const response = await axios.get('/api/v1/alerts/groups', { params })
+    const response = await apiClient.get('/alerts/groups', { params })
     groups.value = response.data
   } catch (error) {
     ElMessage.error('加载聚合告警失败')
@@ -213,7 +213,7 @@ const viewDetail = async (group: AlertGroup) => {
   detailVisible.value = true
   alertsLoading.value = true
   try {
-    const response = await axios.get(`/api/v1/alerts/groups/${group.id}/alerts`)
+    const response = await apiClient.get(`/alerts/groups/${group.id}/alerts`)
     groupAlerts.value = response.data.alerts
   } catch (error) {
     ElMessage.error('加载关联告警失败')
@@ -225,7 +225,7 @@ const viewDetail = async (group: AlertGroup) => {
 const analyzeRca = async (group: AlertGroup) => {
   try {
     ElMessage.info('正在生成根因分析报告...')
-    const response = await axios.post(`/api/v1/alerts/groups/${group.id}/rca`)
+    const response = await apiClient.post(`/alerts/groups/${group.id}/rca`)
     rcaReport.value = response.data
     await loadCandidates(response.data.id)
     rcaVisible.value = true
@@ -237,7 +237,7 @@ const analyzeRca = async (group: AlertGroup) => {
 const loadCandidates = async (reportId: number) => {
   candidatesLoading.value = true
   try {
-    const response = await axios.get(`/api/v1/alerts/rca/${reportId}/candidates`)
+    const response = await apiClient.get(`/alerts/rca/${reportId}/candidates`)
     rcaCandidates.value = response.data
   } catch (error) {
     ElMessage.error('加载根因候选失败')
@@ -248,7 +248,7 @@ const loadCandidates = async (reportId: number) => {
 
 const acknowledgeGroup = async (group: AlertGroup) => {
   try {
-    await axios.put(`/api/v1/alerts/groups/${group.id}/acknowledge`)
+    await apiClient.put(`/alerts/groups/${group.id}/acknowledge`)
     ElMessage.success('已确认')
     loadGroups()
   } catch (error) {
@@ -258,7 +258,7 @@ const acknowledgeGroup = async (group: AlertGroup) => {
 
 const resolveGroup = async (group: AlertGroup) => {
   try {
-    await axios.put(`/api/v1/alerts/groups/${group.id}/resolve`)
+    await apiClient.put(`/alerts/groups/${group.id}/resolve`)
     ElMessage.success('已解决')
     loadGroups()
   } catch (error) {
