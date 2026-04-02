@@ -347,4 +347,21 @@ onMounted(() => {
   display: flex;
   align-items: center;
 }
+
+:deep(.el-descriptions) {
+  .el-descriptions__label {
+    background: rgba(0, 0, 0, 0.3);
+    color: rgba(255, 255, 255, 0.7);
+  }
+
+  .el-descriptions__content {
+    background: rgba(0, 0, 0, 0.2);
+    color: rgba(255, 255, 255, 0.9);
+  }
+}
+
+:deep(.el-divider__text) {
+  background: rgba(0, 0, 0, 0.3);
+  color: rgba(255, 255, 255, 0.8);
+}
 </style>
