@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 import numpy as np
 from sqlalchemy.orm import Session
 from apps.alert.models import AlertGroup, AlertGroupMember, AlertEvent
+from apps.simulator.models import SimulationComponent
 import logging
 
 logger = logging.getLogger(__name__)
@@ -38,7 +39,7 @@ class CorrelationAnalyzer:
                 "score": float(score),
                 "evidence": {"correlation_score": float(score), "alert_count": len(related_alerts)},
                 "method": "correlation",
-                "type": "unknown",
+                "type": self._get_component_type(component),
             })
         return {
             "candidates": candidates,
@@ -80,3 +81,7 @@ class CorrelationAnalyzer:
         if np.std(a_arr) == 0 or np.std(b_arr) == 0:
             return 0.0
         return float(np.corrcoef(a_arr, b_arr)[0, 1])
+
+    def _get_component_type(self, name: str) -> str:
+        component = self.db.query(SimulationComponent).filter(SimulationComponent.name == name).first()
+        return component.component_type if component else "unknown"
