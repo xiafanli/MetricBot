@@ -492,7 +492,6 @@ def get_rca_candidates(
         result.append({
             "id": c.id,
             "report_id": c.report_id,
-            "component_id": c.component_id,
             "component_name": c.component_name,
             "component_type": c.component_type,
             "score": float(c.score) if c.score else None,
