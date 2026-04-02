@@ -350,18 +350,26 @@ onMounted(() => {
 
 :deep(.el-descriptions) {
   .el-descriptions__label {
-    background: rgba(0, 0, 0, 0.3);
-    color: rgba(255, 255, 255, 0.7);
+    background: linear-gradient(135deg, rgba(30, 40, 60, 0.95), rgba(40, 50, 70, 0.9));
+    color: #ffd700;
+    font-weight: 500;
+    border-right: 1px solid rgba(255, 215, 0, 0.2);
   }
 
   .el-descriptions__content {
-    background: rgba(0, 0, 0, 0.2);
-    color: rgba(255, 255, 255, 0.9);
+    background: linear-gradient(135deg, rgba(20, 25, 35, 0.85), rgba(30, 35, 45, 0.8));
+    color: rgba(255, 255, 255, 0.95);
+  }
+
+  .el-descriptions__cell {
+    border-color: rgba(255, 215, 0, 0.15);
   }
 }
 
 :deep(.el-divider__text) {
-  background: rgba(0, 0, 0, 0.3);
-  color: rgba(255, 255, 255, 0.8);
+  background: linear-gradient(135deg, rgba(30, 40, 60, 0.95), rgba(40, 50, 70, 0.9));
+  color: #ffd700;
+  padding: 8px 20px;
+  border-radius: 4px;
 }
 </style>
