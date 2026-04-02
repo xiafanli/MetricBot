@@ -496,6 +496,7 @@ def get_rca_candidates(
             "component_type": c.component_type,
             "score": float(c.score) if c.score else None,
             "rank_order": c.rank_order,
+            "analysis_method": c.analysis_method,
             "evidence": evidence,
             "created_at": c.created_at,
         })
