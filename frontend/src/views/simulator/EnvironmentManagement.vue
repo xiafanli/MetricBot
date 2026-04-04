@@ -57,6 +57,7 @@
               v-for="node in getComponentsByLayer(0)"
               :key="node.id"
               class="topology-node client-node"
+              @click="handleNodeClick(node)"
             >
               <div class="node-icon">
                 <el-icon><Monitor /></el-icon>
@@ -87,6 +88,7 @@
               v-for="node in getComponentsByLayer(1)"
               :key="node.id"
               class="topology-node nginx-node"
+              @click="handleNodeClick(node)"
             >
               <div class="node-icon">
                 <el-icon><Connection /></el-icon>
@@ -112,6 +114,7 @@
               v-for="node in getComponentsByLayer(2)"
               :key="node.id"
               class="topology-node app-node"
+              @click="handleNodeClick(node)"
             >
               <div class="node-icon">
                 <el-icon><DataBoard /></el-icon>
@@ -137,6 +140,7 @@
               v-for="node in getComponentsByLayer(3)"
               :key="node.id"
               class="topology-node cache-node"
+              @click="handleNodeClick(node)"
             >
               <div class="node-icon">
                 <el-icon><Lightning /></el-icon>
@@ -162,6 +166,7 @@
               v-for="node in getComponentsByLayer(4)"
               :key="node.id"
               class="topology-node db-node"
+              @click="handleNodeClick(node)"
             >
               <div class="node-icon">
                 <el-icon><Coin /></el-icon>
@@ -190,6 +195,11 @@
         </div>
       </div>
     </div>
+
+    <ComponentDetail
+      v-model="showComponentDetail"
+      :component="selectedComponent"
+    />
   </div>
 </template>
 
@@ -199,6 +209,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus, RefreshRight, Monitor, Connection, DataBoard, Lightning, Coin } from '@element-plus/icons-vue'
 import { useRouter } from 'vue-router'
 import { api } from '@/api'
+import ComponentDetail from '@/components/simulator/ComponentDetail.vue'
 
 interface Environment {
   id: number
@@ -219,6 +230,8 @@ interface Component {
   ip_address: string
   port: number
   layer: number
+  status?: string
+  properties?: any
 }
 
 interface Relation {
@@ -232,6 +245,8 @@ const router = useRouter()
 const currentEnvironment = ref<Environment | null>(null)
 const topologyComponents = ref<Component[]>([])
 const topologyRelations = ref<Relation[]>([])
+const showComponentDetail = ref(false)
+const selectedComponent = ref<Component | null>(null)
 
 const loadEnvironment = async () => {
   try {
@@ -332,6 +347,11 @@ const handleSyncToHosts = async () => {
       ElMessage.error('同步失败')
     }
   }
+}
+
+const handleNodeClick = (component: Component) => {
+  selectedComponent.value = component
+  showComponentDetail.value = true
 }
 
 onMounted(() => {
@@ -470,6 +490,7 @@ onMounted(() => {
   border-radius: 8px;
   min-width: 180px;
   transition: all 0.3s;
+  cursor: pointer;
 
   &:hover {
     transform: translateY(-2px);

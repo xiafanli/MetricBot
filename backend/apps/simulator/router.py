@@ -176,6 +176,39 @@ def delete_component(id: int, db: Session = Depends(get_db)):
     db.commit()
 
 
+@router.get("/components/{id}/relations")
+def get_component_relations(id: int, db: Session = Depends(get_db)):
+    component = db.query(SimulationComponent).filter(SimulationComponent.id == id).first()
+    if not component:
+        raise HTTPException(status_code=404, detail="Component not found")
+
+    outgoing = db.query(ComponentRelation).filter(ComponentRelation.source_id == id).all()
+    incoming = db.query(ComponentRelation).filter(ComponentRelation.target_id == id).all()
+
+    relations = []
+    for rel in outgoing:
+        target = db.query(SimulationComponent).filter(SimulationComponent.id == rel.target_id).first()
+        if target:
+            relations.append({
+                "id": target.id,
+                "name": target.name,
+                "relation_type": rel.relation_type,
+                "direction": "outgoing"
+            })
+
+    for rel in incoming:
+        source = db.query(SimulationComponent).filter(SimulationComponent.id == rel.source_id).first()
+        if source:
+            relations.append({
+                "id": source.id,
+                "name": source.name,
+                "relation_type": rel.relation_type,
+                "direction": "incoming"
+            })
+
+    return relations
+
+
 @router.get("/environments/{id}/relations", response_model=List[ComponentRelationResponse])
 def get_relations(id: int, db: Session = Depends(get_db)):
     return db.query(ComponentRelation).filter(ComponentRelation.env_id == id).all()
