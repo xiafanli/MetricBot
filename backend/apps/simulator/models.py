@@ -148,3 +148,19 @@ class FaultInstance(Base):
 
     scenario = relationship("FaultScenario", back_populates="fault_instances")
     component = relationship("SimulationComponent", back_populates="fault_instances")
+
+
+class ScenarioHistory(Base):
+    __tablename__ = "simulator_scenario_history"
+
+    id = Column(Integer, primary_key=True, index=True)
+    env_id = Column(Integer, ForeignKey("simulation_environments.id"), nullable=False)
+    name = Column(String(100), nullable=False)
+    description = Column(Text, nullable=True)
+    start_time = Column(DateTime(timezone=True), nullable=False)
+    end_time = Column(DateTime(timezone=True), nullable=True)
+    status = Column(String(20), default="completed")
+    snapshot_data = Column(JSON, nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    environment = relationship("SimulationEnvironment")

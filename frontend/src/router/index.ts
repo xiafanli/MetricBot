@@ -96,6 +96,12 @@ const routes = [
         name: 'SimulatorWizard',
         component: () => import('../views/simulator/TopologyWizard.vue'),
         meta: { title: '拓扑生成向导', requiresAuth: true }
+      },
+      {
+        path: 'simulator/replay',
+        name: 'ScenarioReplay',
+        component: () => import('../views/simulator/ScenarioReplay.vue'),
+        meta: { title: '历史场景回放', requiresAuth: true }
       }
     ]
   }

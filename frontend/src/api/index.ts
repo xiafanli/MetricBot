@@ -324,6 +324,35 @@ function getEnvironmentStatus(id: number) {
   return apiClient.get(`/simulator/environments/${id}/status`)
 }
 
+function getScenarioHistory(envId?: number) {
+  const params = envId ? { env_id: envId } : {}
+  return apiClient.get('/simulator/scenario-history', { params })
+}
+
+function getScenarioHistoryDetail(id: number) {
+  return apiClient.get(`/simulator/scenario-history/${id}`)
+}
+
+function createScenarioHistory(data: {
+  env_id: number
+  name: string
+  description?: string
+  start_time: string
+  end_time?: string
+  status?: string
+  snapshot_data?: object
+}) {
+  return apiClient.post('/simulator/scenario-history', data)
+}
+
+function deleteScenarioHistory(id: number) {
+  return apiClient.delete(`/simulator/scenario-history/${id}`)
+}
+
+function replayScenarioHistory(id: number) {
+  return apiClient.post(`/simulator/scenario-history/${id}/replay`)
+}
+
 export const api = {
   healthCheck,
   getRoot,
@@ -389,5 +418,10 @@ export const api = {
   triggerFault,
   getFaultInstances,
   getFaultInstance,
-  getEnvironmentStatus
+  getEnvironmentStatus,
+  getScenarioHistory,
+  getScenarioHistoryDetail,
+  createScenarioHistory,
+  deleteScenarioHistory,
+  replayScenarioHistory
 }

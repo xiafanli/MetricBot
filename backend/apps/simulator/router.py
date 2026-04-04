@@ -11,6 +11,7 @@ from apps.simulator.models import (
     LogTemplate,
     FaultScenario,
     FaultInstance,
+    ScenarioHistory,
 )
 from apps.simulator.schemas import (
     SimulationEnvironmentCreate,
@@ -457,3 +458,96 @@ def get_topology_components(db: Session = Depends(get_db)):
 def check_ip_prefix(ip_prefix: str, db: Session = Depends(get_db)):
     generator = TopologyGenerator(db)
     return generator.check_ip_conflict(ip_prefix)
+
+
+@router.get("/scenario-history")
+def get_scenario_history(env_id: int = None, db: Session = Depends(get_db)):
+    query = db.query(ScenarioHistory).order_by(ScenarioHistory.created_at.desc())
+    if env_id:
+        query = query.filter(ScenarioHistory.env_id == env_id)
+    histories = query.limit(50).all()
+    return [
+        {
+            "id": h.id,
+            "env_id": h.env_id,
+            "name": h.name,
+            "description": h.description,
+            "start_time": h.start_time.isoformat() if h.start_time else None,
+            "end_time": h.end_time.isoformat() if h.end_time else None,
+            "status": h.status,
+            "snapshot_data": h.snapshot_data,
+            "created_at": h.created_at.isoformat() if h.created_at else None,
+        }
+        for h in histories
+    ]
+
+
+@router.post("/scenario-history")
+def create_scenario_history(data: dict, db: Session = Depends(get_db)):
+    from datetime import datetime
+
+    history = ScenarioHistory(
+        env_id=data.get("env_id"),
+        name=data.get("name"),
+        description=data.get("description"),
+        start_time=datetime.fromisoformat(data["start_time"]) if data.get("start_time") else datetime.now(),
+        end_time=datetime.fromisoformat(data["end_time"]) if data.get("end_time") else None,
+        status=data.get("status", "completed"),
+        snapshot_data=data.get("snapshot_data"),
+    )
+    db.add(history)
+    db.commit()
+    db.refresh(history)
+    return {
+        "id": history.id,
+        "env_id": history.env_id,
+        "name": history.name,
+        "description": history.description,
+        "start_time": history.start_time.isoformat() if history.start_time else None,
+        "end_time": history.end_time.isoformat() if history.end_time else None,
+        "status": history.status,
+        "snapshot_data": history.snapshot_data,
+        "created_at": history.created_at.isoformat() if history.created_at else None,
+    }
+
+
+@router.get("/scenario-history/{id}")
+def get_scenario_history_detail(id: int, db: Session = Depends(get_db)):
+    history = db.query(ScenarioHistory).filter(ScenarioHistory.id == id).first()
+    if not history:
+        raise HTTPException(status_code=404, detail="Scenario history not found")
+    return {
+        "id": history.id,
+        "env_id": history.env_id,
+        "name": history.name,
+        "description": history.description,
+        "start_time": history.start_time.isoformat() if history.start_time else None,
+        "end_time": history.end_time.isoformat() if history.end_time else None,
+        "status": history.status,
+        "snapshot_data": history.snapshot_data,
+        "created_at": history.created_at.isoformat() if history.created_at else None,
+    }
+
+
+@router.delete("/scenario-history/{id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_scenario_history(id: int, db: Session = Depends(get_db)):
+    history = db.query(ScenarioHistory).filter(ScenarioHistory.id == id).first()
+    if not history:
+        raise HTTPException(status_code=404, detail="Scenario history not found")
+    db.delete(history)
+    db.commit()
+
+
+@router.post("/scenario-history/{id}/replay")
+def replay_scenario_history(id: int, db: Session = Depends(get_db)):
+    history = db.query(ScenarioHistory).filter(ScenarioHistory.id == id).first()
+    if not history:
+        raise HTTPException(status_code=404, detail="Scenario history not found")
+
+    if not history.snapshot_data:
+        raise HTTPException(status_code=400, detail="No snapshot data available for replay")
+
+    return {
+        "message": "Scenario replay started",
+        "snapshot_data": history.snapshot_data,
+    }
