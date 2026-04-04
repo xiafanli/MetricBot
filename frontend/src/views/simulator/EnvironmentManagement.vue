@@ -100,13 +100,21 @@
         </div>
 
         <div class="layer-arrow">
-          <svg width="100%" height="40">
+          <svg width="100%" height="40" class="flow-arrow">
             <defs>
               <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
                 <polygon points="0 0, 10 3.5, 0 7" fill="rgba(255, 215, 0, 0.5)" />
               </marker>
+              <linearGradient id="flowGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" style="stop-color:rgba(255, 215, 0, 0.8)" />
+                <stop offset="50%" style="stop-color:rgba(255, 215, 0, 0.3)" />
+                <stop offset="100%" style="stop-color:rgba(255, 215, 0, 0.8)" />
+              </linearGradient>
             </defs>
             <line x1="50%" y1="0" x2="50%" y2="30" stroke="rgba(255, 215, 0, 0.3)" stroke-width="2" marker-end="url(#arrowhead)" />
+            <circle r="4" fill="rgba(255, 215, 0, 0.9)" class="flow-dot">
+              <animateMotion dur="1.5s" repeatCount="indefinite" path="M0,0 L0,30" />
+            </circle>
           </svg>
         </div>
 
@@ -131,8 +139,11 @@
         </div>
 
         <div class="layer-arrow">
-          <svg width="100%" height="40">
+          <svg width="100%" height="40" class="flow-arrow">
             <line x1="50%" y1="0" x2="50%" y2="30" stroke="rgba(255, 215, 0, 0.3)" stroke-width="2" marker-end="url(#arrowhead)" />
+            <circle r="4" fill="rgba(255, 215, 0, 0.9)" class="flow-dot">
+              <animateMotion dur="1.5s" repeatCount="indefinite" path="M0,0 L0,30" begin="0.3s" />
+            </circle>
           </svg>
         </div>
 
@@ -157,8 +168,11 @@
         </div>
 
         <div class="layer-arrow">
-          <svg width="100%" height="40">
+          <svg width="100%" height="40" class="flow-arrow">
             <line x1="50%" y1="0" x2="50%" y2="30" stroke="rgba(255, 215, 0, 0.3)" stroke-width="2" marker-end="url(#arrowhead)" />
+            <circle r="4" fill="rgba(255, 215, 0, 0.9)" class="flow-dot">
+              <animateMotion dur="1.5s" repeatCount="indefinite" path="M0,0 L0,30" begin="0.6s" />
+            </circle>
           </svg>
         </div>
 
@@ -183,8 +197,11 @@
         </div>
 
         <div class="layer-arrow">
-          <svg width="100%" height="40">
+          <svg width="100%" height="40" class="flow-arrow">
             <line x1="50%" y1="0" x2="50%" y2="30" stroke="rgba(255, 215, 0, 0.3)" stroke-width="2" marker-end="url(#arrowhead)" />
+            <circle r="4" fill="rgba(255, 215, 0, 0.9)" class="flow-dot">
+              <animateMotion dur="1.5s" repeatCount="indefinite" path="M0,0 L0,30" begin="0.9s" />
+            </circle>
           </svg>
         </div>
 
@@ -626,6 +643,29 @@ onUnmounted(() => {
   height: 40px;
   display: flex;
   justify-content: center;
+}
+
+.flow-arrow {
+  overflow: visible;
+}
+
+.flow-dot {
+  filter: drop-shadow(0 0 4px rgba(255, 215, 0, 0.8));
+}
+
+@keyframes flowPulse {
+  0%, 100% {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.2);
+  }
+}
+
+.flow-arrow line {
+  animation: flowPulse 2s ease-in-out infinite;
 }
 
 .topology-node {
