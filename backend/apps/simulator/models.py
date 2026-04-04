@@ -164,3 +164,16 @@ class ScenarioHistory(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     environment = relationship("SimulationEnvironment")
+
+
+class TopologyTemplate(Base):
+    __tablename__ = "simulator_topology_templates"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(100), nullable=False)
+    description = Column(Text, nullable=True)
+    topology_type = Column(String(50), nullable=False)
+    scale = Column(String(50), nullable=False)
+    components_config = Column(JSON, nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())

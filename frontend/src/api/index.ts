@@ -353,6 +353,38 @@ function replayScenarioHistory(id: number) {
   return apiClient.post(`/simulator/scenario-history/${id}/replay`)
 }
 
+function getTopologyTemplates() {
+  return apiClient.get('/simulator/topology-templates')
+}
+
+function getTopologyTemplate(id: number) {
+  return apiClient.get(`/simulator/topology-templates/${id}`)
+}
+
+function createTopologyTemplate(data: {
+  name: string
+  description?: string
+  topology_type: string
+  scale: string
+  components_config?: object
+}) {
+  return apiClient.post('/simulator/topology-templates', data)
+}
+
+function deleteTopologyTemplate(id: number) {
+  return apiClient.delete(`/simulator/topology-templates/${id}`)
+}
+
+function applyTopologyTemplate(id: number, data: {
+  name?: string
+  ip_prefix?: string
+  description?: string
+  pushgateway_url?: string
+  log_path?: string
+}) {
+  return apiClient.post(`/simulator/topology-templates/${id}/apply`, data)
+}
+
 export const api = {
   healthCheck,
   getRoot,
@@ -423,5 +455,10 @@ export const api = {
   getScenarioHistoryDetail,
   createScenarioHistory,
   deleteScenarioHistory,
-  replayScenarioHistory
+  replayScenarioHistory,
+  getTopologyTemplates,
+  getTopologyTemplate,
+  createTopologyTemplate,
+  deleteTopologyTemplate,
+  applyTopologyTemplate
 }

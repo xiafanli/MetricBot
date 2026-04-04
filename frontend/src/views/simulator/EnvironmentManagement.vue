@@ -42,6 +42,14 @@
           <el-button type="info" size="small" @click="handleSyncToHosts">
             同步到主机
           </el-button>
+          <el-button type="primary" size="small" @click="showSaveTemplateDialog">
+            <el-icon><FolderAdd /></el-icon>
+            保存为模板
+          </el-button>
+          <el-button size="small" @click="showLoadTemplateDialog">
+            <el-icon><FolderOpened /></el-icon>
+            加载模板
+          </el-button>
         </div>
       </div>
 
@@ -272,13 +280,72 @@
       v-model="showComponentDetail"
       :component="selectedComponent"
     />
+
+    <el-dialog v-model="saveTemplateDialog" title="保存为模板" width="500px">
+      <el-form :model="templateForm" label-width="100px">
+        <el-form-item label="模板名称" required>
+          <el-input v-model="templateForm.name" placeholder="请输入模板名称" />
+        </el-form-item>
+        <el-form-item label="模板描述">
+          <el-input v-model="templateForm.description" type="textarea" :rows="3" placeholder="请输入模板描述（可选）" />
+        </el-form-item>
+        <el-form-item label="拓扑类型">
+          <el-input v-model="templateForm.topology_type" disabled />
+        </el-form-item>
+        <el-form-item label="规模">
+          <el-input v-model="templateForm.scale" disabled />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="saveTemplateDialog = false">取消</el-button>
+        <el-button type="primary" @click="handleSaveTemplate" :loading="savingTemplate">保存</el-button>
+      </template>
+    </el-dialog>
+
+    <el-dialog v-model="loadTemplateDialog" title="加载模板" width="700px">
+      <el-table :data="topologyTemplates" style="width: 100%" v-loading="loadingTemplates">
+        <el-table-column prop="name" label="模板名称" min-width="120" />
+        <el-table-column prop="description" label="描述" min-width="150" show-overflow-tooltip />
+        <el-table-column prop="topology_type" label="拓扑类型" width="100" />
+        <el-table-column prop="scale" label="规模" width="80" />
+        <el-table-column prop="created_at" label="创建时间" width="160">
+          <template #default="{ row }">
+            {{ formatDateTime(row.created_at) }}
+          </template>
+        </el-table-column>
+        <el-table-column label="操作" width="120" fixed="right">
+          <template #default="{ row }">
+            <el-button type="primary" link @click="handleApplyTemplate(row)">应用</el-button>
+            <el-button type="danger" link @click="handleDeleteTemplate(row)">删除</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+    </el-dialog>
+
+    <el-dialog v-model="applyTemplateDialog" title="应用模板" width="500px">
+      <el-form :model="applyForm" label-width="100px">
+        <el-form-item label="环境名称" required>
+          <el-input v-model="applyForm.name" placeholder="请输入新环境名称" />
+        </el-form-item>
+        <el-form-item label="IP前缀">
+          <el-input v-model="applyForm.ip_prefix" placeholder="例如: 192.168.1" />
+        </el-form-item>
+        <el-form-item label="描述">
+          <el-input v-model="applyForm.description" type="textarea" :rows="2" placeholder="请输入环境描述（可选）" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="applyTemplateDialog = false">取消</el-button>
+        <el-button type="primary" @click="confirmApplyTemplate" :loading="applyingTemplate">应用</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Plus, RefreshRight, Monitor, Connection, DataBoard, Lightning, Coin, ZoomIn, ZoomOut, Refresh } from '@element-plus/icons-vue'
+import { Plus, RefreshRight, Monitor, Connection, DataBoard, Lightning, Coin, ZoomIn, ZoomOut, Refresh, FolderAdd, FolderOpened } from '@element-plus/icons-vue'
 import { useRouter } from 'vue-router'
 import { api } from '@/api'
 import ComponentDetail from '@/components/simulator/ComponentDetail.vue'
@@ -526,6 +593,162 @@ const getNodeStatusClass = (status: string | undefined) => {
       return 'status-critical'
     default:
       return 'status-unknown'
+  }
+}
+
+const saveTemplateDialog = ref(false)
+const loadTemplateDialog = ref(false)
+const applyTemplateDialog = ref(false)
+const savingTemplate = ref(false)
+const loadingTemplates = ref(false)
+const applyingTemplate = ref(false)
+const topologyTemplates = ref<Array<{
+  id: number
+  name: string
+  description: string | null
+  topology_type: string
+  scale: string
+  created_at: string
+}>>([])
+const selectedTemplate = ref<{ id: number; name: string } | null>(null)
+
+const templateForm = ref({
+  name: '',
+  description: '',
+  topology_type: 'custom',
+  scale: 'medium'
+})
+
+const applyForm = ref({
+  name: '',
+  ip_prefix: '',
+  description: ''
+})
+
+const formatDateTime = (dateStr: string | null | undefined) => {
+  if (!dateStr) return '-'
+  const date = new Date(dateStr)
+  return date.toLocaleString('zh-CN', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit'
+  })
+}
+
+const showSaveTemplateDialog = () => {
+  templateForm.value = {
+    name: `${currentEnvironment.value?.name || '环境'}模板`,
+    description: currentEnvironment.value?.description || '',
+    topology_type: 'custom',
+    scale: 'medium'
+  }
+  saveTemplateDialog.value = true
+}
+
+const handleSaveTemplate = async () => {
+  if (!templateForm.value.name) {
+    ElMessage.warning('请输入模板名称')
+    return
+  }
+
+  savingTemplate.value = true
+  try {
+    const componentsConfig = topologyComponents.value.map(c => ({
+      type: c.component_type,
+      name: c.name,
+      ip_address: c.ip_address,
+      properties: c.properties
+    }))
+
+    await api.createTopologyTemplate({
+      name: templateForm.value.name,
+      description: templateForm.value.description,
+      topology_type: templateForm.value.topology_type,
+      scale: templateForm.value.scale,
+      components_config: { components: componentsConfig }
+    })
+
+    ElMessage.success('模板保存成功')
+    saveTemplateDialog.value = false
+  } catch (error) {
+    console.error('Failed to save template:', error)
+    ElMessage.error('保存模板失败')
+  } finally {
+    savingTemplate.value = false
+  }
+}
+
+const showLoadTemplateDialog = async () => {
+  loadTemplateDialog.value = true
+  loadingTemplates.value = true
+  try {
+    const response = await api.getTopologyTemplates() as typeof topologyTemplates.value
+    topologyTemplates.value = response
+  } catch (error) {
+    console.error('Failed to load templates:', error)
+    ElMessage.error('加载模板列表失败')
+  } finally {
+    loadingTemplates.value = false
+  }
+}
+
+const handleApplyTemplate = (template: typeof topologyTemplates.value[0]) => {
+  selectedTemplate.value = { id: template.id, name: template.name }
+  applyForm.value = {
+    name: `从模板创建-${template.name}`,
+    ip_prefix: '',
+    description: template.description || ''
+  }
+  loadTemplateDialog.value = false
+  applyTemplateDialog.value = true
+}
+
+const confirmApplyTemplate = async () => {
+  if (!applyForm.value.name) {
+    ElMessage.warning('请输入环境名称')
+    return
+  }
+
+  if (!selectedTemplate.value) return
+
+  applyingTemplate.value = true
+  try {
+    const result = await api.applyTopologyTemplate(selectedTemplate.value.id, {
+      name: applyForm.value.name,
+      ip_prefix: applyForm.value.ip_prefix,
+      description: applyForm.value.description
+    }) as { environment: Environment }
+
+    ElMessage.success('模板应用成功')
+    applyTemplateDialog.value = false
+    currentEnvironment.value = result.environment
+    await loadTopologyData()
+  } catch (error) {
+    console.error('Failed to apply template:', error)
+    ElMessage.error('应用模板失败')
+  } finally {
+    applyingTemplate.value = false
+  }
+}
+
+const handleDeleteTemplate = async (template: typeof topologyTemplates.value[0]) => {
+  try {
+    await ElMessageBox.confirm('确定要删除该模板吗？', '确认删除', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning'
+    })
+
+    await api.deleteTopologyTemplate(template.id)
+    ElMessage.success('删除成功')
+    topologyTemplates.value = topologyTemplates.value.filter(t => t.id !== template.id)
+  } catch (error) {
+    if (error !== 'cancel') {
+      console.error('Failed to delete template:', error)
+      ElMessage.error('删除失败')
+    }
   }
 }
 

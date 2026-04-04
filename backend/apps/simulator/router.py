@@ -12,6 +12,7 @@ from apps.simulator.models import (
     FaultScenario,
     FaultInstance,
     ScenarioHistory,
+    TopologyTemplate,
 )
 from apps.simulator.schemas import (
     SimulationEnvironmentCreate,
@@ -551,3 +552,94 @@ def replay_scenario_history(id: int, db: Session = Depends(get_db)):
         "message": "Scenario replay started",
         "snapshot_data": history.snapshot_data,
     }
+
+
+@router.get("/topology-templates")
+def get_topology_templates(db: Session = Depends(get_db)):
+    templates = db.query(TopologyTemplate).order_by(TopologyTemplate.created_at.desc()).all()
+    return [
+        {
+            "id": t.id,
+            "name": t.name,
+            "description": t.description,
+            "topology_type": t.topology_type,
+            "scale": t.scale,
+            "components_config": t.components_config,
+            "created_at": t.created_at.isoformat() if t.created_at else None,
+            "updated_at": t.updated_at.isoformat() if t.updated_at else None,
+        }
+        for t in templates
+    ]
+
+
+@router.post("/topology-templates")
+def create_topology_template(data: dict, db: Session = Depends(get_db)):
+    template = TopologyTemplate(
+        name=data.get("name"),
+        description=data.get("description"),
+        topology_type=data.get("topology_type"),
+        scale=data.get("scale"),
+        components_config=data.get("components_config"),
+    )
+    db.add(template)
+    db.commit()
+    db.refresh(template)
+    return {
+        "id": template.id,
+        "name": template.name,
+        "description": template.description,
+        "topology_type": template.topology_type,
+        "scale": template.scale,
+        "components_config": template.components_config,
+        "created_at": template.created_at.isoformat() if template.created_at else None,
+        "updated_at": template.updated_at.isoformat() if template.updated_at else None,
+    }
+
+
+@router.get("/topology-templates/{id}")
+def get_topology_template(id: int, db: Session = Depends(get_db)):
+    template = db.query(TopologyTemplate).filter(TopologyTemplate.id == id).first()
+    if not template:
+        raise HTTPException(status_code=404, detail="Topology template not found")
+    return {
+        "id": template.id,
+        "name": template.name,
+        "description": template.description,
+        "topology_type": template.topology_type,
+        "scale": template.scale,
+        "components_config": template.components_config,
+        "created_at": template.created_at.isoformat() if template.created_at else None,
+        "updated_at": template.updated_at.isoformat() if template.updated_at else None,
+    }
+
+
+@router.delete("/topology-templates/{id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_topology_template(id: int, db: Session = Depends(get_db)):
+    template = db.query(TopologyTemplate).filter(TopologyTemplate.id == id).first()
+    if not template:
+        raise HTTPException(status_code=404, detail="Topology template not found")
+    db.delete(template)
+    db.commit()
+
+
+@router.post("/topology-templates/{id}/apply")
+def apply_topology_template(id: int, data: dict, db: Session = Depends(get_db)):
+    template = db.query(TopologyTemplate).filter(TopologyTemplate.id == id).first()
+    if not template:
+        raise HTTPException(status_code=404, detail="Topology template not found")
+
+    generator = TopologyGenerator(db)
+    try:
+        result = generator.generate(
+            name=data.get("name", f"从模板创建-{template.name}"),
+            topology_type=template.topology_type,
+            scale=template.scale,
+            ip_prefix=data.get("ip_prefix"),
+            description=data.get("description", template.description),
+            pushgateway_url=data.get("pushgateway_url"),
+            log_path=data.get("log_path"),
+            include_components=template.components_config,
+        )
+        return result
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
