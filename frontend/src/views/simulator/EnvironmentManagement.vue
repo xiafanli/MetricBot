@@ -86,8 +86,10 @@
               v-for="node in getComponentsByLayer(0)"
               :key="node.id"
               class="topology-node client-node"
+              :class="{ 'node-unhealthy': node.status && node.status !== 'active' }"
               @click="handleNodeClick(node)"
             >
+              <div class="node-status" :class="getNodeStatusClass(node.status)"></div>
               <div class="node-icon">
                 <el-icon><Monitor /></el-icon>
               </div>
@@ -125,8 +127,10 @@
               v-for="node in getComponentsByLayer(1)"
               :key="node.id"
               class="topology-node nginx-node"
+              :class="{ 'node-unhealthy': node.status && node.status !== 'active' }"
               @click="handleNodeClick(node)"
             >
+              <div class="node-status" :class="getNodeStatusClass(node.status)"></div>
               <div class="node-icon">
                 <el-icon><Connection /></el-icon>
               </div>
@@ -154,8 +158,10 @@
               v-for="node in getComponentsByLayer(2)"
               :key="node.id"
               class="topology-node app-node"
+              :class="{ 'node-unhealthy': node.status && node.status !== 'active' }"
               @click="handleNodeClick(node)"
             >
+              <div class="node-status" :class="getNodeStatusClass(node.status)"></div>
               <div class="node-icon">
                 <el-icon><DataBoard /></el-icon>
               </div>
@@ -183,8 +189,10 @@
               v-for="node in getComponentsByLayer(3)"
               :key="node.id"
               class="topology-node cache-node"
+              :class="{ 'node-unhealthy': node.status && node.status !== 'active' }"
               @click="handleNodeClick(node)"
             >
+              <div class="node-status" :class="getNodeStatusClass(node.status)"></div>
               <div class="node-icon">
                 <el-icon><Lightning /></el-icon>
               </div>
@@ -212,8 +220,10 @@
               v-for="node in getComponentsByLayer(4)"
               :key="node.id"
               class="topology-node db-node"
+              :class="{ 'node-unhealthy': node.status && node.status !== 'active' }"
               @click="handleNodeClick(node)"
             >
+              <div class="node-status" :class="getNodeStatusClass(node.status)"></div>
               <div class="node-icon">
                 <el-icon><Coin /></el-icon>
               </div>
@@ -476,6 +486,20 @@ const updateComponentStatus = (components: Array<{ id: number; status: string }>
   })
 }
 
+const getNodeStatusClass = (status: string | undefined) => {
+  if (!status) return 'status-unknown'
+  switch (status) {
+    case 'active':
+      return 'status-healthy'
+    case 'inactive':
+      return 'status-warning'
+    case 'error':
+      return 'status-critical'
+    default:
+      return 'status-unknown'
+  }
+}
+
 onMounted(() => {
   loadEnvironment()
   statusInterval = setInterval(loadEnvironmentStatus, 10000)
@@ -677,10 +701,80 @@ onUnmounted(() => {
   min-width: 180px;
   transition: all 0.3s;
   cursor: pointer;
+  position: relative;
 
   &:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  }
+}
+
+.node-status {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid rgba(0, 0, 0, 0.5);
+  animation: pulse 2s infinite;
+}
+
+.status-healthy {
+  background: #67c23a;
+  box-shadow: 0 0 8px rgba(103, 194, 58, 0.6);
+}
+
+.status-warning {
+  background: #e6a23c;
+  box-shadow: 0 0 8px rgba(230, 162, 60, 0.6);
+}
+
+.status-critical {
+  background: #f56c6c;
+  box-shadow: 0 0 8px rgba(245, 108, 108, 0.6);
+  animation: pulse-critical 1s infinite;
+}
+
+.status-unknown {
+  background: #909399;
+  box-shadow: 0 0 8px rgba(144, 147, 153, 0.6);
+}
+
+.node-unhealthy {
+  border-color: rgba(245, 108, 108, 0.5) !important;
+  animation: shake 0.5s ease-in-out;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+@keyframes pulse-critical {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.3);
+    opacity: 0.7;
+  }
+}
+
+@keyframes shake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-2px);
+  }
+  75% {
+    transform: translateX(2px);
   }
 }
 
