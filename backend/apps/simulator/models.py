@@ -3,6 +3,42 @@ from sqlalchemy.orm import relationship
 from common.core.database import Base
 
 
+class FaultType:
+    HOST_CPU_OVERLOAD = "host_cpu_overload"
+    HOST_MEMORY_EXHAUST = "host_memory_exhaust"
+    HOST_DISK_FULL = "host_disk_full"
+    HOST_NETWORK_LATENCY = "host_network_latency"
+    
+    NGINX_CONNECTION_OVERFLOW = "nginx_connection_overflow"
+    NGINX_UPSTREAM_TIMEOUT = "nginx_upstream_timeout"
+    NGINX_CACHE_MISS = "nginx_cache_miss"
+    
+    APP_MEMORY_LEAK = "app_memory_leak"
+    APP_GC_OVERHEAD = "app_gc_overhead"
+    APP_THREAD_BLOCK = "app_thread_block"
+    APP_API_TIMEOUT = "app_api_timeout"
+    
+    API_GATEWAY_CIRCUIT_BREAK = "api_gateway_circuit_break"
+    API_GATEWAY_RATE_LIMIT = "api_gateway_rate_limit"
+    
+    REDIS_CONNECTION_EXHAUST = "redis_connection_exhaust"
+    REDIS_MEMORY_OVERFLOW = "redis_memory_overflow"
+    REDIS_CACHE_PENETRATION = "redis_cache_penetration"
+    
+    MYSQL_CONNECTION_EXHAUST = "mysql_connection_exhaust"
+    MYSQL_SLOW_QUERY = "mysql_slow_query"
+    MYSQL_DEADLOCK = "mysql_deadlock"
+    MYSQL_REPLICATION_LAG = "mysql_replication_lag"
+    
+    FIREWALL_RULE_BLOCK = "firewall_rule_block"
+    FIREWALL_CONNECTION_OVERFLOW = "firewall_connection_overflow"
+    
+    KAFKA_PARTITION_UNBALANCE = "kafka_partition_unbalance"
+    KAFKA_CONSUMER_LAG = "kafka_consumer_lag"
+    
+    CONFIG_CENTER_SYNC_FAIL = "config_center_sync_fail"
+
+
 class SimulationEnvironment(Base):
     __tablename__ = "simulation_environments"
 
