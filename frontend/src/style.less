@@ -1842,3 +1842,87 @@ body {
   background: #ffd700 !important;
   border-width: 1px !important;
 }
+
+/* Element Plus Dialog Button 深色主题适配 */
+.el-dialog {
+  .el-button--default {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 215, 0, 0.2);
+    color: rgba(255, 255, 255, 0.8);
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.15);
+      border-color: rgba(255, 215, 0, 0.3);
+      color: white;
+    }
+
+    &:active {
+      background: rgba(255, 255, 255, 0.2);
+    }
+  }
+
+  .el-button--primary {
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.9) 0%, rgba(247, 37, 133, 0.9) 100%);
+    border: none;
+    color: #0a0a0a;
+    font-weight: 600;
+
+    &:hover {
+      opacity: 0.9;
+      box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
+    }
+  }
+}
+
+/* Element Plus Message Box 深色主题适配 */
+.el-message-box {
+  background: rgba(26, 26, 46, 0.98) !important;
+  border: 1px solid rgba(255, 215, 0, 0.2) !important;
+  border-radius: 12px !important;
+
+  .el-message-box__header {
+    background: rgba(0, 0, 0, 0.3);
+    border-bottom: 1px solid rgba(255, 215, 0, 0.15);
+    border-radius: 12px 12px 0 0;
+    padding: 16px 20px;
+  }
+
+  .el-message-box__title {
+    color: white !important;
+    font-weight: 600;
+  }
+
+  .el-message-box__content {
+    color: rgba(255, 255, 255, 0.85);
+    padding: 20px;
+  }
+
+  .el-message-box__btns {
+    padding: 16px 20px;
+    border-top: 1px solid rgba(255, 215, 0, 0.15);
+
+    .el-button--default {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 215, 0, 0.2);
+      color: rgba(255, 255, 255, 0.8);
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.15);
+        border-color: rgba(255, 215, 0, 0.3);
+        color: white;
+      }
+    }
+
+    .el-button--primary {
+      background: linear-gradient(135deg, rgba(255, 215, 0, 0.9) 0%, rgba(247, 37, 133, 0.9) 100%);
+      border: none;
+      color: #0a0a0a;
+      font-weight: 600;
+
+      &:hover {
+        opacity: 0.9;
+        box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
+      }
+    }
+  }
+}
