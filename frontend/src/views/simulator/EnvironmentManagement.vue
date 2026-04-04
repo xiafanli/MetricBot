@@ -204,7 +204,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus, RefreshRight, Monitor, Connection, DataBoard, Lightning, Coin } from '@element-plus/icons-vue'
 import { useRouter } from 'vue-router'
@@ -354,8 +354,37 @@ const handleNodeClick = (component: Component) => {
   showComponentDetail.value = true
 }
 
+let statusInterval: ReturnType<typeof setInterval> | null = null
+
+const loadEnvironmentStatus = async () => {
+  if (!currentEnvironment.value?.id) return
+
+  try {
+    const response = await api.getEnvironmentStatus(currentEnvironment.value.id)
+    updateComponentStatus(response.components)
+  } catch (error) {
+    console.error('Failed to load environment status:', error)
+  }
+}
+
+const updateComponentStatus = (components: Array<{ id: number; status: string }>) => {
+  components.forEach(comp => {
+    const node = topologyComponents.value.find(n => n.id === comp.id)
+    if (node) {
+      node.status = comp.status
+    }
+  })
+}
+
 onMounted(() => {
   loadEnvironment()
+  statusInterval = setInterval(loadEnvironmentStatus, 10000)
+})
+
+onUnmounted(() => {
+  if (statusInterval) {
+    clearInterval(statusInterval)
+  }
 })
 </script>
 

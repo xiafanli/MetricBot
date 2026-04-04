@@ -128,6 +128,50 @@ def deactivate_environment(id: int, db: Session = Depends(get_db)):
     return {"message": "Environment deactivated", "id": id}
 
 
+@router.get("/environments/{id}/status")
+def get_environment_status(id: int, db: Session = Depends(get_db)):
+    env = db.query(SimulationEnvironment).filter(SimulationEnvironment.id == id).first()
+    if not env:
+        raise HTTPException(status_code=404, detail="Environment not found")
+
+    components = db.query(SimulationComponent).filter(SimulationComponent.env_id == id).all()
+
+    active_faults = db.query(FaultInstance).join(FaultScenario).join(SimulationComponent).filter(
+        SimulationComponent.env_id == id,
+        FaultInstance.status == "active"
+    ).all()
+
+    status = {
+        "total_components": len(components),
+        "active_components": len([c for c in components if c.status == "active"]),
+        "inactive_components": len([c for c in components if c.status != "active"]),
+        "active_faults": len(active_faults),
+        "components": [
+            {
+                "id": c.id,
+                "name": c.name,
+                "type": c.component_type,
+                "status": c.status,
+                "ip_address": c.ip_address,
+            }
+            for c in components
+        ],
+        "faults": [
+            {
+                "id": f.id,
+                "component_id": f.component_id,
+                "component_name": f.component.name if f.component else None,
+                "scenario_name": f.scenario.name if f.scenario else None,
+                "start_time": f.start_time.isoformat() if f.start_time else None,
+                "end_time": f.end_time.isoformat() if f.end_time else None,
+            }
+            for f in active_faults
+        ],
+    }
+
+    return status
+
+
 @router.post("/environments/{id}/sync-to-hosts")
 def sync_to_hosts(id: int, db: Session = Depends(get_db)):
     manager = TopologyManager(db)

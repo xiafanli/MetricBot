@@ -320,6 +320,10 @@ function getFaultInstance(id: number) {
   return apiClient.get(`/simulator/fault-instances/${id}`)
 }
 
+function getEnvironmentStatus(id: number) {
+  return apiClient.get(`/simulator/environments/${id}/status`)
+}
+
 export const api = {
   healthCheck,
   getRoot,
@@ -384,5 +388,6 @@ export const api = {
   deleteFaultScenario,
   triggerFault,
   getFaultInstances,
-  getFaultInstance
+  getFaultInstance,
+  getEnvironmentStatus
 }

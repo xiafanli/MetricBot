@@ -149,6 +149,30 @@ export const simulatorApi = {
     return apiClient.post(`/simulator/environments/${id}/deactivate`)
   },
 
+  getEnvironmentStatus(id: number): Promise<{
+    total_components: number
+    active_components: number
+    inactive_components: number
+    active_faults: number
+    components: Array<{
+      id: number
+      name: string
+      type: string
+      status: string
+      ip_address: string
+    }>
+    faults: Array<{
+      id: number
+      component_id: number
+      component_name: string | null
+      scenario_name: string | null
+      start_time: string | null
+      end_time: string | null
+    }>
+  }> {
+    return apiClient.get(`/simulator/environments/${id}/status`)
+  },
+
   getComponents(envId: number): Promise<SimulationComponent[]> {
     return apiClient.get(`/simulator/environments/${envId}/components`)
   },
