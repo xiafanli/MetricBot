@@ -49,7 +49,36 @@
         <el-empty description="该环境暂无组件" />
       </div>
 
-      <div v-else class="topology-graph">
+      <div v-else class="topology-container">
+        <div class="topology-controls">
+          <el-button-group>
+            <el-button size="small" @click="zoomIn">
+              <el-icon><ZoomIn /></el-icon>
+            </el-button>
+            <el-button size="small" @click="zoomOut">
+              <el-icon><ZoomOut /></el-icon>
+            </el-button>
+            <el-button size="small" @click="resetZoom">
+              <el-icon><Refresh /></el-icon>
+            </el-button>
+          </el-button-group>
+          <span class="zoom-level">{{ Math.round(zoomLevel * 100) }}%</span>
+        </div>
+        <div 
+          class="topology-graph-wrapper"
+          @mousedown="startDrag"
+          @mousemove="onDrag"
+          @mouseup="endDrag"
+          @mouseleave="endDrag"
+          @wheel.prevent="handleWheel"
+        >
+          <div 
+            class="topology-graph" 
+            :style="{ 
+              transform: `scale(${zoomLevel}) translate(${panX}px, ${panY}px)`,
+              cursor: isDragging ? 'grabbing' : 'grab'
+            }"
+          >
         <div class="layer client-layer">
           <div class="layer-title">客户端层</div>
           <div class="layer-nodes">
@@ -178,6 +207,7 @@
             </div>
           </div>
         </div>
+        </div>
       </div>
 
       <div class="topology-stats">
@@ -206,7 +236,7 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Plus, RefreshRight, Monitor, Connection, DataBoard, Lightning, Coin } from '@element-plus/icons-vue'
+import { Plus, RefreshRight, Monitor, Connection, DataBoard, Lightning, Coin, ZoomIn, ZoomOut, Refresh } from '@element-plus/icons-vue'
 import { useRouter } from 'vue-router'
 import { api } from '@/api'
 import ComponentDetail from '@/components/simulator/ComponentDetail.vue'
@@ -247,6 +277,59 @@ const topologyComponents = ref<Component[]>([])
 const topologyRelations = ref<Relation[]>([])
 const showComponentDetail = ref(false)
 const selectedComponent = ref<Component | null>(null)
+
+const zoomLevel = ref(1)
+const panX = ref(0)
+const panY = ref(0)
+const isDragging = ref(false)
+const dragStartX = ref(0)
+const dragStartY = ref(0)
+const dragStartPanX = ref(0)
+const dragStartPanY = ref(0)
+
+const zoomIn = () => {
+  if (zoomLevel.value < 2) {
+    zoomLevel.value = Math.min(2, zoomLevel.value + 0.1)
+  }
+}
+
+const zoomOut = () => {
+  if (zoomLevel.value > 0.5) {
+    zoomLevel.value = Math.max(0.5, zoomLevel.value - 0.1)
+  }
+}
+
+const resetZoom = () => {
+  zoomLevel.value = 1
+  panX.value = 0
+  panY.value = 0
+}
+
+const handleWheel = (e: WheelEvent) => {
+  const delta = e.deltaY > 0 ? -0.05 : 0.05
+  zoomLevel.value = Math.max(0.5, Math.min(2, zoomLevel.value + delta))
+}
+
+const startDrag = (e: MouseEvent) => {
+  if ((e.target as HTMLElement).closest('.topology-node')) return
+  isDragging.value = true
+  dragStartX.value = e.clientX
+  dragStartY.value = e.clientY
+  dragStartPanX.value = panX.value
+  dragStartPanY.value = panY.value
+}
+
+const onDrag = (e: MouseEvent) => {
+  if (!isDragging.value) return
+  const dx = e.clientX - dragStartX.value
+  const dy = e.clientY - dragStartY.value
+  panX.value = dragStartPanX.value + dx / zoomLevel.value
+  panY.value = dragStartPanY.value + dy / zoomLevel.value
+}
+
+const endDrag = () => {
+  isDragging.value = false
+}
 
 const loadEnvironment = async () => {
   try {
@@ -475,11 +558,45 @@ onUnmounted(() => {
   min-height: 300px;
 }
 
+.topology-container {
+  position: relative;
+}
+
+.topology-controls {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(0, 0, 0, 0.5);
+  padding: 8px 12px;
+  border-radius: 8px;
+}
+
+.zoom-level {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 12px;
+  min-width: 40px;
+}
+
+.topology-graph-wrapper {
+  overflow: hidden;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.1);
+  min-height: 500px;
+  position: relative;
+}
+
 .topology-graph {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 0;
+  transform-origin: center center;
+  transition: transform 0.1s ease-out;
+  padding: 20px;
 }
 
 .layer {
