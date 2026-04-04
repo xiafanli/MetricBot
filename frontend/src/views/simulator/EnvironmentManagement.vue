@@ -86,10 +86,13 @@
               v-for="node in getComponentsByLayer(0)"
               :key="node.id"
               class="topology-node client-node"
-              :class="{ 'node-unhealthy': node.status && node.status !== 'active' }"
+              :class="{ 'node-unhealthy': node.status && node.status !== 'active', 'node-has-fault': getComponentFaults(node.id).length > 0 }"
               @click="handleNodeClick(node)"
             >
               <div class="node-status" :class="getNodeStatusClass(node.status)"></div>
+              <div v-if="getComponentFaults(node.id).length > 0" class="fault-badge">
+                {{ getComponentFaults(node.id).length }}
+              </div>
               <div class="node-icon">
                 <el-icon><Monitor /></el-icon>
               </div>
@@ -127,10 +130,13 @@
               v-for="node in getComponentsByLayer(1)"
               :key="node.id"
               class="topology-node nginx-node"
-              :class="{ 'node-unhealthy': node.status && node.status !== 'active' }"
+              :class="{ 'node-unhealthy': node.status && node.status !== 'active', 'node-has-fault': getComponentFaults(node.id).length > 0 }"
               @click="handleNodeClick(node)"
             >
               <div class="node-status" :class="getNodeStatusClass(node.status)"></div>
+              <div v-if="getComponentFaults(node.id).length > 0" class="fault-badge">
+                {{ getComponentFaults(node.id).length }}
+              </div>
               <div class="node-icon">
                 <el-icon><Connection /></el-icon>
               </div>
@@ -158,10 +164,13 @@
               v-for="node in getComponentsByLayer(2)"
               :key="node.id"
               class="topology-node app-node"
-              :class="{ 'node-unhealthy': node.status && node.status !== 'active' }"
+              :class="{ 'node-unhealthy': node.status && node.status !== 'active', 'node-has-fault': getComponentFaults(node.id).length > 0 }"
               @click="handleNodeClick(node)"
             >
               <div class="node-status" :class="getNodeStatusClass(node.status)"></div>
+              <div v-if="getComponentFaults(node.id).length > 0" class="fault-badge">
+                {{ getComponentFaults(node.id).length }}
+              </div>
               <div class="node-icon">
                 <el-icon><DataBoard /></el-icon>
               </div>
@@ -189,10 +198,13 @@
               v-for="node in getComponentsByLayer(3)"
               :key="node.id"
               class="topology-node cache-node"
-              :class="{ 'node-unhealthy': node.status && node.status !== 'active' }"
+              :class="{ 'node-unhealthy': node.status && node.status !== 'active', 'node-has-fault': getComponentFaults(node.id).length > 0 }"
               @click="handleNodeClick(node)"
             >
               <div class="node-status" :class="getNodeStatusClass(node.status)"></div>
+              <div v-if="getComponentFaults(node.id).length > 0" class="fault-badge">
+                {{ getComponentFaults(node.id).length }}
+              </div>
               <div class="node-icon">
                 <el-icon><Lightning /></el-icon>
               </div>
@@ -220,10 +232,13 @@
               v-for="node in getComponentsByLayer(4)"
               :key="node.id"
               class="topology-node db-node"
-              :class="{ 'node-unhealthy': node.status && node.status !== 'active' }"
+              :class="{ 'node-unhealthy': node.status && node.status !== 'active', 'node-has-fault': getComponentFaults(node.id).length > 0 }"
               @click="handleNodeClick(node)"
             >
               <div class="node-status" :class="getNodeStatusClass(node.status)"></div>
+              <div v-if="getComponentFaults(node.id).length > 0" class="fault-badge">
+                {{ getComponentFaults(node.id).length }}
+              </div>
               <div class="node-icon">
                 <el-icon><Coin /></el-icon>
               </div>
@@ -472,6 +487,7 @@ const loadEnvironmentStatus = async () => {
   try {
     const response = await api.getEnvironmentStatus(currentEnvironment.value.id)
     updateComponentStatus(response.components)
+    activeFaults.value = response.faults || []
   } catch (error) {
     console.error('Failed to load environment status:', error)
   }
@@ -484,6 +500,19 @@ const updateComponentStatus = (components: Array<{ id: number; status: string }>
       node.status = comp.status
     }
   })
+}
+
+const activeFaults = ref<Array<{
+  id: number
+  component_id: number
+  component_name: string | null
+  scenario_name: string | null
+  start_time: string | null
+  end_time: string | null
+}>>([])
+
+const getComponentFaults = (componentId: number) => {
+  return activeFaults.value.filter(f => f.component_id === componentId)
 }
 
 const getNodeStatusClass = (status: string | undefined) => {
@@ -744,6 +773,38 @@ onUnmounted(() => {
 .node-unhealthy {
   border-color: rgba(245, 108, 108, 0.5) !important;
   animation: shake 0.5s ease-in-out;
+}
+
+.node-has-fault {
+  box-shadow: 0 0 12px rgba(245, 108, 108, 0.4);
+}
+
+.fault-badge {
+  position: absolute;
+  top: -8px;
+  left: -8px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  background: linear-gradient(135deg, #f56c6c, #c45656);
+  border-radius: 9px;
+  font-size: 11px;
+  font-weight: 600;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(245, 108, 108, 0.5);
+  animation: badge-pulse 2s infinite;
+}
+
+@keyframes badge-pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
 }
 
 @keyframes pulse {
