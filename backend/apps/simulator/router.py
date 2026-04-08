@@ -143,21 +143,29 @@ def get_environment_status(id: int, db: Session = Depends(get_db)):
         FaultInstance.status == "active"
     ).all()
 
+    faulty_component_ids = {f.component_id for f in active_faults}
+
+    component_statuses = []
+    active_count = 0
+    for c in components:
+        status = "error" if c.id in faulty_component_ids else "active"
+        if status == "active":
+            active_count += 1
+        props = c.properties or {}
+        component_statuses.append({
+            "id": c.id,
+            "name": c.name,
+            "type": c.component_type,
+            "status": status,
+            "ip_address": props.get("ip_address", ""),
+        })
+
     status = {
         "total_components": len(components),
-        "active_components": len([c for c in components if c.status == "active"]),
-        "inactive_components": len([c for c in components if c.status != "active"]),
+        "active_components": active_count,
+        "inactive_components": len(components) - active_count,
         "active_faults": len(active_faults),
-        "components": [
-            {
-                "id": c.id,
-                "name": c.name,
-                "type": c.component_type,
-                "status": c.status,
-                "ip_address": c.ip_address,
-            }
-            for c in components
-        ],
+        "components": component_statuses,
         "faults": [
             {
                 "id": f.id,
@@ -416,6 +424,23 @@ def get_fault_instance(id: int, db: Session = Depends(get_db)):
     if not fault:
         raise HTTPException(status_code=404, detail="Fault instance not found")
     return fault
+
+
+@router.post("/fault-instances/{id}/recover")
+def recover_fault_instance(id: int, db: Session = Depends(get_db)):
+    fault = db.query(FaultInstance).filter(FaultInstance.id == id).first()
+    if not fault:
+        raise HTTPException(status_code=404, detail="Fault instance not found")
+    
+    if fault.status != "active":
+        raise HTTPException(status_code=400, detail="Fault instance is not active")
+    
+    from datetime import datetime
+    fault.status = "recovered"
+    fault.end_time = datetime.utcnow()
+    db.commit()
+    
+    return {"message": "Fault instance recovered", "id": id}
 
 
 @router.post("/environments/generate", response_model=TopologyGenerateResponse, status_code=status.HTTP_201_CREATED)

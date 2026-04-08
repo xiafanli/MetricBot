@@ -1,7 +1,22 @@
 # 忽略SQLBot目录
 SQLBot/
 
+# IDE和工具配置
 .vscode
+.idea/*
+!.idea/icon.png
+
+# AI助手配置目录
+.claude/
+.trae/
+
+# 敏感配置文件
+*.pem
+*.key
+secrets/
+.env.local
+.env.*.local
+
 node_modules/
 /test-results/
 /playwright-report/
@@ -63,8 +78,7 @@ coverage.xml
 .hypothesis/
 .pytest_cache/
 cover/
-.trae/
-.claude/
+
 # Translations
 *.mo
 *.pot
@@ -179,8 +193,6 @@ cython_debug/
 #  be found at https://github.com/github/gitignore/blob/main/Global/JetBrains.gitignore
 #  and can be added to the global gitignore or merged into this file.  For a more nuclear
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
-.idea/*
-!.idea/icon.png
 
 # Ruff stuff:
 .ruff_cache/

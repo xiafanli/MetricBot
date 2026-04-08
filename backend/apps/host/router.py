@@ -28,9 +28,13 @@ def host_to_dict(host: Host) -> dict:
     tags = None
     if host.tags:
         try:
-            tags = json.loads(host.tags)
+            parsed = json.loads(host.tags)
+            if isinstance(parsed, list):
+                tags = parsed
+            else:
+                tags = [str(parsed)]
         except (json.JSONDecodeError, TypeError):
-            tags = host.tags
+            tags = [host.tags]
     
     extra_data = None
     if host.extra_data:

@@ -1,12 +1,5 @@
 <template>
   <div class="template-management">
-    <div class="page-header">
-      <div class="header-left">
-        <h2 class="page-title">模板管理</h2>
-        <span class="page-desc">管理指标和日志生成模板</span>
-      </div>
-    </div>
-
     <div class="config-card">
       <el-tabs v-model="activeTab" type="border-card">
         <el-tab-pane label="指标模板" name="metrics">
@@ -129,38 +122,18 @@ onMounted(() => {
 .template-management {
   display: flex;
   flex-direction: column;
-  gap: 24px;
-}
-
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.header-left {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.page-title {
-  font-size: 20px;
-  font-weight: 700;
-  color: white;
-  margin: 0;
-}
-
-.page-desc {
-  font-size: 14px;
-  color: rgba(255, 255, 255, 0.5);
+  height: 100%;
+  padding: 20px;
 }
 
 .config-card {
   background: rgba(0, 0, 0, 0.2);
   border: 1px solid rgba(255, 215, 0, 0.1);
   border-radius: 12px;
-  padding: 24px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
 }
 
 .tab-content {
@@ -170,6 +143,9 @@ onMounted(() => {
 :deep(.el-tabs--border-card) {
   background: transparent !important;
   border: none !important;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 
   > .el-tabs__header {
     background: rgba(0, 0, 0, 0.3) !important;
@@ -180,6 +156,8 @@ onMounted(() => {
   .el-tabs__content {
     background: rgba(0, 0, 0, 0.2) !important;
     padding: 24px !important;
+    flex: 1;
+    overflow: auto;
   }
 }
 

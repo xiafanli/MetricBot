@@ -1,22 +1,5 @@
 <template>
   <div class="environment-management">
-    <div class="page-header">
-      <div class="header-left">
-        <h2 class="page-title">环境管理</h2>
-        <span class="page-desc">管理模拟生产环境拓扑</span>
-      </div>
-      <div class="header-right">
-        <el-button v-if="!currentEnvironment" type="primary" @click="handleCreate">
-          <el-icon><Plus /></el-icon>
-          创建环境
-        </el-button>
-        <el-button v-else type="warning" @click="handleRegenerate">
-          <el-icon><RefreshRight /></el-icon>
-          重新生成
-        </el-button>
-      </div>
-    </div>
-
     <div v-if="!currentEnvironment" class="empty-state">
       <el-empty description="暂无环境，请创建一个模拟环境">
         <el-button type="primary" @click="handleCreate">创建环境</el-button>
@@ -50,6 +33,10 @@
             <el-icon><FolderOpened /></el-icon>
             加载模板
           </el-button>
+          <el-button type="warning" size="small" @click="handleRegenerate">
+            <el-icon><RefreshRight /></el-icon>
+            重新生成
+          </el-button>
         </div>
       </div>
 
@@ -58,294 +45,223 @@
       </div>
 
       <div v-else class="topology-container">
-        <div class="topology-controls">
-          <el-button-group>
-            <el-button size="small" @click="zoomIn">
-              <el-icon><ZoomIn /></el-icon>
-            </el-button>
-            <el-button size="small" @click="zoomOut">
-              <el-icon><ZoomOut /></el-icon>
-            </el-button>
-            <el-button size="small" @click="resetZoom">
-              <el-icon><Refresh /></el-icon>
-            </el-button>
-          </el-button-group>
-          <span class="zoom-level">{{ Math.round(zoomLevel * 100) }}%</span>
+        <div class="topology-toolbar">
+          <div class="toolbar-left">
+            <div class="legend-item">
+              <span class="legend-dot healthy"></span>
+              <span>正常</span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-dot fault"></span>
+              <span>故障</span>
+            </div>
+          </div>
+          <div class="toolbar-right">
+            <el-button-group size="small">
+              <el-button @click="zoomIn" title="放大">
+                <el-icon><ZoomIn /></el-icon>
+              </el-button>
+              <el-button @click="zoomOut" title="缩小">
+                <el-icon><ZoomOut /></el-icon>
+              </el-button>
+              <el-button @click="resetView" title="重置视图">
+                <el-icon><Refresh /></el-icon>
+              </el-button>
+              <el-button @click="fitToScreen" title="适应屏幕">
+                <el-icon><FullScreen /></el-icon>
+              </el-button>
+            </el-button-group>
+            <span class="zoom-indicator">{{ Math.round(viewState.scale * 100) }}%</span>
+          </div>
         </div>
+
         <div 
-          class="topology-graph-wrapper"
-          @mousedown="startDrag"
-          @mousemove="onDrag"
-          @mouseup="endDrag"
-          @mouseleave="endDrag"
+          class="topology-canvas-wrapper"
+          ref="canvasWrapper"
+          @mousedown="startPan"
+          @mousemove="onPan"
+          @mouseup="endPan"
+          @mouseleave="endPan"
           @wheel.prevent="handleWheel"
         >
-          <div 
-            class="topology-graph" 
-            :style="{ 
-              transform: `scale(${zoomLevel}) translate(${panX}px, ${panY}px)`,
-              cursor: isDragging ? 'grabbing' : 'grab'
-            }"
+          <svg 
+            class="topology-canvas"
+            :viewBox="viewBox"
+            :style="{ cursor: viewState.isPanning ? 'grabbing' : 'grab' }"
           >
-        <div class="layer client-layer">
-          <div class="layer-title">客户端层</div>
-          <div class="layer-nodes">
-            <div
-              v-for="node in getComponentsByLayer(0)"
-              :key="node.id"
-              class="topology-node client-node"
-              :class="{ 'node-unhealthy': node.status && node.status !== 'active', 'node-has-fault': getComponentFaults(node.id).length > 0 }"
-              @click="handleNodeClick(node)"
-            >
-              <div class="node-status" :class="getNodeStatusClass(node.status)"></div>
-              <div v-if="getComponentFaults(node.id).length > 0" class="fault-badge">
-                {{ getComponentFaults(node.id).length }}
-              </div>
-              <div class="node-icon">
-                <el-icon><Monitor /></el-icon>
-              </div>
-              <div class="node-info">
-                <span class="node-name">{{ node.name }}</span>
-                <span class="node-ip">{{ node.ip_address }}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="layer-arrow">
-          <svg width="100%" height="40" class="flow-arrow">
             <defs>
-              <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
-                <polygon points="0 0, 10 3.5, 0 7" fill="rgba(255, 215, 0, 0.5)" />
+              <marker id="arrow-healthy" markerWidth="12" markerHeight="12" refX="10" refY="4" orient="auto">
+                <path d="M0,0 L0,8 L10,4 z" fill="#3b82f6" />
               </marker>
-              <linearGradient id="flowGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                <stop offset="0%" style="stop-color:rgba(255, 215, 0, 0.8)" />
-                <stop offset="50%" style="stop-color:rgba(255, 215, 0, 0.3)" />
-                <stop offset="100%" style="stop-color:rgba(255, 215, 0, 0.8)" />
-              </linearGradient>
+              <marker id="arrow-fault" markerWidth="12" markerHeight="12" refX="10" refY="4" orient="auto">
+                <path d="M0,0 L0,8 L10,4 z" fill="#ef4444" />
+              </marker>
+              <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+                <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="rgba(0,0,0,0.3)"/>
+              </filter>
+              <filter id="glow-blue" x="-50%" y="-50%" width="200%" height="200%">
+                <feGaussianBlur stdDeviation="4" result="blur"/>
+                <feFlood flood-color="#3b82f6" flood-opacity="0.5"/>
+                <feComposite in2="blur" operator="in"/>
+                <feMerge>
+                  <feMergeNode/>
+                  <feMergeNode in="SourceGraphic"/>
+                </feMerge>
+              </filter>
+              <filter id="glow-red" x="-50%" y="-50%" width="200%" height="200%">
+                <feGaussianBlur stdDeviation="4" result="blur"/>
+                <feFlood flood-color="#ef4444" flood-opacity="0.6"/>
+                <feComposite in2="blur" operator="in"/>
+                <feMerge>
+                  <feMergeNode/>
+                  <feMergeNode in="SourceGraphic"/>
+                </feMerge>
+              </filter>
             </defs>
-            <line x1="50%" y1="0" x2="50%" y2="30" stroke="rgba(255, 215, 0, 0.3)" stroke-width="2" marker-end="url(#arrowhead)" />
-            <circle r="4" fill="rgba(255, 215, 0, 0.9)" class="flow-dot">
-              <animateMotion dur="1.5s" repeatCount="indefinite" path="M0,0 L0,30" />
-            </circle>
+
+            <g class="layer-labels">
+              <g v-for="layer in visibleLayers" :key="layer.id" class="layer-label-group">
+                <text 
+                  class="layer-label"
+                  :x="60"
+                  :y="layerYPositions[layer.id] + 5"
+                >{{ layer.name }}</text>
+                <line 
+                  class="layer-separator"
+                  x1="120"
+                  :y1="layerYPositions[layer.id]"
+                  :x2="680"
+                  :y2="layerYPositions[layer.id]"
+                />
+              </g>
+            </g>
+
+            <g class="connections-layer">
+              <g 
+                v-for="conn in connections" 
+                :key="conn.id"
+                class="connection"
+              >
+                <path 
+                  :d="conn.path" 
+                  class="connection-line"
+                  :class="conn.status"
+                  fill="none"
+                  :marker-end="`url(#arrow-${conn.status})`"
+                />
+              </g>
+            </g>
+
+            <g class="nodes-layer">
+              <g
+                v-for="node in nodes"
+                :key="node.id"
+                class="topology-node"
+                :class="node.status"
+                :transform="`translate(${node.x}, ${node.y})`"
+                @mousedown.stop="startDragNode($event, node)"
+                @click="handleNodeClick(node.data)"
+              >
+                <circle 
+                  class="node-circle"
+                  :class="node.status"
+                  r="32"
+                  filter="url(#shadow)"
+                />
+                <g class="node-icon" :class="node.status">
+                  <component :is="node.icon" />
+                </g>
+                <text class="node-name" y="50">{{ node.data.name }}</text>
+                <g v-if="node.faultCount > 0" class="fault-badge">
+                  <circle cx="24" cy="-24" r="12" fill="#ef4444" />
+                  <text x="24" y="-20" text-anchor="middle" fill="white" font-size="11" font-weight="bold">{{ node.faultCount }}</text>
+                </g>
+              </g>
+            </g>
           </svg>
         </div>
 
-        <div class="layer lb-layer">
-          <div class="layer-title">负载均衡层</div>
-          <div class="layer-nodes">
-            <div
-              v-for="node in getComponentsByLayer(1)"
-              :key="node.id"
-              class="topology-node nginx-node"
-              :class="{ 'node-unhealthy': node.status && node.status !== 'active', 'node-has-fault': getComponentFaults(node.id).length > 0 }"
-              @click="handleNodeClick(node)"
-            >
-              <div class="node-status" :class="getNodeStatusClass(node.status)"></div>
-              <div v-if="getComponentFaults(node.id).length > 0" class="fault-badge">
-                {{ getComponentFaults(node.id).length }}
+        <div v-if="activeFaults.length > 0" class="active-faults-panel">
+          <div class="panel-header">
+            <el-icon class="panel-icon"><Warning /></el-icon>
+            <span>活跃故障 ({{ activeFaults.length }})</span>
+          </div>
+          <div class="faults-list">
+            <div v-for="fault in activeFaults" :key="fault.id" class="fault-item">
+              <div class="fault-info">
+                <span class="fault-name">{{ fault.scenario_name || '未知故障' }}</span>
+                <span class="fault-component">{{ fault.component_name }}</span>
               </div>
-              <div class="node-icon">
-                <el-icon><Connection /></el-icon>
-              </div>
-              <div class="node-info">
-                <span class="node-name">{{ node.name }}</span>
-                <span class="node-ip">{{ node.ip_address }}</span>
-              </div>
+              <div class="fault-time">{{ formatDateTime(fault.start_time) }}</div>
+              <el-button type="success" size="small" @click="handleRecoverFault(fault.id)">恢复</el-button>
             </div>
           </div>
-        </div>
-
-        <div class="layer-arrow">
-          <svg width="100%" height="40" class="flow-arrow">
-            <line x1="50%" y1="0" x2="50%" y2="30" stroke="rgba(255, 215, 0, 0.3)" stroke-width="2" marker-end="url(#arrowhead)" />
-            <circle r="4" fill="rgba(255, 215, 0, 0.9)" class="flow-dot">
-              <animateMotion dur="1.5s" repeatCount="indefinite" path="M0,0 L0,30" begin="0.3s" />
-            </circle>
-          </svg>
-        </div>
-
-        <div class="layer app-layer">
-          <div class="layer-title">应用层</div>
-          <div class="layer-nodes">
-            <div
-              v-for="node in getComponentsByLayer(2)"
-              :key="node.id"
-              class="topology-node app-node"
-              :class="{ 'node-unhealthy': node.status && node.status !== 'active', 'node-has-fault': getComponentFaults(node.id).length > 0 }"
-              @click="handleNodeClick(node)"
-            >
-              <div class="node-status" :class="getNodeStatusClass(node.status)"></div>
-              <div v-if="getComponentFaults(node.id).length > 0" class="fault-badge">
-                {{ getComponentFaults(node.id).length }}
-              </div>
-              <div class="node-icon">
-                <el-icon><DataBoard /></el-icon>
-              </div>
-              <div class="node-info">
-                <span class="node-name">{{ node.name }}</span>
-                <span class="node-ip">{{ node.ip_address }}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="layer-arrow">
-          <svg width="100%" height="40" class="flow-arrow">
-            <line x1="50%" y1="0" x2="50%" y2="30" stroke="rgba(255, 215, 0, 0.3)" stroke-width="2" marker-end="url(#arrowhead)" />
-            <circle r="4" fill="rgba(255, 215, 0, 0.9)" class="flow-dot">
-              <animateMotion dur="1.5s" repeatCount="indefinite" path="M0,0 L0,30" begin="0.6s" />
-            </circle>
-          </svg>
-        </div>
-
-        <div class="layer cache-layer">
-          <div class="layer-title">缓存层</div>
-          <div class="layer-nodes">
-            <div
-              v-for="node in getComponentsByLayer(3)"
-              :key="node.id"
-              class="topology-node cache-node"
-              :class="{ 'node-unhealthy': node.status && node.status !== 'active', 'node-has-fault': getComponentFaults(node.id).length > 0 }"
-              @click="handleNodeClick(node)"
-            >
-              <div class="node-status" :class="getNodeStatusClass(node.status)"></div>
-              <div v-if="getComponentFaults(node.id).length > 0" class="fault-badge">
-                {{ getComponentFaults(node.id).length }}
-              </div>
-              <div class="node-icon">
-                <el-icon><Lightning /></el-icon>
-              </div>
-              <div class="node-info">
-                <span class="node-name">{{ node.name }}</span>
-                <span class="node-ip">{{ node.ip_address }}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="layer-arrow">
-          <svg width="100%" height="40" class="flow-arrow">
-            <line x1="50%" y1="0" x2="50%" y2="30" stroke="rgba(255, 215, 0, 0.3)" stroke-width="2" marker-end="url(#arrowhead)" />
-            <circle r="4" fill="rgba(255, 215, 0, 0.9)" class="flow-dot">
-              <animateMotion dur="1.5s" repeatCount="indefinite" path="M0,0 L0,30" begin="0.9s" />
-            </circle>
-          </svg>
-        </div>
-
-        <div class="layer db-layer">
-          <div class="layer-title">数据库层</div>
-          <div class="layer-nodes">
-            <div
-              v-for="node in getComponentsByLayer(4)"
-              :key="node.id"
-              class="topology-node db-node"
-              :class="{ 'node-unhealthy': node.status && node.status !== 'active', 'node-has-fault': getComponentFaults(node.id).length > 0 }"
-              @click="handleNodeClick(node)"
-            >
-              <div class="node-status" :class="getNodeStatusClass(node.status)"></div>
-              <div v-if="getComponentFaults(node.id).length > 0" class="fault-badge">
-                {{ getComponentFaults(node.id).length }}
-              </div>
-              <div class="node-icon">
-                <el-icon><Coin /></el-icon>
-              </div>
-              <div class="node-info">
-                <span class="node-name">{{ node.name }}</span>
-                <span class="node-ip">{{ node.ip_address }}</span>
-              </div>
-            </div>
-          </div>
-        </div>
         </div>
       </div>
 
-      <div class="topology-stats">
-        <div class="stat-item">
-          <span class="stat-label">总组件数</span>
-          <span class="stat-value">{{ topologyComponents.length }}</span>
-        </div>
-        <div class="stat-item">
-          <span class="stat-label">连接数</span>
-          <span class="stat-value">{{ topologyRelations.length }}</span>
-        </div>
-        <div class="stat-item">
-          <span class="stat-label">Pushgateway</span>
-          <span class="stat-value">{{ currentEnvironment.pushgateway_url }}</span>
-        </div>
-      </div>
+      <ComponentDetail
+        v-model="showComponentDetail"
+        :component="selectedComponent"
+      />
+
+      <el-dialog v-model="saveTemplateDialog" title="保存为模板" width="500px">
+        <el-form :model="templateForm" label-width="100px">
+          <el-form-item label="模板名称" required>
+            <el-input v-model="templateForm.name" placeholder="请输入模板名称" />
+          </el-form-item>
+          <el-form-item label="模板描述">
+            <el-input v-model="templateForm.description" type="textarea" :rows="3" placeholder="请输入模板描述（可选）" />
+          </el-form-item>
+        </el-form>
+        <template #footer>
+          <el-button @click="saveTemplateDialog = false">取消</el-button>
+          <el-button type="primary" @click="handleSaveTemplate" :loading="savingTemplate">保存</el-button>
+        </template>
+      </el-dialog>
+
+      <el-dialog v-model="loadTemplateDialog" title="加载模板" width="700px">
+        <el-table :data="topologyTemplates" style="width: 100%" v-loading="loadingTemplates">
+          <el-table-column prop="name" label="模板名称" min-width="120" />
+          <el-table-column prop="description" label="描述" min-width="150" show-overflow-tooltip />
+          <el-table-column prop="created_at" label="创建时间" width="160">
+            <template #default="{ row }">{{ formatDateTime(row.created_at) }}</template>
+          </el-table-column>
+          <el-table-column label="操作" width="120" fixed="right">
+            <template #default="{ row }">
+              <el-button type="primary" link @click="handleApplyTemplate(row)">应用</el-button>
+              <el-button type="danger" link @click="handleDeleteTemplate(row)">删除</el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+      </el-dialog>
+
+      <el-dialog v-model="applyTemplateDialog" title="应用模板" width="500px">
+        <el-form :model="applyForm" label-width="100px">
+          <el-form-item label="环境名称" required>
+            <el-input v-model="applyForm.name" placeholder="请输入新环境名称" />
+          </el-form-item>
+          <el-form-item label="IP前缀">
+            <el-input v-model="applyForm.ip_prefix" placeholder="例如: 192.168.1" />
+          </el-form-item>
+          <el-form-item label="描述">
+            <el-input v-model="applyForm.description" type="textarea" :rows="2" placeholder="请输入环境描述（可选）" />
+          </el-form-item>
+        </el-form>
+        <template #footer>
+          <el-button @click="applyTemplateDialog = false">取消</el-button>
+          <el-button type="primary" @click="confirmApplyTemplate" :loading="applyingTemplate">应用</el-button>
+        </template>
+      </el-dialog>
     </div>
-
-    <ComponentDetail
-      v-model="showComponentDetail"
-      :component="selectedComponent"
-    />
-
-    <el-dialog v-model="saveTemplateDialog" title="保存为模板" width="500px">
-      <el-form :model="templateForm" label-width="100px">
-        <el-form-item label="模板名称" required>
-          <el-input v-model="templateForm.name" placeholder="请输入模板名称" />
-        </el-form-item>
-        <el-form-item label="模板描述">
-          <el-input v-model="templateForm.description" type="textarea" :rows="3" placeholder="请输入模板描述（可选）" />
-        </el-form-item>
-        <el-form-item label="拓扑类型">
-          <el-input v-model="templateForm.topology_type" disabled />
-        </el-form-item>
-        <el-form-item label="规模">
-          <el-input v-model="templateForm.scale" disabled />
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <el-button @click="saveTemplateDialog = false">取消</el-button>
-        <el-button type="primary" @click="handleSaveTemplate" :loading="savingTemplate">保存</el-button>
-      </template>
-    </el-dialog>
-
-    <el-dialog v-model="loadTemplateDialog" title="加载模板" width="700px">
-      <el-table :data="topologyTemplates" style="width: 100%" v-loading="loadingTemplates">
-        <el-table-column prop="name" label="模板名称" min-width="120" />
-        <el-table-column prop="description" label="描述" min-width="150" show-overflow-tooltip />
-        <el-table-column prop="topology_type" label="拓扑类型" width="100" />
-        <el-table-column prop="scale" label="规模" width="80" />
-        <el-table-column prop="created_at" label="创建时间" width="160">
-          <template #default="{ row }">
-            {{ formatDateTime(row.created_at) }}
-          </template>
-        </el-table-column>
-        <el-table-column label="操作" width="120" fixed="right">
-          <template #default="{ row }">
-            <el-button type="primary" link @click="handleApplyTemplate(row)">应用</el-button>
-            <el-button type="danger" link @click="handleDeleteTemplate(row)">删除</el-button>
-          </template>
-        </el-table-column>
-      </el-table>
-    </el-dialog>
-
-    <el-dialog v-model="applyTemplateDialog" title="应用模板" width="500px">
-      <el-form :model="applyForm" label-width="100px">
-        <el-form-item label="环境名称" required>
-          <el-input v-model="applyForm.name" placeholder="请输入新环境名称" />
-        </el-form-item>
-        <el-form-item label="IP前缀">
-          <el-input v-model="applyForm.ip_prefix" placeholder="例如: 192.168.1" />
-        </el-form-item>
-        <el-form-item label="描述">
-          <el-input v-model="applyForm.description" type="textarea" :rows="2" placeholder="请输入环境描述（可选）" />
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <el-button @click="applyTemplateDialog = false">取消</el-button>
-        <el-button type="primary" @click="confirmApplyTemplate" :loading="applyingTemplate">应用</el-button>
-      </template>
-    </el-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, h } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Plus, RefreshRight, Monitor, Connection, DataBoard, Lightning, Coin, ZoomIn, ZoomOut, Refresh, FolderAdd, FolderOpened } from '@element-plus/icons-vue'
+import { 
+  RefreshRight, FolderAdd, FolderOpened, ZoomIn, ZoomOut, Refresh, FullScreen, Warning
+} from '@element-plus/icons-vue'
 import { useRouter } from 'vue-router'
 import { api } from '@/api'
 import ComponentDetail from '@/components/simulator/ComponentDetail.vue'
@@ -386,58 +302,247 @@ const topologyComponents = ref<Component[]>([])
 const topologyRelations = ref<Relation[]>([])
 const showComponentDetail = ref(false)
 const selectedComponent = ref<Component | null>(null)
+const canvasWrapper = ref<HTMLElement | null>(null)
 
-const zoomLevel = ref(1)
-const panX = ref(0)
-const panY = ref(0)
-const isDragging = ref(false)
-const dragStartX = ref(0)
-const dragStartY = ref(0)
-const dragStartPanX = ref(0)
-const dragStartPanY = ref(0)
+const viewState = ref({
+  scale: 1,
+  offsetX: 0,
+  offsetY: 0,
+  isPanning: false,
+  panStartX: 0,
+  panStartY: 0,
+  panStartOffsetX: 0,
+  panStartOffsetY: 0
+})
+
+const draggingNode = ref<{ id: number; startX: number; startY: number; nodeStartX: number; nodeStartY: number } | null>(null)
+const nodePositions = ref<Map<number, { x: number; y: number }>>(new Map())
+
+const viewBox = computed(() => {
+  const width = 800
+  const height = 600
+  const scaledWidth = width / viewState.value.scale
+  const scaledHeight = height / viewState.value.scale
+  const x = viewState.value.offsetX - scaledWidth / 2 + width / 2
+  const y = viewState.value.offsetY - scaledHeight / 2 + height / 2
+  return `${x} ${y} ${scaledWidth} ${scaledHeight}`
+})
+
+const layers = [
+  { id: 0, name: '客户端层' },
+  { id: 1, name: '负载均衡层' },
+  { id: 2, name: '应用服务层' },
+  { id: 3, name: '缓存层' },
+  { id: 4, name: '数据层' }
+]
+
+const layerYPositions: Record<number, number> = {
+  0: 80,
+  1: 180,
+  2: 280,
+  3: 380,
+  4: 480
+}
+
+const visibleLayers = computed(() => {
+  const usedLayers = new Set(topologyComponents.value.map(c => getComponentLayer(c.component_type)))
+  return layers.filter(l => usedLayers.has(l.id))
+})
+
+const componentIcons: Record<string, any> = {
+  client: {
+    render: () => h('g', { fill: 'none', stroke: 'currentColor', 'stroke-width': 2 }, [
+      h('circle', { cx: 0, cy: -6, r: 8 }),
+      h('path', { d: 'M-12,12 Q0,4 12,12', fill: 'none' }),
+      h('line', { x1: 0, y1: 2, x2: 0, y2: 12 }),
+    ])
+  },
+  nginx: {
+    render: () => h('g', { fill: 'currentColor' }, [
+      h('polygon', { points: '0,-12 12,4 -12,4' }),
+      h('rect', { x: -8, y: 4, width: 16, height: 8, rx: 2 }),
+    ])
+  },
+  app: {
+    render: () => h('g', { fill: 'currentColor' }, [
+      h('rect', { x: -10, y: -10, width: 20, height: 20, rx: 3 }),
+      h('rect', { x: -6, y: -6, width: 5, height: 5, rx: 1, fill: '#1e293b' }),
+      h('rect', { x: 1, y: -6, width: 5, height: 5, rx: 1, fill: '#1e293b' }),
+      h('rect', { x: -6, y: 1, width: 5, height: 5, rx: 1, fill: '#1e293b' }),
+      h('rect', { x: 1, y: 1, width: 5, height: 5, rx: 1, fill: '#1e293b' }),
+    ])
+  },
+  redis: {
+    render: () => h('g', { fill: 'currentColor' }, [
+      h('polygon', { points: '0,-12 12,0 0,12 -12,0' }),
+      h('rect', { x: -5, y: -3, width: 10, height: 6, rx: 1, fill: '#1e293b' }),
+    ])
+  },
+  mysql: {
+    render: () => h('g', { fill: 'currentColor' }, [
+      h('ellipse', { cx: 0, cy: -8, rx: 12, ry: 5 }),
+      h('rect', { x: -12, y: -8, width: 24, height: 16 }),
+      h('ellipse', { cx: 0, cy: 8, rx: 12, ry: 5 }),
+      h('ellipse', { cx: 0, cy: -8, rx: 12, ry: 5, fill: '#1e293b', opacity: 0.3 }),
+    ])
+  }
+}
+
+const getComponentIcon = (type: string) => {
+  const iconMap: Record<string, string> = {
+    client: 'client',
+    nginx: 'nginx',
+    app: 'app',
+    redis: 'redis',
+    mysql: 'mysql'
+  }
+  return iconMap[type] || 'app'
+}
+
+const getComponentLayer = (type: string): number => {
+  const layerMap: Record<string, number> = {
+    client: 0,
+    nginx: 1,
+    app: 2,
+    redis: 3,
+    mysql: 4
+  }
+  return layerMap[type] ?? 2
+}
+
+const nodes = computed(() => {
+  const componentsWithLayer = topologyComponents.value.map(comp => ({
+    ...comp,
+    computedLayer: getComponentLayer(comp.component_type)
+  }))
+  
+  return componentsWithLayer.map((comp) => {
+    const layerComponents = componentsWithLayer.filter(c => c.computedLayer === comp.computedLayer)
+    const layerIndex = layerComponents.indexOf(comp)
+    const layerWidth = layerComponents.length * 140
+    const startX = 400 - layerWidth / 2 + 70
+    
+    let x = startX + layerIndex * 140
+    let y = layerYPositions[comp.computedLayer] || 300
+    
+    if (nodePositions.value.has(comp.id)) {
+      const pos = nodePositions.value.get(comp.id)!
+      x = pos.x
+      y = pos.y
+    }
+    
+    const faults = activeFaults.value.filter(f => f.component_id === comp.id)
+    const status = faults.length > 0 ? 'fault' : 'healthy'
+    
+    return {
+      id: comp.id,
+      x,
+      y,
+      data: comp,
+      status,
+      faultCount: faults.length,
+      icon: componentIcons[getComponentIcon(comp.component_type)]
+    }
+  })
+})
+
+const connections = computed(() => {
+  return topologyRelations.value.map(rel => {
+    const source = nodes.value.find(n => n.id === rel.source_id)
+    const target = nodes.value.find(n => n.id === rel.target_id)
+    
+    if (!source || !target) return null
+    
+    const path = `M ${source.x} ${source.y + 32} L ${target.x} ${target.y - 32}`
+    
+    const sourceFault = activeFaults.value.some(f => f.component_id === source.id)
+    const targetFault = activeFaults.value.some(f => f.component_id === target.id)
+    const status = (sourceFault || targetFault) ? 'fault' : 'healthy'
+    
+    return {
+      id: rel.id,
+      path,
+      status
+    }
+  }).filter(Boolean) as { id: number; path: string; status: string }[]
+})
 
 const zoomIn = () => {
-  if (zoomLevel.value < 2) {
-    zoomLevel.value = Math.min(2, zoomLevel.value + 0.1)
-  }
+  viewState.value.scale = Math.min(2, viewState.value.scale + 0.1)
 }
 
 const zoomOut = () => {
-  if (zoomLevel.value > 0.5) {
-    zoomLevel.value = Math.max(0.5, zoomLevel.value - 0.1)
-  }
+  viewState.value.scale = Math.max(0.3, viewState.value.scale - 0.1)
 }
 
-const resetZoom = () => {
-  zoomLevel.value = 1
-  panX.value = 0
-  panY.value = 0
+const resetView = () => {
+  viewState.value.scale = 1
+  viewState.value.offsetX = 0
+  viewState.value.offsetY = 0
+  nodePositions.value.clear()
+}
+
+const fitToScreen = () => {
+  if (nodes.value.length === 0) return
+  
+  const minX = Math.min(...nodes.value.map(n => n.x)) - 100
+  const maxX = Math.max(...nodes.value.map(n => n.x)) + 100
+  const minY = Math.min(...nodes.value.map(n => n.y)) - 100
+  const maxY = Math.max(...nodes.value.map(n => n.y)) + 100
+  
+  const width = maxX - minX
+  const height = maxY - minY
+  
+  viewState.value.scale = Math.min(800 / width, 600 / height, 1.5)
+  viewState.value.offsetX = (minX + maxX) / 2
+  viewState.value.offsetY = (minY + maxY) / 2
 }
 
 const handleWheel = (e: WheelEvent) => {
   const delta = e.deltaY > 0 ? -0.05 : 0.05
-  zoomLevel.value = Math.max(0.5, Math.min(2, zoomLevel.value + delta))
+  viewState.value.scale = Math.max(0.3, Math.min(2, viewState.value.scale + delta))
 }
 
-const startDrag = (e: MouseEvent) => {
+const startPan = (e: MouseEvent) => {
   if ((e.target as HTMLElement).closest('.topology-node')) return
-  isDragging.value = true
-  dragStartX.value = e.clientX
-  dragStartY.value = e.clientY
-  dragStartPanX.value = panX.value
-  dragStartPanY.value = panY.value
+  viewState.value.isPanning = true
+  viewState.value.panStartX = e.clientX
+  viewState.value.panStartY = e.clientY
+  viewState.value.panStartOffsetX = viewState.value.offsetX
+  viewState.value.panStartOffsetY = viewState.value.offsetY
 }
 
-const onDrag = (e: MouseEvent) => {
-  if (!isDragging.value) return
-  const dx = e.clientX - dragStartX.value
-  const dy = e.clientY - dragStartY.value
-  panX.value = dragStartPanX.value + dx / zoomLevel.value
-  panY.value = dragStartPanY.value + dy / zoomLevel.value
+const onPan = (e: MouseEvent) => {
+  if (draggingNode.value) {
+    const dx = (e.clientX - draggingNode.value.startX) / viewState.value.scale
+    const dy = (e.clientY - draggingNode.value.startY) / viewState.value.scale
+    nodePositions.value.set(draggingNode.value.id, {
+      x: draggingNode.value.nodeStartX + dx,
+      y: draggingNode.value.nodeStartY + dy
+    })
+    return
+  }
+  
+  if (!viewState.value.isPanning) return
+  const dx = (e.clientX - viewState.value.panStartX) / viewState.value.scale
+  const dy = (e.clientY - viewState.value.panStartY) / viewState.value.scale
+  viewState.value.offsetX = viewState.value.panStartOffsetX - dx
+  viewState.value.offsetY = viewState.value.panStartOffsetY - dy
 }
 
-const endDrag = () => {
-  isDragging.value = false
+const endPan = () => {
+  viewState.value.isPanning = false
+  draggingNode.value = null
+}
+
+const startDragNode = (e: MouseEvent, node: any) => {
+  draggingNode.value = {
+    id: node.id,
+    startX: e.clientX,
+    startY: e.clientY,
+    nodeStartX: node.x,
+    nodeStartY: node.y
+  }
 }
 
 const loadEnvironment = async () => {
@@ -466,6 +571,7 @@ const loadTopology = async (envId: number) => {
     ])
     topologyComponents.value = Array.isArray(componentsData) ? componentsData : []
     topologyRelations.value = Array.isArray(relationsData) ? relationsData : []
+    nodePositions.value.clear()
   } catch (error) {
     console.error('加载拓扑数据失败:', error)
     topologyComponents.value = []
@@ -473,13 +579,7 @@ const loadTopology = async (envId: number) => {
   }
 }
 
-const getComponentsByLayer = (layer: number) => {
-  return topologyComponents.value.filter(c => c.layer === layer)
-}
-
-const handleCreate = () => {
-  router.push('/simulator/wizard')
-}
+const handleCreate = () => router.push('/simulator/wizard')
 
 const handleRegenerate = async () => {
   try {
@@ -496,9 +596,7 @@ const handleRegenerate = async () => {
       router.push('/simulator/wizard')
     }
   } catch (error) {
-    if (error !== 'cancel') {
-      ElMessage.error('操作失败')
-    }
+    if (error !== 'cancel') ElMessage.error('操作失败')
   }
 }
 
@@ -535,9 +633,7 @@ const handleSyncToHosts = async () => {
     await api.syncEnvironmentToHosts(currentEnvironment.value.id)
     ElMessage.success('同步成功')
   } catch (error) {
-    if (error !== 'cancel') {
-      ElMessage.error('同步失败')
-    }
+    if (error !== 'cancel') ElMessage.error('同步失败')
   }
 }
 
@@ -550,7 +646,6 @@ let statusInterval: ReturnType<typeof setInterval> | null = null
 
 const loadEnvironmentStatus = async () => {
   if (!currentEnvironment.value?.id) return
-
   try {
     const response = await api.getEnvironmentStatus(currentEnvironment.value.id)
     updateComponentStatus(response.components)
@@ -563,9 +658,7 @@ const loadEnvironmentStatus = async () => {
 const updateComponentStatus = (components: Array<{ id: number; status: string }>) => {
   components.forEach(comp => {
     const node = topologyComponents.value.find(n => n.id === comp.id)
-    if (node) {
-      node.status = comp.status
-    }
+    if (node) node.status = comp.status
   })
 }
 
@@ -578,21 +671,14 @@ const activeFaults = ref<Array<{
   end_time: string | null
 }>>([])
 
-const getComponentFaults = (componentId: number) => {
-  return activeFaults.value.filter(f => f.component_id === componentId)
-}
-
-const getNodeStatusClass = (status: string | undefined) => {
-  if (!status) return 'status-unknown'
-  switch (status) {
-    case 'active':
-      return 'status-healthy'
-    case 'inactive':
-      return 'status-warning'
-    case 'error':
-      return 'status-critical'
-    default:
-      return 'status-unknown'
+const handleRecoverFault = async (faultId: number) => {
+  try {
+    await api.recoverFaultInstance(faultId)
+    ElMessage.success('故障已恢复')
+    loadEnvironmentStatus()
+  } catch (error) {
+    console.error('恢复失败:', error)
+    ElMessage.error('恢复失败')
   }
 }
 
@@ -612,29 +698,13 @@ const topologyTemplates = ref<Array<{
 }>>([])
 const selectedTemplate = ref<{ id: number; name: string } | null>(null)
 
-const templateForm = ref({
-  name: '',
-  description: '',
-  topology_type: 'custom',
-  scale: 'medium'
-})
-
-const applyForm = ref({
-  name: '',
-  ip_prefix: '',
-  description: ''
-})
+const templateForm = ref({ name: '', description: '', topology_type: 'custom', scale: 'medium' })
+const applyForm = ref({ name: '', ip_prefix: '', description: '' })
 
 const formatDateTime = (dateStr: string | null | undefined) => {
   if (!dateStr) return '-'
   const date = new Date(dateStr)
-  return date.toLocaleString('zh-CN', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit'
-  })
+  return date.toLocaleString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })
 }
 
 const showSaveTemplateDialog = () => {
@@ -652,7 +722,6 @@ const handleSaveTemplate = async () => {
     ElMessage.warning('请输入模板名称')
     return
   }
-
   savingTemplate.value = true
   try {
     const componentsConfig = topologyComponents.value.map(c => ({
@@ -661,7 +730,6 @@ const handleSaveTemplate = async () => {
       ip_address: c.ip_address,
       properties: c.properties
     }))
-
     await api.createTopologyTemplate({
       name: templateForm.value.name,
       description: templateForm.value.description,
@@ -669,7 +737,6 @@ const handleSaveTemplate = async () => {
       scale: templateForm.value.scale,
       components_config: { components: componentsConfig }
     })
-
     ElMessage.success('模板保存成功')
     saveTemplateDialog.value = false
   } catch (error) {
@@ -710,9 +777,7 @@ const confirmApplyTemplate = async () => {
     ElMessage.warning('请输入环境名称')
     return
   }
-
   if (!selectedTemplate.value) return
-
   applyingTemplate.value = true
   try {
     const result = await api.applyTopologyTemplate(selectedTemplate.value.id, {
@@ -720,11 +785,10 @@ const confirmApplyTemplate = async () => {
       ip_prefix: applyForm.value.ip_prefix,
       description: applyForm.value.description
     }) as { environment: Environment }
-
     ElMessage.success('模板应用成功')
     applyTemplateDialog.value = false
     currentEnvironment.value = result.environment
-    await loadTopologyData()
+    await loadTopology(currentEnvironment.value.id)
   } catch (error) {
     console.error('Failed to apply template:', error)
     ElMessage.error('应用模板失败')
@@ -740,7 +804,6 @@ const handleDeleteTemplate = async (template: typeof topologyTemplates.value[0])
       cancelButtonText: '取消',
       type: 'warning'
     })
-
     await api.deleteTopologyTemplate(template.id)
     ElMessage.success('删除成功')
     topologyTemplates.value = topologyTemplates.value.filter(t => t.id !== template.id)
@@ -758,9 +821,7 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
-  if (statusInterval) {
-    clearInterval(statusInterval)
-  }
+  if (statusInterval) clearInterval(statusInterval)
 })
 </script>
 
@@ -768,37 +829,8 @@ onUnmounted(() => {
 .environment-management {
   display: flex;
   flex-direction: column;
-  gap: 24px;
-}
-
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.header-left {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.page-title {
-  font-size: 20px;
-  font-weight: 700;
-  color: white;
-  margin: 0;
-}
-
-.page-desc {
-  font-size: 14px;
-  color: rgba(255, 255, 255, 0.5);
-}
-
-.header-right {
-  display: flex;
-  align-items: center;
-  gap: 12px;
+  height: 100%;
+  padding: 20px;
 }
 
 .empty-state {
@@ -809,38 +841,43 @@ onUnmounted(() => {
   background: rgba(0, 0, 0, 0.2);
   border: 1px solid rgba(255, 215, 0, 0.1);
   border-radius: 12px;
+  flex: 1;
 }
 
 .topology-view {
+  display: flex;
+  flex-direction: column;
   background: rgba(0, 0, 0, 0.2);
   border: 1px solid rgba(255, 215, 0, 0.1);
   border-radius: 12px;
-  padding: 24px;
+  flex: 1;
+  min-height: 0;
 }
 
 .topology-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 24px;
+  padding: 16px 20px;
+  border-bottom: 1px solid rgba(255, 215, 0, 0.08);
+  flex-shrink: 0;
 
   .header-info {
     h3 {
       color: #ffd700;
-      margin: 0 0 8px 0;
-      font-size: 18px;
+      margin: 0 0 4px 0;
+      font-size: 16px;
     }
-
     .env-desc {
       color: rgba(255, 255, 255, 0.5);
-      font-size: 14px;
+      font-size: 13px;
     }
   }
 
   .header-actions {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
   }
 }
 
@@ -852,292 +889,293 @@ onUnmounted(() => {
 }
 
 .topology-container {
-  position: relative;
-}
-
-.topology-controls {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  z-index: 100;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  background: rgba(0, 0, 0, 0.5);
-  padding: 8px 12px;
-  border-radius: 8px;
-}
-
-.zoom-level {
-  color: rgba(255, 255, 255, 0.7);
-  font-size: 12px;
-  min-width: 40px;
-}
-
-.topology-graph-wrapper {
-  overflow: hidden;
-  border-radius: 8px;
-  background: rgba(0, 0, 0, 0.1);
-  min-height: 500px;
-  position: relative;
-}
-
-.topology-graph {
   display: flex;
   flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+.topology-toolbar {
+  display: flex;
+  justify-content: space-between;
   align-items: center;
-  gap: 0;
-  transform-origin: center center;
-  transition: transform 0.1s ease-out;
-  padding: 20px;
-}
-
-.layer {
-  width: 100%;
-  padding: 16px;
-  border-radius: 8px;
-  background: rgba(0, 0, 0, 0.2);
-}
-
-.layer-title {
-  text-align: center;
-  color: rgba(255, 255, 255, 0.7);
-  font-size: 14px;
-  margin-bottom: 12px;
-  font-weight: 500;
-}
-
-.layer-nodes {
-  display: flex;
-  justify-content: center;
-  gap: 16px;
-  flex-wrap: wrap;
-}
-
-.layer-arrow {
-  width: 100%;
-  height: 40px;
-  display: flex;
-  justify-content: center;
-}
-
-.flow-arrow {
-  overflow: visible;
-}
-
-.flow-dot {
-  filter: drop-shadow(0 0 4px rgba(255, 215, 0, 0.8));
-}
-
-@keyframes flowPulse {
-  0%, 100% {
-    opacity: 0.6;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 1;
-    transform: scale(1.2);
-  }
-}
-
-.flow-arrow line {
-  animation: flowPulse 2s ease-in-out infinite;
-}
-
-.topology-node {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 16px;
-  border-radius: 8px;
-  min-width: 180px;
-  transition: all 0.3s;
-  cursor: pointer;
-  position: relative;
-
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-  }
-}
-
-.node-status {
-  position: absolute;
-  top: -4px;
-  right: -4px;
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  border: 2px solid rgba(0, 0, 0, 0.5);
-  animation: pulse 2s infinite;
-}
-
-.status-healthy {
-  background: #67c23a;
-  box-shadow: 0 0 8px rgba(103, 194, 58, 0.6);
-}
-
-.status-warning {
-  background: #e6a23c;
-  box-shadow: 0 0 8px rgba(230, 162, 60, 0.6);
-}
-
-.status-critical {
-  background: #f56c6c;
-  box-shadow: 0 0 8px rgba(245, 108, 108, 0.6);
-  animation: pulse-critical 1s infinite;
-}
-
-.status-unknown {
-  background: #909399;
-  box-shadow: 0 0 8px rgba(144, 147, 153, 0.6);
-}
-
-.node-unhealthy {
-  border-color: rgba(245, 108, 108, 0.5) !important;
-  animation: shake 0.5s ease-in-out;
-}
-
-.node-has-fault {
-  box-shadow: 0 0 12px rgba(245, 108, 108, 0.4);
-}
-
-.fault-badge {
-  position: absolute;
-  top: -8px;
-  left: -8px;
-  min-width: 18px;
-  height: 18px;
-  padding: 0 4px;
-  background: linear-gradient(135deg, #f56c6c, #c45656);
-  border-radius: 9px;
-  font-size: 11px;
-  font-weight: 600;
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 2px 8px rgba(245, 108, 108, 0.5);
-  animation: badge-pulse 2s infinite;
-}
-
-@keyframes badge-pulse {
-  0%, 100% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.1);
-  }
-}
-
-@keyframes pulse {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.6;
-  }
-}
-
-@keyframes pulse-critical {
-  0%, 100% {
-    transform: scale(1);
-    opacity: 1;
-  }
-  50% {
-    transform: scale(1.3);
-    opacity: 0.7;
-  }
-}
-
-@keyframes shake {
-  0%, 100% {
-    transform: translateX(0);
-  }
-  25% {
-    transform: translateX(-2px);
-  }
-  75% {
-    transform: translateX(2px);
-  }
-}
-
-.client-node {
-  background: linear-gradient(135deg, rgba(64, 158, 255, 0.2), rgba(64, 158, 255, 0.1));
-  border: 1px solid rgba(64, 158, 255, 0.3);
-}
-
-.nginx-node {
-  background: linear-gradient(135deg, rgba(103, 194, 58, 0.2), rgba(103, 194, 58, 0.1));
-  border: 1px solid rgba(103, 194, 58, 0.3);
-}
-
-.app-node {
-  background: linear-gradient(135deg, rgba(255, 215, 0, 0.2), rgba(255, 215, 0, 0.1));
-  border: 1px solid rgba(255, 215, 0, 0.3);
-}
-
-.cache-node {
-  background: linear-gradient(135deg, rgba(230, 162, 60, 0.2), rgba(230, 162, 60, 0.1));
-  border: 1px solid rgba(230, 162, 60, 0.3);
-}
-
-.db-node {
-  background: linear-gradient(135deg, rgba(144, 147, 153, 0.2), rgba(144, 147, 153, 0.1));
-  border: 1px solid rgba(144, 147, 153, 0.3);
-}
-
-.node-icon {
-  width: 36px;
-  height: 36px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 8px;
+  padding: 10px 20px;
   background: rgba(0, 0, 0, 0.3);
-  color: #ffd700;
-  font-size: 20px;
+  border-bottom: 1px solid rgba(255, 215, 0, 0.08);
+  flex-shrink: 0;
+
+  .toolbar-left {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.7);
+  }
+
+  .legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    
+    &.healthy {
+      background: #3b82f6;
+      box-shadow: 0 0 8px rgba(59, 130, 246, 0.6);
+    }
+    
+    &.fault {
+      background: #ef4444;
+      box-shadow: 0 0 8px rgba(239, 68, 68, 0.6);
+    }
+  }
+
+  .toolbar-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .zoom-indicator {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.6);
+    min-width: 45px;
+    text-align: center;
+    font-family: 'SF Mono', 'Monaco', monospace;
+  }
 }
 
-.node-info {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
+.topology-canvas-wrapper {
+  flex: 1;
+  min-height: 400px;
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.95) 0%, rgba(15, 23, 42, 0.98) 100%);
+  overflow: hidden;
+  position: relative;
 }
 
-.node-name {
-  color: white;
-  font-weight: 500;
-  font-size: 14px;
+.topology-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
 }
 
-.node-ip {
-  color: rgba(255, 255, 255, 0.5);
-  font-size: 12px;
+.layer-labels {
+  .layer-label-group {
+    .layer-label {
+      font-size: 12px;
+      fill: rgba(255, 255, 255, 0.4);
+      font-weight: 500;
+      text-anchor: end;
+    }
+    
+    .layer-separator {
+      stroke: rgba(255, 255, 255, 0.05);
+      stroke-width: 1;
+      stroke-dasharray: 4 4;
+    }
+  }
 }
 
-.topology-stats {
-  display: flex;
-  gap: 24px;
-  margin-top: 24px;
-  padding-top: 24px;
-  border-top: 1px solid rgba(255, 215, 0, 0.1);
+.connections-layer {
+  .connection {
+    .connection-line {
+      stroke-width: 2;
+      stroke-linecap: round;
+      transition: stroke 0.3s ease;
+      
+      &.healthy {
+        stroke: #3b82f6;
+      }
+      
+      &.fault {
+        stroke: #ef4444;
+        stroke-dasharray: 6 3;
+        animation: dash-flow 0.5s linear infinite;
+      }
+    }
+  }
 }
 
-.stat-item {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+@keyframes dash-flow {
+  to {
+    stroke-dashoffset: -9;
+  }
 }
 
-.stat-label {
-  color: rgba(255, 255, 255, 0.5);
-  font-size: 12px;
+.nodes-layer {
+  .topology-node {
+    cursor: pointer;
+
+    &:hover {
+      .node-circle {
+        stroke-width: 3;
+      }
+    }
+
+    .node-circle {
+      transition: all 0.3s ease;
+      stroke-width: 2;
+      
+      &.healthy {
+        fill: rgba(59, 130, 246, 0.15);
+        stroke: #3b82f6;
+      }
+      
+      &.fault {
+        fill: rgba(239, 68, 68, 0.15);
+        stroke: #ef4444;
+        animation: pulse-circle 1.5s ease-in-out infinite;
+      }
+    }
+
+    .node-icon {
+      font-size: 20px;
+      transition: all 0.3s ease;
+      
+      &.healthy {
+        color: #3b82f6;
+      }
+      
+      &.fault {
+        color: #ef4444;
+      }
+    }
+
+    .node-name {
+      font-size: 11px;
+      font-weight: 500;
+      fill: rgba(255, 255, 255, 0.9);
+      text-anchor: middle;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
+  }
 }
 
-.stat-value {
-  color: #ffd700;
-  font-size: 16px;
-  font-weight: 500;
+@keyframes pulse-circle {
+  0%, 100% {
+    stroke-opacity: 1;
+    fill-opacity: 0.15;
+  }
+  50% {
+    stroke-opacity: 0.6;
+    fill-opacity: 0.25;
+  }
+}
+
+.active-faults-panel {
+  background: rgba(239, 68, 68, 0.08);
+  border-top: 1px solid rgba(239, 68, 68, 0.2);
+  padding: 12px 20px;
+  flex-shrink: 0;
+  max-height: 150px;
+  overflow-y: auto;
+
+  .panel-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+    color: #f87171;
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  .panel-icon {
+    font-size: 16px;
+  }
+
+  .faults-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .fault-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 12px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 6px;
+    border: 1px solid rgba(239, 68, 68, 0.15);
+  }
+
+  .fault-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .fault-name {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.9);
+  }
+
+  .fault-component {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.5);
+  }
+
+  .fault-time {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.4);
+    font-family: 'SF Mono', 'Monaco', monospace;
+  }
+}
+
+:deep(.el-dialog) {
+  background: rgba(20, 20, 30, 0.95);
+  border: 1px solid rgba(255, 215, 0, 0.2);
+
+  .el-dialog__header {
+    border-bottom: 1px solid rgba(255, 215, 0, 0.1);
+  }
+
+  .el-dialog__title {
+    color: #ffd700;
+  }
+
+  .el-form-item__label {
+    color: rgba(255, 255, 255, 0.8);
+  }
+}
+
+:deep(.el-table) {
+  --el-table-bg-color: transparent;
+  --el-table-tr-bg-color: transparent;
+  --el-table-header-bg-color: rgba(255, 215, 0, 0.08);
+  --el-table-row-hover-bg-color: rgba(255, 215, 0, 0.05);
+  --el-table-border-color: rgba(255, 215, 0, 0.1);
+  --el-table-text-color: rgba(255, 255, 255, 0.85);
+  --el-table-header-text-color: rgba(255, 255, 255, 0.95);
+
+  background: transparent !important;
+
+  .el-table__inner-wrapper::before {
+    display: none;
+  }
+
+  th.el-table__cell {
+    background: var(--el-table-header-bg-color) !important;
+    border-bottom: 1px solid var(--el-table-border-color) !important;
+    font-weight: 600;
+  }
+
+  td.el-table__cell {
+    border-bottom: 1px solid var(--el-table-border-color);
+  }
+
+  tr {
+    background: transparent !important;
+  }
+
+  .el-table__body tr:hover > td.el-table__cell {
+    background: var(--el-table-row-hover-bg-color) !important;
+  }
 }
 </style>

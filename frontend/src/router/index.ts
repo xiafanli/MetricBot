@@ -87,9 +87,30 @@ const routes = [
       },
       {
         path: 'simulator',
-        name: 'Simulator',
-        component: () => import('../views/simulator/Index.vue'),
-        meta: { title: '生产环境模拟器', requiresAuth: true }
+        name: 'SimulatorLayout',
+        component: () => import('../views/simulator/Layout.vue'),
+        redirect: '/simulator/environment',
+        meta: { title: '生产环境模拟器', requiresAuth: true },
+        children: [
+          {
+            path: 'environment',
+            name: 'SimulatorEnvironment',
+            component: () => import('../views/simulator/EnvironmentManagement.vue'),
+            meta: { title: '环境管理', requiresAuth: true }
+          },
+          {
+            path: 'templates',
+            name: 'SimulatorTemplates',
+            component: () => import('../views/simulator/TemplateManagement.vue'),
+            meta: { title: '模板管理', requiresAuth: true }
+          },
+          {
+            path: 'faults',
+            name: 'SimulatorFaults',
+            component: () => import('../views/simulator/FaultManagement.vue'),
+            meta: { title: '故障场景', requiresAuth: true }
+          }
+        ]
       },
       {
         path: 'simulator/wizard',
