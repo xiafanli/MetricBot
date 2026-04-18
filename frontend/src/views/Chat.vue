@@ -134,6 +134,11 @@
             class="chat-input"
           />
           <div class="input-actions">
+            <el-tooltip content="导出对话" placement="top">
+              <el-button circle text @click="exportMessages">
+                <el-icon><Download /></el-icon>
+              </el-button>
+            </el-tooltip>
             <el-tooltip content="清空对话" placement="top">
               <el-button circle text @click="clearMessages">
                 <el-icon><Delete /></el-icon>
@@ -166,6 +171,7 @@ import {
   CopyDocument,
   RefreshRight,
   Delete,
+  Download,
   Promotion
 } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/user'
@@ -271,6 +277,36 @@ ORDER BY time;`
 const clearMessages = () => {
   messages.value = []
   ElMessage.success('对话已清空')
+}
+
+const exportMessages = () => {
+  if (messages.value.length === 0) {
+    ElMessage.warning('暂无对话记录可导出')
+    return
+  }
+  
+  const exportData = {
+    exportTime: new Date().toLocaleString(),
+    totalMessages: messages.value.length,
+    messages: messages.value.map(msg => ({
+      role: msg.role === 'user' ? '用户' : 'AI助手',
+      content: msg.content,
+      time: msg.time,
+      sql: msg.sql || null
+    }))
+  }
+  
+  const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `chat-history-${new Date().toISOString().slice(0, 10)}.json`
+  document.body.appendChild(a)
+  a.click()
+  document.body.removeChild(a)
+  URL.revokeObjectURL(url)
+  
+  ElMessage.success('对话历史已导出')
 }
 
 const copySQL = (sql: string) => {
