@@ -134,6 +134,11 @@
             class="chat-input"
           />
           <div class="input-actions">
+            <el-tooltip content="查询模板" placement="top">
+              <el-button circle text @click="openTemplateDialog">
+                <el-icon><Document /></el-icon>
+              </el-button>
+            </el-tooltip>
             <el-tooltip content="导出对话" placement="top">
               <el-button circle text @click="exportMessages">
                 <el-icon><Download /></el-icon>
@@ -160,6 +165,37 @@
         </div>
       </div>
     </div>
+
+    <el-dialog
+      v-model="showTemplateDialog"
+      title="查询模板库"
+      width="800px"
+      class="template-dialog"
+    >
+      <div class="template-categories">
+        <div
+          v-for="category in templateCategories"
+          :key="category.name"
+          class="template-category"
+        >
+          <div class="category-header">
+            <el-icon><component :is="category.icon" /></el-icon>
+            <span class="category-name">{{ category.name }}</span>
+          </div>
+          <div class="template-list">
+            <div
+              v-for="template in category.templates"
+              :key="template.name"
+              class="template-item"
+              @click="useTemplate(template.query)"
+            >
+              <div class="template-name">{{ template.name }}</div>
+              <div class="template-query">{{ template.query }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
@@ -172,6 +208,11 @@ import {
   RefreshRight,
   Delete,
   Download,
+  Document,
+  TrendCharts,
+  Bell,
+  DataAnalysis,
+  Warning,
   Promotion
 } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/user'
@@ -199,6 +240,60 @@ const quickQuestions = ref([
   '对比本周和上周的系统性能',
   '帮我找出内存使用率最高的主机'
 ])
+
+const templateCategories = ref([
+  {
+    name: '性能监控',
+    icon: 'TrendCharts',
+    templates: [
+      { name: 'CPU使用率趋势', query: '查询最近1小时的CPU使用率趋势' },
+      { name: '内存使用情况', query: '分析当前内存使用情况' },
+      { name: '磁盘IO统计', query: '统计最近24小时的磁盘IO情况' },
+      { name: '网络流量分析', query: '分析最近1小时的网络流量趋势' }
+    ]
+  },
+  {
+    name: '告警分析',
+    icon: 'Bell',
+    templates: [
+      { name: '活跃告警统计', query: '统计当前活跃告警的数量和分布' },
+      { name: '告警趋势分析', query: '分析最近7天的告警趋势' },
+      { name: '严重告警查询', query: '查询所有严重级别的告警' },
+      { name: '告警处理率', query: '计算本周告警的处理率' }
+    ]
+  },
+  {
+    name: '容量规划',
+    icon: 'DataAnalysis',
+    templates: [
+      { name: '资源使用预测', query: '预测未来7天的资源使用情况' },
+      { name: '容量瓶颈分析', query: '分析当前系统的容量瓶颈' },
+      { name: '扩容建议', query: '给出系统扩容建议' },
+      { name: '资源利用率', query: '统计各主机的资源利用率' }
+    ]
+  },
+  {
+    name: '故障诊断',
+    icon: 'Warning',
+    templates: [
+      { name: '异常检测', query: '检测最近1小时的异常指标' },
+      { name: '根因分析', query: '分析最近告警的根本原因' },
+      { name: '服务依赖关系', query: '展示服务之间的依赖关系' },
+      { name: '故障影响范围', query: '评估当前故障的影响范围' }
+    ]
+  }
+])
+
+const showTemplateDialog = ref(false)
+
+const openTemplateDialog = () => {
+  showTemplateDialog.value = true
+}
+
+const useTemplate = (query: string) => {
+  inputMessage.value = query
+  showTemplateDialog.value = false
+}
 
 const scrollToBottom = () => {
   nextTick(() => {
@@ -704,5 +799,84 @@ const regenerate = (message: Message) => {
   font-size: 12px;
   color: rgba(255, 255, 255, 0.4);
   text-align: center;
+}
+
+.template-dialog {
+  :deep(.el-dialog__header) {
+    border-bottom: 1px solid rgba(255, 215, 0, 0.1);
+  }
+  
+  :deep(.el-dialog__body) {
+    padding: 20px;
+  }
+}
+
+.template-categories {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+.template-category {
+  background: rgba(26, 26, 46, 0.4);
+  border: 1px solid rgba(255, 215, 0, 0.1);
+  border-radius: 12px;
+  padding: 16px;
+  
+  .category-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(255, 215, 0, 0.1);
+    
+    .el-icon {
+      font-size: 20px;
+      color: #ffd700;
+    }
+    
+    .category-name {
+      font-size: 16px;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.9);
+    }
+  }
+  
+  .template-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .template-item {
+    padding: 10px 12px;
+    background: rgba(255, 215, 0, 0.03);
+    border: 1px solid rgba(255, 215, 0, 0.1);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    
+    &:hover {
+      background: rgba(255, 215, 0, 0.08);
+      border-color: rgba(255, 215, 0, 0.3);
+      transform: translateX(4px);
+    }
+    
+    .template-name {
+      font-size: 14px;
+      font-weight: 500;
+      color: rgba(255, 255, 255, 0.9);
+      margin-bottom: 4px;
+    }
+    
+    .template-query {
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.5);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
 }
 </style>
