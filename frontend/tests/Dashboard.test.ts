@@ -1,7 +1,17 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
+import ElementPlus from 'element-plus'
 import Dashboard from '@/views/Dashboard.vue'
+
+global.WebSocket = vi.fn(() => ({
+  onopen: null,
+  onmessage: null,
+  onerror: null,
+  onclose: null,
+  send: vi.fn(),
+  close: vi.fn()
+}))
 
 describe('Dashboard', () => {
   beforeEach(() => {
@@ -9,19 +19,31 @@ describe('Dashboard', () => {
   })
 
   it('renders properly', () => {
-    const wrapper = mount(Dashboard)
+    const wrapper = mount(Dashboard, {
+      global: {
+        plugins: [ElementPlus]
+      }
+    })
     expect(wrapper.exists()).toBe(true)
   })
 
   it('displays alert statistics', () => {
-    const wrapper = mount(Dashboard)
+    const wrapper = mount(Dashboard, {
+      global: {
+        plugins: [ElementPlus]
+      }
+    })
     
     expect(wrapper.find('.stats-row').exists()).toBe(true)
     expect(wrapper.findAll('.stat-card').length).toBe(4)
   })
 
   it('shows critical alerts card', () => {
-    const wrapper = mount(Dashboard)
+    const wrapper = mount(Dashboard, {
+      global: {
+        plugins: [ElementPlus]
+      }
+    })
     
     const criticalCard = wrapper.find('.stat-card.critical')
     expect(criticalCard.exists()).toBe(true)
@@ -29,7 +51,11 @@ describe('Dashboard', () => {
   })
 
   it('shows warning alerts card', () => {
-    const wrapper = mount(Dashboard)
+    const wrapper = mount(Dashboard, {
+      global: {
+        plugins: [ElementPlus]
+      }
+    })
     
     const warningCard = wrapper.find('.stat-card.warning')
     expect(warningCard.exists()).toBe(true)
@@ -37,7 +63,11 @@ describe('Dashboard', () => {
   })
 
   it('shows info alerts card', () => {
-    const wrapper = mount(Dashboard)
+    const wrapper = mount(Dashboard, {
+      global: {
+        plugins: [ElementPlus]
+      }
+    })
     
     const infoCard = wrapper.find('.stat-card.info')
     expect(infoCard.exists()).toBe(true)
@@ -45,7 +75,11 @@ describe('Dashboard', () => {
   })
 
   it('shows total alerts card', () => {
-    const wrapper = mount(Dashboard)
+    const wrapper = mount(Dashboard, {
+      global: {
+        plugins: [ElementPlus]
+      }
+    })
     
     const totalCard = wrapper.find('.stat-card.total')
     expect(totalCard.exists()).toBe(true)

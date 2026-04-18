@@ -1,0 +1,40 @@
+============================= test session starts =============================
+platform win32 -- Python 3.6.5, pytest-6.2.5, py-1.11.0, pluggy-1.0.0 -- E:\code\PrometheusBot\backend\venv\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: E:\code\PrometheusBot\backend, configfile: pytest.ini
+plugins: anyio-3.6.2, Faker-14.2.1
+collecting ... collected 13 items
+
+tests/test_alerts.py::TestAlertStatsAPI::test_get_alert_stats_without_auth_fails PASSED [  7%]
+tests/test_alerts.py::TestAlertStatsAPI::test_get_alert_stats_with_auth PASSED [ 15%]
+tests/test_alerts.py::TestAlertStatsAPI::test_alert_stats_initial_values PASSED [ 23%]
+tests/test_alerts.py::TestAlertRulesAPI::test_list_rules_empty PASSED    [ 30%]
+tests/test_alerts.py::TestAlertRulesAPI::test_create_alert_rule_success PASSED [ 38%]
+tests/test_auth.py::TestHealthCheck::test_health_check_returns_healthy PASSED [ 46%]
+tests/test_auth.py::TestAuthAPI::test_register_user_success PASSED       [ 53%]
+tests/test_auth.py::TestAuthAPI::test_register_duplicate_user_fails PASSED [ 61%]
+tests/test_auth.py::TestAuthAPI::test_login_success PASSED               [ 69%]
+tests/test_auth.py::TestAuthAPI::test_login_wrong_password_fails PASSED  [ 76%]
+tests/test_auth.py::TestAuthAPI::test_get_current_user_with_auth PASSED  [ 84%]
+tests/test_auth.py::TestAuthAPI::test_get_current_user_without_auth_fails PASSED [ 92%]
+tests/test_simple.py::test_simple PASSED                                 [100%]
+
+============================== warnings summary ===============================
+venv\lib\site-packages\pymysql\_auth.py:8
+  E:\code\PrometheusBot\backend\venv\lib\site-packages\pymysql\_auth.py:8: CryptographyDeprecationWarning: Python 3.6 is no longer supported by the Python core team. Therefore, support for it is deprecated in cryptography. The next release of cryptography will remove support for Python 3.6.
+    from cryptography.hazmat.backends import default_backend
+
+common\core\database.py:25
+  E:\code\PrometheusBot\backend\common\core\database.py:25: MovedIn20Warning: Deprecated API features detected! These feature(s) are not compatible with SQLAlchemy 2.0. To prevent incompatible upgrades prior to updating applications, ensure requirements files are pinned to "sqlalchemy<2.0". Set environment variable SQLALCHEMY_WARN_20=1 to show all deprecation warnings.  Set environment variable SQLALCHEMY_SILENCE_UBER_WARNING=1 to silence this message. (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    Base = declarative_base()
+
+venv\lib\site-packages\backports\zoneinfo\_common.py:15
+  E:\code\PrometheusBot\backend\venv\lib\site-packages\backports\zoneinfo\_common.py:15: DeprecationWarning: open_binary is deprecated. Use files() instead. Refer to https://importlib-resources.readthedocs.io/en/latest/using.html#migrating-from-legacy for migration advice.
+    return importlib_resources.open_binary(package_name, resource_name)
+
+tests/test_alerts.py::TestAlertRulesAPI::test_list_rules_empty
+  E:\code\PrometheusBot\backend\apps\alert\router.py:67: SAWarning: Dialect sqlite+pysqlite does *not* support Decimal objects natively, and SQLAlchemy must convert from floating point - rounding errors and other issues may occur. Please consider storing Decimal numbers as strings or integers on this platform for lossless storage.
+    rules = query.order_by(AlertRule.severity.desc(), AlertRule.created_at.desc()).all()
+
+-- Docs: https://docs.pytest.org/en/stable/warnings.html
+======================= 13 passed, 4 warnings in 8.53s ========================
