@@ -327,11 +327,13 @@ onMounted(() => {
   flex-direction: column;
   height: 100%;
   padding: 20px;
+  background: var(--bg-primary);
+  font-family: var(--font-body);
 }
 
 .config-card {
-  background: rgba(0, 0, 0, 0.2);
-  border: 1px solid rgba(255, 215, 0, 0.1);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-light);
   border-radius: 12px;
   flex: 1;
   display: flex;
@@ -345,7 +347,7 @@ onMounted(() => {
 }
 
 .text-muted {
-  color: rgba(255, 255, 255, 0.3);
+  color: var(--text-tertiary);
 }
 
 .tab-label-wrapper {
@@ -357,6 +359,17 @@ onMounted(() => {
 .tab-action-btn {
   padding: 4px 8px;
   font-size: 12px;
+  background: var(--gradient-neon) !important;
+  border: none !important;
+  color: white !important;
+  font-weight: 500;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 0 15px rgba(0, 245, 255, 0.4);
+  }
 }
 
 :deep(.fault-tabs) {
@@ -366,8 +379,8 @@ onMounted(() => {
   
   .el-tabs__header {
     margin: 0;
-    background: rgba(0, 0, 0, 0.3);
-    border-bottom: 1px solid rgba(255, 215, 0, 0.1);
+    background: var(--bg-tertiary);
+    border-bottom: 1px solid var(--border-light);
   }
   
   .el-tabs__nav-wrap::after {
@@ -375,19 +388,20 @@ onMounted(() => {
   }
   
   .el-tabs__item {
-    color: rgba(255, 255, 255, 0.6);
+    color: var(--text-tertiary);
+    font-weight: 500;
     
     &:hover {
-      color: rgba(255, 215, 0, 0.8);
+      color: var(--neon-blue);
     }
     
     &.is-active {
-      color: #ffd700;
+      color: var(--neon-blue);
     }
   }
   
   .el-tabs__active-bar {
-    background-color: #ffd700;
+    background-color: var(--neon-blue);
   }
   
   .el-tabs__content {
@@ -403,11 +417,11 @@ onMounted(() => {
 :deep(.el-table) {
   --el-table-bg-color: transparent;
   --el-table-tr-bg-color: transparent;
-  --el-table-header-bg-color: rgba(255, 215, 0, 0.08);
-  --el-table-row-hover-bg-color: rgba(255, 215, 0, 0.05);
-  --el-table-border-color: rgba(255, 215, 0, 0.1);
-  --el-table-text-color: rgba(255, 255, 255, 0.85);
-  --el-table-header-text-color: rgba(255, 255, 255, 0.95);
+  --el-table-header-bg-color: var(--bg-tertiary);
+  --el-table-row-hover-bg-color: rgba(0, 245, 255, 0.05);
+  --el-table-border-color: var(--border-light);
+  --el-table-text-color: var(--text-secondary);
+  --el-table-header-text-color: var(--text-primary);
   
   background: transparent !important;
   
@@ -418,7 +432,11 @@ onMounted(() => {
   th.el-table__cell {
     background: var(--el-table-header-bg-color) !important;
     border-bottom: 1px solid var(--el-table-border-color) !important;
+    font-family: var(--font-display);
     font-weight: 600;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
   }
   
   td.el-table__cell {
@@ -434,20 +452,173 @@ onMounted(() => {
   }
 }
 
+:deep(.el-tag) {
+  border-radius: 6px;
+  font-weight: 500;
+  border: none;
+
+  &.el-tag--success {
+    background: rgba(0, 255, 136, 0.15);
+    color: var(--neon-green);
+  }
+
+  &.el-tag--info {
+    background: rgba(0, 245, 255, 0.15);
+    color: var(--neon-blue);
+  }
+
+  &.el-tag--danger {
+    background: rgba(255, 0, 153, 0.15);
+    color: var(--neon-pink);
+  }
+
+  &.el-tag--warning {
+    background: rgba(255, 165, 0, 0.15);
+    color: var(--neon-orange);
+  }
+}
+
+:deep(.el-button) {
+  border-radius: 6px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+
+  &.el-button--primary {
+    background: var(--gradient-neon);
+    border: none;
+    color: white;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0 20px rgba(0, 245, 255, 0.5);
+    }
+  }
+
+  &.el-button--success {
+    background: rgba(0, 255, 136, 0.15);
+    border: 1px solid var(--neon-green);
+    color: var(--neon-green);
+
+    &:hover {
+      background: rgba(0, 255, 136, 0.25);
+    }
+  }
+
+  &.el-button--danger {
+    background: rgba(255, 0, 153, 0.15);
+    border: 1px solid var(--neon-pink);
+    color: var(--neon-pink);
+
+    &:hover {
+      background: rgba(255, 0, 153, 0.25);
+    }
+  }
+
+  &.el-button--warning {
+    background: rgba(255, 165, 0, 0.15);
+    border: 1px solid var(--neon-orange);
+    color: var(--neon-orange);
+
+    &:hover {
+      background: rgba(255, 165, 0, 0.25);
+    }
+  }
+
+  &.is-link {
+    color: var(--neon-blue);
+    background: transparent;
+    border: none;
+
+    &:hover {
+      color: var(--neon-purple);
+    }
+  }
+}
+
 :deep(.el-dialog) {
-  background: rgba(20, 20, 30, 0.95);
-  border: 1px solid rgba(255, 215, 0, 0.2);
-  
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-light);
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+
   .el-dialog__header {
-    border-bottom: 1px solid rgba(255, 215, 0, 0.1);
+    background: transparent;
+    border-bottom: 1px solid var(--border-light);
+    padding: 20px 24px;
+
+    .el-dialog__title {
+      font-family: var(--font-display);
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
   }
-  
-  .el-dialog__title {
-    color: #ffd700;
+
+  .el-dialog__body {
+    padding: 24px;
+    color: var(--text-secondary);
   }
-  
+
+  .el-dialog__footer {
+    background: transparent;
+    border-top: 1px solid var(--border-light);
+    padding: 16px 24px;
+  }
+}
+
+:deep(.el-form) {
   .el-form-item__label {
-    color: rgba(255, 255, 255, 0.8);
+    color: var(--text-primary);
+    font-weight: 500;
+  }
+
+  .el-input__wrapper,
+  .el-select .el-input__wrapper {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-light);
+    box-shadow: none;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+
+    &:hover {
+      border-color: var(--border-medium);
+    }
+
+    &.is-focus {
+      border-color: var(--neon-blue);
+      box-shadow: 0 0 10px rgba(0, 245, 255, 0.2);
+    }
+
+    .el-input__inner {
+      color: var(--text-primary);
+
+      &::placeholder {
+        color: var(--text-tertiary);
+      }
+    }
+  }
+
+  .el-slider {
+    .el-slider__runway {
+      background: var(--bg-tertiary);
+    }
+
+    .el-slider__bar {
+      background: var(--gradient-neon);
+    }
+
+    .el-slider__button {
+      border-color: var(--neon-blue);
+    }
+  }
+
+  .el-switch {
+    --el-switch-on-color: var(--neon-blue);
+    --el-switch-off-color: var(--border-medium);
+
+    &.is-checked .el-switch__core {
+      box-shadow: 0 0 10px rgba(0, 245, 255, 0.5);
+    }
   }
 }
 </style>

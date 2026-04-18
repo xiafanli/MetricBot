@@ -9,11 +9,12 @@
 
 <style>
 #app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
+  font-family: var(--font-body);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
+  color: var(--text-primary);
   height: 100vh;
+  width: 100%;
+  background: var(--bg-primary);
 }
 </style>

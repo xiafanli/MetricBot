@@ -295,6 +295,10 @@ const saveRelation = () => {
   display: flex;
   flex-direction: column;
   gap: 24px;
+  padding: 24px;
+  background: var(--bg-primary);
+  min-height: 100%;
+  font-family: var(--font-body);
 }
 
 .page-header {
@@ -310,21 +314,39 @@ const saveRelation = () => {
 }
 
 .page-title {
+  font-family: var(--font-display);
   font-size: 20px;
   font-weight: 700;
-  color: white;
+  color: var(--text-primary);
   margin: 0;
 }
 
 .page-desc {
   font-size: 14px;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--text-tertiary);
+}
+
+.header-right {
+  .el-button--primary {
+    background: var(--gradient-neon);
+    border: none;
+    color: white;
+    font-weight: 600;
+    border-radius: 8px;
+    padding: 10px 20px;
+    transition: all 0.3s ease;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0 20px rgba(0, 245, 255, 0.5);
+    }
+  }
 }
 
 .relations-section {
   border-radius: 12px;
-  background: rgba(26, 26, 46, 0.6);
-  border: 1px solid rgba(255, 215, 0, 0.1);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-light);
   overflow: hidden;
 }
 
@@ -333,13 +355,35 @@ const saveRelation = () => {
   justify-content: space-between;
   align-items: center;
   padding: 16px 20px;
-  border-bottom: 1px solid rgba(255, 215, 0, 0.1);
+  border-bottom: 1px solid var(--border-light);
 }
 
 .section-title {
+  font-family: var(--font-display);
   font-size: 16px;
   font-weight: 600;
-  color: white;
+  color: var(--text-primary);
+}
+
+:deep(.el-radio-group) {
+  .el-radio-button__inner {
+    background: var(--bg-tertiary);
+    border-color: var(--border-light);
+    color: var(--text-secondary);
+    font-weight: 500;
+
+    &:hover {
+      color: var(--neon-blue);
+      border-color: var(--neon-blue);
+    }
+  }
+
+  .el-radio-button__original-radio:checked + .el-radio-button__inner {
+    background: var(--gradient-neon);
+    border-color: transparent;
+    color: white;
+    box-shadow: 0 0 15px rgba(0, 245, 255, 0.4);
+  }
 }
 
 .relations-list {
@@ -349,7 +393,12 @@ const saveRelation = () => {
 
 .relation-card {
   padding: 20px;
-  border-bottom: 1px solid rgba(255, 215, 0, 0.05);
+  border-bottom: 1px solid var(--border-light);
+  transition: all 0.3s ease;
+
+  &:hover {
+    background: rgba(0, 245, 255, 0.02);
+  }
 
   &:last-child {
     border-bottom: none;
@@ -369,20 +418,26 @@ const saveRelation = () => {
   gap: 12px;
   padding: 12px 16px;
   border-radius: 10px;
-  background: rgba(255, 215, 0, 0.05);
-  border: 1px solid rgba(255, 215, 0, 0.2);
+  background: rgba(0, 245, 255, 0.05);
+  border: 1px solid var(--border-light);
   min-width: 140px;
+  transition: all 0.3s ease;
+
+  &:hover {
+    border-color: var(--neon-blue);
+    box-shadow: 0 0 15px rgba(0, 245, 255, 0.2);
+  }
 }
 
 .node-icon {
   width: 36px;
   height: 36px;
   border-radius: 8px;
-  background: rgba(255, 215, 0, 0.1);
+  background: rgba(0, 245, 255, 0.1);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #ffd700;
+  color: var(--neon-blue);
   font-size: 18px;
 }
 
@@ -393,14 +448,15 @@ const saveRelation = () => {
 }
 
 .node-name {
+  font-family: var(--font-display);
   font-size: 14px;
   font-weight: 600;
-  color: white;
+  color: var(--text-primary);
 }
 
 .node-type {
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--text-tertiary);
 }
 
 .relation-arrow {
@@ -413,7 +469,8 @@ const saveRelation = () => {
 .arrow-line {
   flex: 1;
   height: 2px;
-  background: linear-gradient(90deg, rgba(255, 215, 0, 0.3) 0%, rgba(247, 37, 133, 0.3) 100%);
+  background: var(--gradient-neon);
+  opacity: 0.5;
 }
 
 .arrow-label {
@@ -422,18 +479,19 @@ const saveRelation = () => {
   top: 50%;
   transform: translate(-50%, -50%);
   padding: 4px 12px;
-  background: rgba(26, 26, 46, 0.9);
-  border: 1px solid rgba(255, 215, 0, 0.3);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-light);
   border-radius: 12px;
   font-size: 12px;
-  color: #ffd700;
+  color: var(--neon-blue);
   white-space: nowrap;
+  font-weight: 500;
 }
 
 .arrow-head {
   width: 0;
   height: 0;
-  border-left: 8px solid rgba(247, 37, 133, 0.5);
+  border-left: 8px solid var(--neon-purple);
   border-top: 5px solid transparent;
   border-bottom: 5px solid transparent;
 }
@@ -452,12 +510,12 @@ const saveRelation = () => {
 
 .meta-label {
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.4);
+  color: var(--text-tertiary);
 }
 
 .meta-value {
   font-size: 13px;
-  color: rgba(255, 255, 255, 0.8);
+  color: var(--text-secondary);
 }
 
 .relation-actions {
@@ -465,19 +523,20 @@ const saveRelation = () => {
   gap: 8px;
 
   .el-button {
-    color: rgba(255, 215, 0, 0.6);
+    color: var(--neon-blue);
     background: transparent !important;
     border: none !important;
+    font-weight: 500;
 
     &:hover {
-      color: #ffd700;
-      background: rgba(255, 215, 0, 0.1) !important;
+      color: var(--neon-purple);
+      background: rgba(191, 0, 255, 0.1) !important;
     }
   }
 
   .delete-btn:hover {
-    color: #ef4444 !important;
-    background: rgba(239, 68, 68, 0.1) !important;
+    color: var(--neon-pink) !important;
+    background: rgba(255, 0, 153, 0.1) !important;
   }
 }
 
@@ -511,6 +570,7 @@ const saveRelation = () => {
   display: flex;
   align-items: center;
   justify-content: center;
+  font-family: var(--font-display);
   font-size: 18px;
   font-weight: 700;
   color: white;
@@ -519,7 +579,7 @@ const saveRelation = () => {
 
 .node-label {
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.8);
+  color: var(--text-secondary);
   white-space: nowrap;
 }
 
@@ -532,20 +592,111 @@ const saveRelation = () => {
   pointer-events: none;
 }
 
-.relation-form {
-  :deep(.el-input__wrapper),
-  :deep(.el-select .el-input__wrapper) {
-    background: rgba(0, 0, 0, 0.3);
-    border: 1px solid rgba(255, 215, 0, 0.2);
-    box-shadow: none;
+:deep(.el-dialog) {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-light);
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
 
-    .el-input__inner {
-      color: white;
+  .el-dialog__header {
+    background: transparent;
+    border-bottom: 1px solid var(--border-light);
+    padding: 20px 24px;
+
+    .el-dialog__title {
+      font-family: var(--font-display);
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text-primary);
     }
   }
 
+  .el-dialog__body {
+    padding: 24px;
+    color: var(--text-secondary);
+  }
+
+  .el-dialog__footer {
+    background: transparent;
+    border-top: 1px solid var(--border-light);
+    padding: 16px 24px;
+  }
+}
+
+.relation-form {
   :deep(.el-form-item__label) {
-    color: rgba(255, 255, 255, 0.8);
+    color: var(--text-primary);
+    font-weight: 500;
+  }
+
+  :deep(.el-input__wrapper),
+  :deep(.el-select .el-input__wrapper) {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-light);
+    box-shadow: none;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+
+    &:hover {
+      border-color: var(--border-medium);
+    }
+
+    &.is-focus {
+      border-color: var(--neon-blue);
+      box-shadow: 0 0 10px rgba(0, 245, 255, 0.2);
+    }
+
+    .el-input__inner {
+      color: var(--text-primary);
+
+      &::placeholder {
+        color: var(--text-tertiary);
+      }
+    }
+  }
+}
+
+:deep(.el-button) {
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+
+  &.el-button--default {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-light);
+    color: var(--text-secondary);
+
+    &:hover {
+      border-color: var(--neon-blue);
+      color: var(--neon-blue);
+    }
+  }
+
+  &.el-button--primary {
+    background: var(--gradient-neon);
+    border: none;
+    color: white;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0 20px rgba(0, 245, 255, 0.5);
+    }
+  }
+}
+
+:deep(.el-tag) {
+  border-radius: 6px;
+  font-weight: 500;
+  border: none;
+
+  &.el-tag--success {
+    background: rgba(0, 255, 136, 0.15);
+    color: var(--neon-green);
+  }
+
+  &.el-tag--info {
+    background: rgba(0, 245, 255, 0.15);
+    color: var(--neon-blue);
   }
 }
 </style>

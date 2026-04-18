@@ -175,8 +175,8 @@ let replayInterval: ReturnType<typeof setInterval> | null = null
 const loadScenarioHistory = async () => {
   loading.value = true
   try {
-    const response = await api.getScenarioHistory() as ScenarioHistoryItem[]
-    scenarioHistory.value = response
+    const response = await api.getScenarioHistory()
+    scenarioHistory.value = response.data as ScenarioHistoryItem[]
   } catch (error) {
     console.error('Failed to load scenario history:', error)
     ElMessage.error('加载历史场景失败')
@@ -223,10 +223,11 @@ const getEventType = (type: string) => {
 
 const replayScenario = async (row: ScenarioHistoryItem) => {
   try {
-    const response = await api.replayScenarioHistory(row.id) as { snapshot_data: ScenarioHistoryItem['snapshot_data'] }
+    const response = await api.replayScenarioHistory(row.id)
+    const data = response.data as { snapshot_data: ScenarioHistoryItem['snapshot_data'] }
     currentSnapshot.value = {
       ...row,
-      snapshot_data: response.snapshot_data || row.snapshot_data
+      snapshot_data: data.snapshot_data || row.snapshot_data
     }
     
     if (currentSnapshot.value.snapshot_data?.events) {
@@ -311,6 +312,9 @@ onUnmounted(() => {
 <style scoped lang="less">
 .scenario-replay {
   padding: 20px;
+  background: var(--bg-primary);
+  min-height: 100%;
+  font-family: var(--font-body);
 }
 
 .page-header {
@@ -318,17 +322,119 @@ onUnmounted(() => {
 }
 
 .page-title {
+  font-family: var(--font-display);
   font-size: 24px;
   font-weight: 600;
-  color: var(--el-text-color-primary);
+  color: var(--text-primary);
   margin: 0;
 }
 
 .config-card {
-  background: var(--el-bg-color);
-  border-radius: 8px;
+  background: var(--bg-secondary);
+  border-radius: 12px;
   padding: 20px;
-  border: 1px solid var(--el-border-color-light);
+  border: 1px solid var(--border-light);
+}
+
+:deep(.el-table) {
+  --el-table-bg-color: transparent;
+  --el-table-tr-bg-color: transparent;
+  --el-table-header-bg-color: var(--bg-tertiary);
+  --el-table-row-hover-bg-color: rgba(0, 245, 255, 0.05);
+  --el-table-border-color: var(--border-light);
+  --el-table-text-color: var(--text-secondary);
+  --el-table-header-text-color: var(--text-primary);
+
+  background: transparent !important;
+
+  .el-table__inner-wrapper::before {
+    display: none;
+  }
+
+  th.el-table__cell {
+    background: var(--el-table-header-bg-color) !important;
+    border-bottom: 1px solid var(--el-table-border-color) !important;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  td.el-table__cell {
+    border-bottom: 1px solid var(--el-table-border-color);
+  }
+
+  tr {
+    background: transparent !important;
+  }
+
+  .el-table__body tr:hover > td.el-table__cell {
+    background: var(--el-table-row-hover-bg-color) !important;
+  }
+}
+
+:deep(.el-tag) {
+  border-radius: 6px;
+  font-weight: 500;
+  border: none;
+
+  &.el-tag--success {
+    background: rgba(0, 255, 136, 0.15);
+    color: var(--neon-green);
+  }
+
+  &.el-tag--info {
+    background: rgba(0, 245, 255, 0.15);
+    color: var(--neon-blue);
+  }
+}
+
+:deep(.el-button) {
+  border-radius: 6px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+
+  &.is-link {
+    color: var(--neon-blue);
+    background: transparent;
+    border: none;
+
+    &:hover {
+      color: var(--neon-purple);
+    }
+  }
+}
+
+:deep(.el-dialog) {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-light);
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+
+  .el-dialog__header {
+    background: transparent;
+    border-bottom: 1px solid var(--border-light);
+    padding: 20px 24px;
+
+    .el-dialog__title {
+      font-family: var(--font-display);
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+  }
+
+  .el-dialog__body {
+    padding: 24px;
+    color: var(--text-secondary);
+  }
+
+  .el-dialog__footer {
+    background: transparent;
+    border-top: 1px solid var(--border-light);
+    padding: 16px 24px;
+  }
 }
 
 .replay-container {
@@ -340,9 +446,34 @@ onUnmounted(() => {
   align-items: center;
   gap: 20px;
   padding: 16px;
-  background: var(--el-fill-color-light);
+  background: var(--bg-tertiary);
   border-radius: 8px;
   margin-bottom: 20px;
+  border: 1px solid var(--border-light);
+
+  :deep(.el-button-group) {
+    .el-button {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-light);
+      color: var(--text-secondary);
+
+      &:hover {
+        border-color: var(--neon-blue);
+        color: var(--neon-blue);
+      }
+
+      &.el-button--primary {
+        background: var(--gradient-neon);
+        border: none;
+        color: white;
+
+        &:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 0 20px rgba(0, 245, 255, 0.5);
+        }
+      }
+    }
+  }
 }
 
 .progress-wrapper {
@@ -350,12 +481,26 @@ onUnmounted(() => {
   align-items: center;
   gap: 16px;
   flex: 1;
+
+  :deep(.el-slider) {
+    .el-slider__runway {
+      background: var(--bg-secondary);
+    }
+
+    .el-slider__bar {
+      background: var(--gradient-neon);
+    }
+
+    .el-slider__button {
+      border-color: var(--neon-blue);
+    }
+  }
 }
 
 .replay-time {
-  font-family: monospace;
+  font-family: var(--font-mono);
   font-size: 14px;
-  color: var(--el-text-color-secondary);
+  color: var(--text-tertiary);
   min-width: 80px;
 }
 
@@ -363,6 +508,14 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   gap: 8px;
+  color: var(--text-secondary);
+
+  :deep(.el-select) {
+    .el-input__wrapper {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-light);
+    }
+  }
 }
 
 .replay-view {
@@ -374,8 +527,8 @@ onUnmounted(() => {
 .snapshot-info,
 .snapshot-events,
 .snapshot-metrics {
-  background: var(--el-bg-color);
-  border: 1px solid var(--el-border-color-light);
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-light);
   border-radius: 8px;
   padding: 16px;
 }
@@ -384,9 +537,69 @@ onUnmounted(() => {
 .snapshot-events h3,
 .snapshot-metrics h3 {
   margin: 0 0 16px 0;
+  font-family: var(--font-display);
   font-size: 16px;
   font-weight: 600;
-  color: var(--el-text-color-primary);
+  color: var(--text-primary);
+}
+
+:deep(.el-descriptions) {
+  .el-descriptions__label {
+    background: var(--bg-secondary);
+    color: var(--neon-blue);
+    font-weight: 600;
+  }
+
+  .el-descriptions__content {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+  }
+
+  .el-descriptions__cell {
+    border-color: var(--border-light);
+  }
+}
+
+:deep(.el-timeline) {
+  .el-timeline-item__timestamp {
+    color: var(--text-tertiary);
+  }
+
+  .el-timeline-item__node--danger {
+    background-color: var(--neon-pink);
+  }
+
+  .el-timeline-item__node--success {
+    background-color: var(--neon-green);
+  }
+
+  .el-timeline-item__node--warning {
+    background-color: var(--neon-orange);
+  }
+
+  .el-timeline-item__node--info {
+    background-color: var(--neon-blue);
+  }
+
+  .el-timeline-item__tail {
+    border-left-color: var(--border-light);
+  }
+
+  .el-card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-light);
+    color: var(--text-primary);
+
+    h4 {
+      color: var(--text-primary);
+      margin: 0 0 8px 0;
+    }
+
+    p {
+      color: var(--text-secondary);
+      margin: 0;
+    }
+  }
 }
 
 .event-component {
@@ -404,18 +617,19 @@ onUnmounted(() => {
   justify-content: space-between;
   align-items: center;
   padding: 12px;
-  background: var(--el-fill-color-light);
+  background: var(--bg-secondary);
   border-radius: 6px;
+  border: 1px solid var(--border-light);
 }
 
 .metric-label {
   font-size: 14px;
-  color: var(--el-text-color-secondary);
+  color: var(--text-tertiary);
 }
 
 .metric-value {
   font-size: 16px;
   font-weight: 600;
-  color: var(--el-color-primary);
+  color: var(--neon-blue);
 }
 </style>

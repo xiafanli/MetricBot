@@ -1,0 +1,657 @@
+/* ========================================
+   赛博朋克未来风亮色主题
+   Cyberpunk Futuristic Light Theme
+   ======================================== */
+
+/* ========================================
+   1. CSS变量定义 - 霓虹色调配色方案
+   ======================================== */
+:root {
+  /* 字体系统 */
+  --font-display: 'Orbitron', sans-serif;
+  --font-body: 'Rajdhani', sans-serif;
+  --font-mono: 'JetBrains Mono', 'Courier New', monospace;
+  
+  /* 霓虹色调配色方案 */
+  --neon-blue: #0088ff;
+  --neon-purple: #9900ff;
+  --neon-pink: #e60073;
+  --neon-green: #00cc6a;
+  --neon-orange: #ff5500;
+  --neon-yellow: #ffcc00;
+  
+  /* 亮色主题背景色 */
+  --bg-primary: #f5f5f7;
+  --bg-secondary: #ffffff;
+  --bg-tertiary: #e8e8ed;
+  --bg-card: rgba(255, 255, 255, 0.9);
+  --bg-overlay: rgba(255, 255, 255, 0.95);
+  
+  /* 文字颜色 */
+  --text-primary: #1a1a2e;
+  --text-secondary: #4a4a5e;
+  --text-tertiary: #7a7a8e;
+  --text-inverse: #ffffff;
+  
+  /* 边框和分隔线 */
+  --border-light: rgba(0, 136, 255, 0.2);
+  --border-medium: rgba(0, 136, 255, 0.4);
+  --border-strong: rgba(0, 136, 255, 0.6);
+  
+  /* 阴影效果 */
+  --shadow-sm: 0 2px 8px rgba(0, 136, 255, 0.1);
+  --shadow-md: 0 4px 16px rgba(0, 136, 255, 0.15);
+  --shadow-lg: 0 8px 32px rgba(0, 136, 255, 0.2);
+  --shadow-neon: 0 0 20px rgba(0, 136, 255, 0.5);
+  
+  /* 渐变效果 */
+  --gradient-neon: linear-gradient(135deg, var(--neon-blue) 0%, var(--neon-purple) 100%);
+  --gradient-cyber: linear-gradient(135deg, var(--neon-pink) 0%, var(--neon-orange) 100%);
+  --gradient-tech: linear-gradient(135deg, var(--neon-green) 0%, var(--neon-blue) 100%);
+  
+  /* 几何图形 */
+  --grid-color: rgba(0, 136, 255, 0.05);
+  --grid-size: 40px;
+  
+  /* 动画时长 */
+  --transition-fast: 0.15s;
+  --transition-base: 0.3s;
+  --transition-slow: 0.5s;
+  
+  /* 圆角 */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  
+  /* 间距 */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+}
+
+/* ========================================
+   2. 全局样式重置
+   ======================================== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-body);
+  font-size: 1rem;
+  line-height: 1.6;
+  color: var(--text-primary);
+  background: var(--bg-primary);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ========================================
+   3. 几何图形背景
+   ======================================== */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: 
+    linear-gradient(var(--grid-color) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
+  background-size: var(--grid-size) var(--grid-size);
+  pointer-events: none;
+  z-index: -1;
+  animation: gridMove 20s linear infinite;
+}
+
+@keyframes gridMove {
+  0% {
+    transform: translate(0, 0);
+  }
+  100% {
+    transform: translate(var(--grid-size), var(--grid-size));
+  }
+}
+
+/* ========================================
+   4. 霓虹发光效果
+   ======================================== */
+.neon-glow {
+  text-shadow: 
+    0 0 5px var(--neon-blue),
+    0 0 10px var(--neon-blue),
+    0 0 20px var(--neon-blue),
+    0 0 40px var(--neon-blue);
+}
+
+.neon-glow-purple {
+  text-shadow: 
+    0 0 5px var(--neon-purple),
+    0 0 10px var(--neon-purple),
+    0 0 20px var(--neon-purple),
+    0 0 40px var(--neon-purple);
+}
+
+.neon-glow-pink {
+  text-shadow: 
+    0 0 5px var(--neon-pink),
+    0 0 10px var(--neon-pink),
+    0 0 20px var(--neon-pink),
+    0 0 40px var(--neon-pink);
+}
+
+.neon-border {
+  border: 2px solid var(--neon-blue);
+  box-shadow: 
+    0 0 10px var(--neon-blue),
+    inset 0 0 10px rgba(0, 136, 255, 0.1);
+}
+
+.neon-border-purple {
+  border: 2px solid var(--neon-purple);
+  box-shadow: 
+    0 0 10px var(--neon-purple),
+    inset 0 0 10px rgba(153, 0, 255, 0.1);
+}
+
+/* ========================================
+   5. 流畅动画效果
+   ======================================== */
+@keyframes scanline {
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(100vh);
+  }
+}
+
+@keyframes glitch {
+  0%, 100% {
+    transform: translate(0);
+  }
+  20% {
+    transform: translate(-2px, 2px);
+  }
+  40% {
+    transform: translate(-2px, -2px);
+  }
+  60% {
+    transform: translate(2px, 2px);
+  }
+  80% {
+    transform: translate(2px, -2px);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+/* ========================================
+   6. 扫描线效果
+   ======================================== */
+.scanline-effect::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    var(--neon-blue),
+    transparent
+  );
+  opacity: 0.3;
+  animation: scanline 8s linear infinite;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* ========================================
+   7. 故障效果
+   ======================================== */
+.glitch-effect {
+  position: relative;
+}
+
+.glitch-effect::before,
+.glitch-effect::after {
+  content: attr(data-text);
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.glitch-effect::before {
+  color: var(--neon-blue);
+  animation: glitch 2s infinite;
+  clip-path: polygon(0 0, 100% 0, 100% 45%, 0 45%);
+  transform: translate(-2px, -2px);
+}
+
+.glitch-effect::after {
+  color: var(--neon-pink);
+  animation: glitch 2s infinite reverse;
+  clip-path: polygon(0 55%, 100% 55%, 100% 100%, 0 100%);
+  transform: translate(2px, 2px);
+}
+
+/* ========================================
+   8. 按钮样式
+   ======================================== */
+.cyber-button {
+  font-family: var(--font-display);
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  padding: 12px 24px;
+  border: 2px solid var(--neon-blue);
+  background: transparent;
+  color: var(--neon-blue);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: all var(--transition-base) ease;
+  clip-path: polygon(
+    0 0,
+    calc(100% - 10px) 0,
+    100% 10px,
+    100% 100%,
+    10px 100%,
+    0 calc(100% - 10px)
+  );
+}
+
+.cyber-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--neon-blue),
+    transparent
+  );
+  transition: left var(--transition-base) ease;
+}
+
+.cyber-button:hover {
+  background: var(--neon-blue);
+  color: var(--text-inverse);
+  box-shadow: var(--shadow-neon);
+}
+
+.cyber-button:hover::before {
+  left: 100%;
+}
+
+.cyber-button:active {
+  transform: scale(0.95);
+}
+
+.cyber-button-primary {
+  background: var(--gradient-neon);
+  border: none;
+  color: var(--text-inverse);
+}
+
+.cyber-button-primary:hover {
+  box-shadow: 
+    0 0 20px var(--neon-blue),
+    0 0 40px var(--neon-purple);
+}
+
+/* ========================================
+   9. 卡片样式
+   ======================================== */
+.cyber-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-lg);
+  position: relative;
+  overflow: hidden;
+  transition: all var(--transition-base) ease;
+  backdrop-filter: blur(10px);
+}
+
+.cyber-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: var(--gradient-neon);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform var(--transition-base) ease;
+}
+
+.cyber-card:hover {
+  border-color: var(--border-medium);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-4px);
+}
+
+.cyber-card:hover::before {
+  transform: scaleX(1);
+}
+
+.cyber-card-header {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-md);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* ========================================
+   10. 输入框样式
+   ======================================== */
+.cyber-input {
+  font-family: var(--font-body);
+  font-size: 1rem;
+  width: 100%;
+  padding: 12px 16px;
+  background: var(--bg-secondary);
+  border: 2px solid var(--border-light);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  transition: all var(--transition-base) ease;
+  outline: none;
+}
+
+.cyber-input:focus {
+  border-color: var(--neon-blue);
+  box-shadow: 
+    0 0 0 3px rgba(0, 136, 255, 0.1),
+    var(--shadow-sm);
+}
+
+.cyber-input::placeholder {
+  color: var(--text-tertiary);
+}
+
+/* ========================================
+   11. 标签样式
+   ======================================== */
+.cyber-tag {
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  padding: 4px 12px;
+  border-radius: var(--radius-sm);
+  background: rgba(0, 136, 255, 0.1);
+  color: var(--neon-blue);
+  border: 1px solid var(--neon-blue);
+}
+
+.cyber-tag-success {
+  background: rgba(0, 204, 106, 0.1);
+  color: var(--neon-green);
+  border-color: var(--neon-green);
+}
+
+.cyber-tag-warning {
+  background: rgba(255, 85, 0, 0.1);
+  color: var(--neon-orange);
+  border-color: var(--neon-orange);
+}
+
+.cyber-tag-danger {
+  background: rgba(230, 0, 115, 0.1);
+  color: var(--neon-pink);
+  border-color: var(--neon-pink);
+}
+
+/* ========================================
+   12. 进度条样式
+   ======================================== */
+.cyber-progress {
+  width: 100%;
+  height: 8px;
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  position: relative;
+}
+
+.cyber-progress-bar {
+  height: 100%;
+  background: var(--gradient-neon);
+  border-radius: var(--radius-sm);
+  position: relative;
+  transition: width var(--transition-base) ease;
+}
+
+.cyber-progress-bar::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.3),
+    transparent
+  );
+  animation: shimmer 2s infinite;
+}
+
+/* ========================================
+   13. 几何图形装饰
+   ======================================== */
+.cyber-shape {
+  position: absolute;
+  opacity: 0.1;
+  pointer-events: none;
+}
+
+.cyber-shape-circle {
+  width: 200px;
+  height: 200px;
+  border: 2px solid var(--neon-blue);
+  border-radius: 50%;
+  animation: rotate 20s linear infinite;
+}
+
+.cyber-shape-square {
+  width: 150px;
+  height: 150px;
+  border: 2px solid var(--neon-purple);
+  animation: rotate 15s linear infinite reverse;
+}
+
+.cyber-shape-triangle {
+  width: 0;
+  height: 0;
+  border-left: 75px solid transparent;
+  border-right: 75px solid transparent;
+  border-bottom: 130px solid var(--neon-pink);
+  animation: float 6s ease-in-out infinite;
+}
+
+/* ========================================
+   14. 响应式设计
+   ======================================== */
+@media (max-width: 768px) {
+  :root {
+    --spacing-lg: 16px;
+    --spacing-xl: 24px;
+  }
+  
+  .cyber-card {
+    padding: var(--spacing-md);
+  }
+  
+  .cyber-button {
+    padding: 10px 20px;
+    font-size: 0.75rem;
+  }
+}
+
+@media (max-width: 480px) {
+  :root {
+    --spacing-md: 12px;
+    --spacing-lg: 16px;
+  }
+  
+  body::before {
+    background-size: 20px 20px;
+  }
+}
+
+/* ========================================
+   15. 自定义滚动条
+   ======================================== */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-tertiary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--gradient-neon);
+  border-radius: var(--radius-sm);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--neon-blue);
+}
+
+/* ========================================
+   16. 选中文本样式
+   ======================================== */
+::selection {
+  background: var(--neon-blue);
+  color: var(--text-inverse);
+}
+
+::-moz-selection {
+  background: var(--neon-blue);
+  color: var(--text-inverse);
+}
+
+/* ========================================
+   17. 工具类
+   ======================================== */
+.text-neon-blue {
+  color: var(--neon-blue);
+}
+
+.text-neon-purple {
+  color: var(--neon-purple);
+}
+
+.text-neon-pink {
+  color: var(--neon-pink);
+}
+
+.text-neon-green {
+  color: var(--neon-green);
+}
+
+.bg-gradient-neon {
+  background: var(--gradient-neon);
+}
+
+.border-neon {
+  border-color: var(--neon-blue);
+}
+
+.shadow-neon {
+  box-shadow: var(--shadow-neon);
+}
+
+.font-display {
+  font-family: var(--font-display);
+}
+
+.font-body {
+  font-family: var(--font-body);
+}
+
+.uppercase {
+  text-transform: uppercase;
+}
+
+.tracking-wide {
+  letter-spacing: 2px;
+}
+
+.animate-pulse {
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+.animate-rotate {
+  animation: rotate 10s linear infinite;
+}

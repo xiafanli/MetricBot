@@ -299,6 +299,10 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   gap: 24px;
+  padding: 24px;
+  background: var(--bg-primary);
+  min-height: 100%;
+  font-family: var(--font-body);
 }
 
 .page-header {
@@ -314,15 +318,33 @@ onMounted(() => {
 }
 
 .page-title {
+  font-family: var(--font-display);
   font-size: 20px;
   font-weight: 700;
-  color: white;
+  color: var(--text-primary);
   margin: 0;
 }
 
 .page-desc {
   font-size: 14px;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--text-tertiary);
+}
+
+.header-right {
+  .el-button--primary {
+    background: var(--gradient-neon);
+    border: none;
+    color: white;
+    font-weight: 600;
+    border-radius: 8px;
+    padding: 10px 20px;
+    transition: all 0.3s ease;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0 20px rgba(0, 245, 255, 0.5);
+    }
+  }
 }
 
 .models-grid {
@@ -333,14 +355,15 @@ onMounted(() => {
 
 .model-card {
   border-radius: 12px;
-  background: rgba(26, 26, 46, 0.6);
-  border: 1px solid rgba(255, 215, 0, 0.1);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-light);
   padding: 20px;
-  transition: all 0.2s;
+  transition: all 0.3s ease;
 
   &:hover {
-    border-color: rgba(255, 215, 0, 0.3);
+    border-color: var(--border-medium);
     transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 245, 255, 0.1);
   }
 
   &.disabled {
@@ -363,9 +386,11 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .icon-text {
+  font-family: var(--font-display);
   font-size: 20px;
   font-weight: 700;
   color: white;
@@ -376,9 +401,10 @@ onMounted(() => {
 }
 
 .model-name {
+  font-family: var(--font-display);
   font-size: 16px;
   font-weight: 600;
-  color: white;
+  color: var(--text-primary);
   display: flex;
   align-items: center;
   gap: 8px;
@@ -386,7 +412,7 @@ onMounted(() => {
 
 .model-provider {
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--text-tertiary);
 }
 
 .model-params {
@@ -394,8 +420,8 @@ onMounted(() => {
   flex-direction: column;
   gap: 8px;
   padding: 12px 0;
-  border-top: 1px solid rgba(255, 215, 0, 0.1);
-  border-bottom: 1px solid rgba(255, 215, 0, 0.1);
+  border-top: 1px solid var(--border-light);
+  border-bottom: 1px solid var(--border-light);
   margin-bottom: 16px;
 }
 
@@ -406,11 +432,11 @@ onMounted(() => {
 }
 
 .param-label {
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--text-tertiary);
 }
 
 .param-value {
-  color: rgba(255, 255, 255, 0.9);
+  color: var(--text-primary);
 }
 
 .model-actions {
@@ -418,48 +444,143 @@ onMounted(() => {
   gap: 8px;
 
   .el-button {
-    color: rgba(255, 215, 0, 0.6);
+    color: var(--neon-blue);
     background: transparent !important;
     border: none !important;
+    font-weight: 500;
 
     &:hover {
-      color: #ffd700;
-      background: rgba(255, 215, 0, 0.1) !important;
+      color: var(--neon-purple);
+      background: rgba(191, 0, 255, 0.1) !important;
     }
   }
 
   .delete-btn:hover {
-    color: #ef4444 !important;
-    background: rgba(239, 68, 68, 0.1) !important;
+    color: var(--neon-pink) !important;
+    background: rgba(255, 0, 153, 0.1) !important;
+  }
+}
+
+:deep(.el-dialog) {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-light);
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+
+  .el-dialog__header {
+    background: transparent;
+    border-bottom: 1px solid var(--border-light);
+    padding: 20px 24px;
+
+    .el-dialog__title {
+      font-family: var(--font-display);
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+  }
+
+  .el-dialog__body {
+    padding: 24px;
+    color: var(--text-secondary);
+  }
+
+  .el-dialog__footer {
+    background: transparent;
+    border-top: 1px solid var(--border-light);
+    padding: 16px 24px;
   }
 }
 
 .model-form {
+  :deep(.el-form-item__label) {
+    color: var(--text-primary);
+    font-weight: 500;
+  }
+
   :deep(.el-input__wrapper),
   :deep(.el-select .el-input__wrapper) {
-    background: rgba(0, 0, 0, 0.3);
-    border: 1px solid rgba(255, 215, 0, 0.2);
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-light);
     box-shadow: none;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+
+    &:hover {
+      border-color: var(--border-medium);
+    }
+
+    &.is-focus {
+      border-color: var(--neon-blue);
+      box-shadow: 0 0 10px rgba(0, 245, 255, 0.2);
+    }
 
     .el-input__inner {
-      color: white;
+      color: var(--text-primary);
+
+      &::placeholder {
+        color: var(--text-tertiary);
+      }
+    }
+  }
+}
+
+:deep(.el-button) {
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+
+  &.el-button--default {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-light);
+    color: var(--text-secondary);
+
+    &:hover {
+      border-color: var(--neon-blue);
+      color: var(--neon-blue);
     }
   }
 
-  :deep(.el-form-item__label) {
-    color: rgba(255, 255, 255, 0.8);
+  &.el-button--primary {
+    background: var(--gradient-neon);
+    border: none;
+    color: white;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0 20px rgba(0, 245, 255, 0.5);
+    }
   }
 }
 
 .cancel-btn {
-  background: rgba(255, 255, 255, 0.05) !important;
-  border: 1px solid rgba(255, 215, 0, 0.2) !important;
-  color: rgba(255, 255, 255, 0.8) !important;
+  background: var(--bg-tertiary) !important;
+  border: 1px solid var(--border-light) !important;
+  color: var(--text-secondary) !important;
 
   &:hover {
-    background: rgba(255, 215, 0, 0.1) !important;
-    border-color: rgba(255, 215, 0, 0.4) !important;
-    color: white !important;
+    border-color: var(--neon-blue) !important;
+    color: var(--neon-blue) !important;
+  }
+}
+
+:deep(.el-switch) {
+  --el-switch-on-color: var(--neon-blue);
+  --el-switch-off-color: var(--border-medium);
+
+  &.is-checked .el-switch__core {
+    box-shadow: 0 0 10px rgba(0, 245, 255, 0.5);
+  }
+}
+
+:deep(.el-tag) {
+  border-radius: 6px;
+  font-weight: 500;
+  border: none;
+
+  &.el-tag--success {
+    background: rgba(0, 255, 136, 0.15);
+    color: var(--neon-green);
   }
 }
 </style>

@@ -1,6 +1,6 @@
 <template>
   <div class="login-container">
-    <div class="login-content">
+    <div class="login-content cyber-card">
       <div class="brand-panel">
         <div class="brand-inner">
           <div class="logo-section">
@@ -14,15 +14,15 @@
                   <circle cx="50" cy="50" r="8" fill="url(#grad1)"/>
                   <defs>
                     <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" style="stop-color:#ffd700"/>
-                      <stop offset="50%" style="stop-color:#ff6b35"/>
-                      <stop offset="100%" style="stop-color:#f72585"/>
+                      <stop offset="0%" style="stop-color:#0088ff"/>
+                      <stop offset="50%" style="stop-color:#9900ff"/>
+                      <stop offset="100%" style="stop-color:#e60073"/>
                     </linearGradient>
                   </defs>
                 </svg>
               </div>
             </div>
-            <h1 class="brand-title">Metric Bot</h1>
+            <h1 class="brand-title neon-glow">Metric Bot</h1>
             <p class="brand-subtitle">监控智能系统</p>
           </div>
           
@@ -90,7 +90,7 @@
               <div class="form-actions">
                 <el-button 
                   type="primary" 
-                  class="login-btn" 
+                  class="login-btn cyber-button" 
                   :loading="loading"
                   @click="submitForm"
                 >
@@ -143,12 +143,9 @@ const submitForm = async () => {
         await userStore.login(loginForm.value)
         ElMessage.success('登录成功！')
 
-        // 确保状态完全同步后再跳转
         await new Promise(resolve => setTimeout(resolve, 100))
 
-        // 检查登录状态是否正确设置
         if (userStore.isLoggedIn) {
-          // 使用工具函数处理跳转，支持重定向参数
           toLoginSuccess(router)
         } else {
           ElMessage.error('登录状态异常，请重试')
@@ -168,11 +165,13 @@ const submitForm = async () => {
 .login-container {
   height: 100vh;
   width: 100vw;
-  background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+  background: var(--bg-primary);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--font-body);
+  position: relative;
+  overflow: hidden;
 }
 
 .login-content {
@@ -182,16 +181,31 @@ const submitForm = async () => {
   height: 580px;
   border-radius: 16px;
   overflow: hidden;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+  box-shadow: var(--shadow-lg);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-light);
+  position: relative;
+  z-index: 1;
 }
 
 .brand-panel {
   flex: 1;
-  background: linear-gradient(180deg, #0f0f0f 0%, #1a1a1a 100%);
+  background: linear-gradient(135deg, rgba(0, 136, 255, 0.03) 0%, rgba(153, 0, 255, 0.03) 100%);
   display: flex;
   align-items: center;
   justify-content: center;
-  border-right: 1px solid rgba(255, 215, 0, 0.1);
+  border-right: 1px solid var(--border-light);
+  position: relative;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: var(--gradient-neon);
+  }
 }
 
 .brand-inner {
@@ -206,27 +220,43 @@ const submitForm = async () => {
 .logo-wrapper {
   display: inline-block;
   margin-bottom: 24px;
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
 }
 
 .logo-icon {
   width: 120px;
   height: 120px;
+  filter: drop-shadow(0 0 20px rgba(0, 136, 255, 0.5));
 }
 
 .brand-title {
+  font-family: var(--font-display);
   font-size: 28px;
   font-weight: 700;
   margin: 0 0 8px 0;
-  background: linear-gradient(135deg, #ffd700 0%, #ff6b35 50%, #f72585 100%);
+  background: var(--gradient-neon);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  text-transform: uppercase;
+  letter-spacing: 2px;
 }
 
 .brand-subtitle {
+  font-family: var(--font-body);
   font-size: 14px;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--text-tertiary);
   margin: 0;
+  letter-spacing: 1px;
 }
 
 .features-list {
@@ -243,18 +273,19 @@ const submitForm = async () => {
 }
 
 .feature-bullet {
-  color: #ffd700;
+  color: var(--neon-blue);
   font-size: 10px;
 }
 
 .feature-text {
+  font-family: var(--font-body);
   font-size: 13px;
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--text-secondary);
 }
 
 .login-panel {
   flex: 1;
-  background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
+  background: var(--bg-secondary);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -271,24 +302,31 @@ const submitForm = async () => {
 
 .login-tag {
   display: inline-block;
+  font-family: var(--font-display);
   font-size: 11px;
-  color: #ffd700;
-  background: rgba(255, 215, 0, 0.1);
+  color: var(--neon-blue);
+  background: rgba(0, 136, 255, 0.1);
   padding: 5px 14px;
-  border: 1px solid rgba(255, 215, 0, 0.3);
+  border: 1px solid var(--neon-blue);
+  text-transform: uppercase;
+  letter-spacing: 1px;
   margin-bottom: 18px;
 }
 
 .login-title {
+  font-family: var(--font-display);
   font-size: 26px;
   font-weight: 700;
   margin: 0 0 8px 0;
-  color: #fff;
+  color: var(--text-primary);
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
 .login-desc {
+  font-family: var(--font-body);
   font-size: 14px;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--text-tertiary);
   margin: 0;
 }
 
@@ -308,9 +346,12 @@ const submitForm = async () => {
 
 .form-label {
   display: block;
+  font-family: var(--font-display);
   font-size: 13px;
-  color: rgba(255, 255, 255, 0.7);
+  color: var(--text-primary);
   margin-bottom: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
 .input-wrapper {
@@ -320,27 +361,28 @@ const submitForm = async () => {
 .custom-input {
   :deep(.el-input__wrapper) {
     border-radius: 8px;
-    background: rgba(0, 0, 0, 0.3);
-    border: 1px solid rgba(255, 215, 0, 0.2);
+    background: var(--bg-primary);
+    border: 2px solid var(--border-light);
     box-shadow: none;
-    transition: all 0.2s;
+    transition: all 0.3s ease;
 
     &:hover {
-      border-color: rgba(255, 107, 53, 0.5);
+      border-color: var(--border-medium);
     }
 
     &.is-focus {
-      border-color: #ffd700;
-      box-shadow: 0 0 15px rgba(255, 215, 0, 0.15);
+      border-color: var(--neon-blue);
+      box-shadow: 0 0 0 3px rgba(0, 136, 255, 0.1), 0 0 20px rgba(0, 136, 255, 0.2);
     }
   }
 
   :deep(.el-input__inner) {
-    color: #fff;
+    color: var(--text-primary);
+    font-family: var(--font-body);
     font-size: 14px;
 
     &::placeholder {
-      color: rgba(255, 255, 255, 0.3);
+      color: var(--text-tertiary);
     }
   }
 }
@@ -352,18 +394,20 @@ const submitForm = async () => {
 .login-btn {
   width: 100%;
   height: 48px;
-  background: linear-gradient(135deg, #ffd700 0%, #ff6b35 50%, #f72585 100%);
+  background: var(--gradient-neon);
   border: none;
-  color: #0a0a0a;
+  color: white;
+  font-family: var(--font-display);
   font-weight: 600;
   font-size: 15px;
   border-radius: 8px;
-  transition: all 0.2s;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 2px;
 
   &:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 8px 25px rgba(255, 215, 0, 0.3);
-    color: #0a0a0a;
+    transform: translateY(-2px);
+    box-shadow: 0 0 20px rgba(0, 136, 255, 0.5), 0 0 40px rgba(153, 0, 255, 0.3);
   }
 
   &:active {
@@ -372,7 +416,7 @@ const submitForm = async () => {
 }
 
 .login-footer {
-  border-top: 1px solid rgba(255, 215, 0, 0.1);
+  border-top: 1px solid var(--border-light);
   padding-top: 20px;
 }
 
@@ -383,12 +427,31 @@ const submitForm = async () => {
 }
 
 .demo-label {
+  font-family: var(--font-body);
   font-size: 13px;
-  color: rgba(255, 255, 255, 0.4);
+  color: var(--text-tertiary);
 }
 
 .demo-value {
+  font-family: var(--font-body);
   font-size: 13px;
-  color: #ffd700;
+  color: var(--neon-blue);
+  font-weight: 600;
+}
+
+@media (max-width: 768px) {
+  .login-content {
+    flex-direction: column;
+    height: auto;
+  }
+  
+  .brand-panel {
+    border-right: none;
+    border-bottom: 1px solid var(--border-light);
+  }
+  
+  .login-inner {
+    padding: 30px;
+  }
 }
 </style>

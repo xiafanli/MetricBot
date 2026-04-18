@@ -12,17 +12,17 @@
               <circle cx="50" cy="50" r="8" fill="url(#chatGrad)"/>
               <defs>
                 <linearGradient id="chatGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" style="stop-color:#ffd700"/>
-                  <stop offset="50%" style="stop-color:#ff6b35"/>
-                  <stop offset="100%" style="stop-color:#f72585"/>
+                  <stop offset="0%" style="stop-color:#00f5ff"/>
+                  <stop offset="50%" style="stop-color:#bf00ff"/>
+                  <stop offset="100%" style="stop-color:#ff0099"/>
                 </linearGradient>
               </defs>
             </svg>
           </div>
-          <h1 class="welcome-title">你好，我是 Metric Bot</h1>
+          <h1 class="welcome-title neon-glow">你好，我是 Metric Bot</h1>
           <p class="welcome-desc">我可以帮你查询监控数据、分析告警、生成报表，用自然语言告诉我你想了解什么吧～</p>
           
-          <div class="quick-questions">
+          <div class="quick-questions cyber-card">
             <div class="quick-title">快速提问</div>
             <div class="quick-list">
               <div 
@@ -57,8 +57,8 @@
                   <circle cx="50" cy="50" r="8" fill="url(#msgGrad)"/>
                   <defs>
                     <linearGradient id="msgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" style="stop-color:#ffd700"/>
-                      <stop offset="100%" style="stop-color:#f72585"/>
+                      <stop offset="0%" style="stop-color:#00f5ff"/>
+                      <stop offset="100%" style="stop-color:#bf00ff"/>
                     </linearGradient>
                   </defs>
                 </svg>
@@ -87,8 +87,8 @@
                           />
                           <defs>
                             <linearGradient id="lineGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                              <stop offset="0%" style="stop-color:#ffd700"/>
-                              <stop offset="100%" style="stop-color:#f72585"/>
+                              <stop offset="0%" style="stop-color:#00f5ff"/>
+                              <stop offset="100%" style="stop-color:#bf00ff"/>
                             </linearGradient>
                           </defs>
                         </svg>
@@ -176,7 +176,7 @@
         <div
           v-for="category in templateCategories"
           :key="category.name"
-          class="template-category"
+          class="template-category cyber-card"
         >
           <div class="category-header">
             <el-icon><component :is="category.icon" /></el-icon>
@@ -450,37 +450,55 @@ const regenerate = (message: Message) => {
   width: 80px;
   height: 80px;
   margin: 0 auto 24px;
+  animation: float 3s ease-in-out infinite;
+  filter: drop-shadow(0 0 20px rgba(0, 245, 255, 0.5));
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
 }
 
 .welcome-title {
+  font-family: var(--font-display);
   font-size: 28px;
   font-weight: 700;
   margin: 0 0 12px;
-  background: linear-gradient(135deg, #ffd700 0%, #ff6b35 50%, #f72585 100%);
+  background: var(--gradient-neon);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  text-transform: uppercase;
+  letter-spacing: 2px;
 }
 
 .welcome-desc {
+  font-family: var(--font-body);
   font-size: 15px;
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--text-secondary);
   line-height: 1.7;
   margin: 0 0 32px;
 }
 
 .quick-questions {
   text-align: left;
-  background: rgba(26, 26, 46, 0.4);
+  background: var(--bg-secondary);
   border-radius: 12px;
   padding: 20px;
-  border: 1px solid rgba(255, 215, 0, 0.1);
+  border: 1px solid var(--border-light);
 }
 
 .quick-title {
+  font-family: var(--font-display);
   font-size: 13px;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--text-tertiary);
   margin-bottom: 12px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
 .quick-list {
@@ -494,22 +512,23 @@ const regenerate = (message: Message) => {
   align-items: center;
   gap: 10px;
   padding: 12px 16px;
-  background: rgba(255, 215, 0, 0.03);
-  border: 1px solid rgba(255, 215, 0, 0.1);
+  background: rgba(0, 245, 255, 0.05);
+  border: 1px solid var(--border-light);
   border-radius: 8px;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.3s ease;
   font-size: 14px;
-  color: rgba(255, 255, 255, 0.8);
+  color: var(--text-secondary);
 
   &:hover {
-    background: rgba(255, 215, 0, 0.08);
-    border-color: rgba(255, 215, 0, 0.3);
-    color: white;
+    background: rgba(0, 245, 255, 0.1);
+    border-color: var(--neon-blue);
+    color: var(--neon-blue);
+    transform: translateX(4px);
   }
 
   .quick-icon {
-    color: #ffd700;
+    color: var(--neon-blue);
   }
 }
 
@@ -538,7 +557,7 @@ const regenerate = (message: Message) => {
     }
 
     .message-body {
-      background: linear-gradient(135deg, rgba(255, 215, 0, 0.15) 0%, rgba(247, 37, 133, 0.15) 100%);
+      background: linear-gradient(135deg, rgba(0, 245, 255, 0.15) 0%, rgba(191, 0, 255, 0.15) 100%);
       border-radius: 16px 16px 4px 16px;
     }
   }
@@ -549,17 +568,20 @@ const regenerate = (message: Message) => {
 }
 
 .user-avatar {
-  background: linear-gradient(135deg, #ffd700 0%, #f72585 100%);
+  background: var(--gradient-neon);
+  color: white;
+  font-weight: 600;
 }
 
 .ai-avatar {
   width: 36px;
   height: 36px;
-  background: rgba(255, 215, 0, 0.1);
+  background: rgba(0, 245, 255, 0.1);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
+  border: 1px solid var(--border-light);
 
   svg {
     width: 24px;
@@ -582,26 +604,30 @@ const regenerate = (message: Message) => {
 }
 
 .message-name {
+  font-family: var(--font-display);
   font-size: 13px;
   font-weight: 600;
-  color: white;
+  color: var(--text-primary);
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
 .message-time {
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.4);
+  color: var(--text-tertiary);
 }
 
 .message-body {
   padding: 14px 18px;
-  background: rgba(26, 26, 46, 0.6);
+  background: var(--bg-secondary);
   border-radius: 16px 16px 16px 4px;
-  border: 1px solid rgba(255, 215, 0, 0.1);
+  border: 1px solid var(--border-light);
 }
 
 .user-text {
+  font-family: var(--font-body);
   font-size: 14px;
-  color: white;
+  color: var(--text-primary);
   line-height: 1.6;
 }
 
@@ -612,26 +638,31 @@ const regenerate = (message: Message) => {
 }
 
 .response-text {
+  font-family: var(--font-body);
   font-size: 14px;
-  color: rgba(255, 255, 255, 0.9);
+  color: var(--text-primary);
   line-height: 1.7;
 }
 
 .response-chart {
-  background: rgba(0, 0, 0, 0.2);
+  background: var(--bg-primary);
   border-radius: 8px;
   overflow: hidden;
+  border: 1px solid var(--border-light);
 }
 
 .chart-header {
   padding: 10px 14px;
-  border-bottom: 1px solid rgba(255, 215, 0, 0.1);
+  border-bottom: 1px solid var(--border-light);
 }
 
 .chart-title {
+  font-family: var(--font-display);
   font-size: 13px;
   font-weight: 600;
-  color: white;
+  color: var(--text-primary);
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
 .chart-preview {
@@ -644,13 +675,15 @@ const regenerate = (message: Message) => {
   svg {
     width: 100%;
     height: 100%;
+    filter: drop-shadow(0 0 8px rgba(0, 245, 255, 0.3));
   }
 }
 
 .response-sql {
-  background: rgba(0, 0, 0, 0.3);
+  background: var(--bg-primary);
   border-radius: 8px;
   overflow: hidden;
+  border: 1px solid var(--border-light);
 }
 
 .sql-header {
@@ -658,18 +691,18 @@ const regenerate = (message: Message) => {
   justify-content: space-between;
   align-items: center;
   padding: 10px 14px;
-  background: rgba(255, 215, 0, 0.05);
-  border-bottom: 1px solid rgba(255, 215, 0, 0.1);
+  background: rgba(0, 245, 255, 0.05);
+  border-bottom: 1px solid var(--border-light);
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--text-secondary);
 }
 
 .sql-code {
   margin: 0;
   padding: 14px;
-  font-family: 'Fira Code', 'Monaco', monospace;
+  font-family: var(--font-mono);
   font-size: 12px;
-  color: #ffd700;
+  color: var(--neon-blue);
   overflow-x: auto;
   white-space: pre-wrap;
 }
@@ -680,18 +713,18 @@ const regenerate = (message: Message) => {
   padding: 0 4px;
 
   .el-button {
-    color: rgba(255, 215, 0, 0.6);
+    color: var(--neon-blue);
 
     &:hover {
-      color: #ffd700;
+      color: var(--neon-purple);
     }
   }
 }
 
 .input-section {
   padding: 16px 20px;
-  border-top: 1px solid rgba(255, 215, 0, 0.1);
-  background: rgba(26, 26, 46, 0.4);
+  border-top: 1px solid var(--border-light);
+  background: var(--bg-secondary);
 }
 
 .input-wrapper {
@@ -706,30 +739,30 @@ const regenerate = (message: Message) => {
   flex: 1;
 
   :deep(.el-textarea__inner) {
-    background: rgba(0, 0, 0, 0.4);
-    border: 1px solid rgba(255, 215, 0, 0.2);
+    background: var(--bg-primary);
+    border: 2px solid var(--border-light);
     border-radius: 12px;
-    color: white;
+    color: var(--text-primary);
+    font-family: var(--font-body);
     font-size: 14px;
     padding: 14px 16px;
     resize: none;
     line-height: 1.5;
     min-height: 44px;
     box-shadow: none;
-    transition: all 0.2s;
+    transition: all 0.3s ease;
 
     &::placeholder {
-      color: rgba(255, 255, 255, 0.3);
+      color: var(--text-tertiary);
     }
 
     &:focus {
-      border-color: rgba(255, 215, 0, 0.5);
-      box-shadow: 0 0 0 2px rgba(255, 215, 0, 0.1);
-      background: rgba(0, 0, 0, 0.5);
+      border-color: var(--neon-blue);
+      box-shadow: 0 0 0 3px rgba(0, 245, 255, 0.1);
     }
 
     &:hover:not(:focus) {
-      border-color: rgba(255, 215, 0, 0.3);
+      border-color: var(--border-medium);
     }
   }
 }
@@ -751,14 +784,14 @@ const regenerate = (message: Message) => {
   }
 
   .el-button--primary {
-    background: linear-gradient(135deg, #ffd700 0%, #ff6b35 50%, #f72585 100%);
+    background: var(--gradient-neon);
     border: none;
-    color: #0a0a0a;
+    color: white;
     font-weight: 600;
 
     &:hover {
-      box-shadow: 0 4px 12px rgba(255, 215, 0, 0.4);
-      transform: translateY(-1px);
+      box-shadow: 0 0 20px rgba(0, 245, 255, 0.5);
+      transform: translateY(-2px);
     }
 
     &:active {
@@ -777,14 +810,14 @@ const regenerate = (message: Message) => {
   }
 
   .el-button.is-text {
-    color: rgba(255, 215, 0, 0.6);
-    background: rgba(255, 215, 0, 0.05);
-    border: 1px solid rgba(255, 215, 0, 0.2);
+    color: var(--neon-blue);
+    background: rgba(0, 245, 255, 0.05);
+    border: 1px solid var(--border-light);
 
     &:hover {
-      color: #ffd700;
-      background: rgba(255, 215, 0, 0.1);
-      border-color: rgba(255, 215, 0, 0.4);
+      color: var(--neon-purple);
+      background: rgba(0, 245, 255, 0.1);
+      border-color: var(--neon-blue);
     }
 
     &:active {
@@ -797,17 +830,18 @@ const regenerate = (message: Message) => {
   max-width: 900px;
   margin: 8px auto 0;
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.4);
+  color: var(--text-tertiary);
   text-align: center;
 }
 
 .template-dialog {
   :deep(.el-dialog__header) {
-    border-bottom: 1px solid rgba(255, 215, 0, 0.1);
+    border-bottom: 1px solid var(--border-light);
   }
   
   :deep(.el-dialog__body) {
     padding: 20px;
+    background: var(--bg-secondary);
   }
 }
 
@@ -818,8 +852,8 @@ const regenerate = (message: Message) => {
 }
 
 .template-category {
-  background: rgba(26, 26, 46, 0.4);
-  border: 1px solid rgba(255, 215, 0, 0.1);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-light);
   border-radius: 12px;
   padding: 16px;
   
@@ -829,17 +863,20 @@ const regenerate = (message: Message) => {
     gap: 8px;
     margin-bottom: 12px;
     padding-bottom: 12px;
-    border-bottom: 1px solid rgba(255, 215, 0, 0.1);
+    border-bottom: 1px solid var(--border-light);
     
     .el-icon {
       font-size: 20px;
-      color: #ffd700;
+      color: var(--neon-blue);
     }
     
     .category-name {
+      font-family: var(--font-display);
       font-size: 16px;
       font-weight: 600;
-      color: rgba(255, 255, 255, 0.9);
+      color: var(--text-primary);
+      text-transform: uppercase;
+      letter-spacing: 1px;
     }
   }
   
@@ -851,32 +888,43 @@ const regenerate = (message: Message) => {
   
   .template-item {
     padding: 10px 12px;
-    background: rgba(255, 215, 0, 0.03);
-    border: 1px solid rgba(255, 215, 0, 0.1);
+    background: rgba(0, 245, 255, 0.05);
+    border: 1px solid var(--border-light);
     border-radius: 8px;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.3s ease;
     
     &:hover {
-      background: rgba(255, 215, 0, 0.08);
-      border-color: rgba(255, 215, 0, 0.3);
+      background: rgba(0, 245, 255, 0.1);
+      border-color: var(--neon-blue);
       transform: translateX(4px);
     }
     
     .template-name {
+      font-family: var(--font-body);
       font-size: 14px;
       font-weight: 500;
-      color: rgba(255, 255, 255, 0.9);
+      color: var(--text-primary);
       margin-bottom: 4px;
     }
     
     .template-query {
       font-size: 12px;
-      color: rgba(255, 255, 255, 0.5);
+      color: var(--text-tertiary);
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
     }
+  }
+}
+
+@media (max-width: 768px) {
+  .template-categories {
+    grid-template-columns: 1fr;
+  }
+  
+  .message-content {
+    max-width: 85%;
   }
 }
 </style>

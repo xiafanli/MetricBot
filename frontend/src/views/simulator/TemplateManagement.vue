@@ -4,7 +4,7 @@
       <el-tabs v-model="activeTab" type="border-card">
         <el-tab-pane label="指标模板" name="metrics">
           <div class="tab-content">
-            <el-table :data="metricTemplates" style="width: 100%" :header-cell-style="tableHeaderStyle" :cell-style="tableCellStyle">
+            <el-table :data="metricTemplates" style="width: 100%">
               <el-table-column prop="id" label="ID" width="60" />
               <el-table-column prop="component_type" label="组件类型" width="120" />
               <el-table-column prop="metric_name" label="指标名称" width="150" />
@@ -23,7 +23,7 @@
         </el-tab-pane>
         <el-tab-pane label="日志模板" name="logs">
           <div class="tab-content">
-            <el-table :data="logTemplates" style="width: 100%" :header-cell-style="tableHeaderStyle" :cell-style="tableCellStyle">
+            <el-table :data="logTemplates" style="width: 100%">
               <el-table-column prop="id" label="ID" width="60" />
               <el-table-column prop="component_type" label="组件类型" width="150" />
               <el-table-column prop="log_format" label="日志格式" width="120" />
@@ -78,18 +78,6 @@ const activeTab = ref('metrics')
 const metricTemplates = ref<MetricTemplate[]>([])
 const logTemplates = ref<LogTemplate[]>([])
 
-const tableHeaderStyle = {
-  background: 'rgba(255, 215, 0, 0.05)',
-  color: 'rgba(255, 255, 255, 0.9)',
-  borderBottom: '1px solid rgba(255, 215, 0, 0.1)'
-}
-
-const tableCellStyle = {
-  background: 'transparent',
-  color: 'rgba(255, 255, 255, 0.8)',
-  borderBottom: '1px solid rgba(255, 215, 0, 0.05)'
-}
-
 const loadMetricTemplates = async () => {
   try {
     const data = await api.getMetricTemplates()
@@ -124,11 +112,13 @@ onMounted(() => {
   flex-direction: column;
   height: 100%;
   padding: 20px;
+  background: var(--bg-primary);
+  font-family: var(--font-body);
 }
 
 .config-card {
-  background: rgba(0, 0, 0, 0.2);
-  border: 1px solid rgba(255, 215, 0, 0.1);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-light);
   border-radius: 12px;
   flex: 1;
   display: flex;
@@ -148,13 +138,13 @@ onMounted(() => {
   flex-direction: column;
 
   > .el-tabs__header {
-    background: rgba(0, 0, 0, 0.3) !important;
-    border-bottom: 1px solid rgba(255, 215, 0, 0.15) !important;
+    background: var(--bg-tertiary) !important;
+    border-bottom: 1px solid var(--border-light) !important;
     margin: 0 !important;
   }
 
   .el-tabs__content {
-    background: rgba(0, 0, 0, 0.2) !important;
+    background: var(--bg-secondary) !important;
     padding: 24px !important;
     flex: 1;
     overflow: auto;
@@ -162,16 +152,77 @@ onMounted(() => {
 }
 
 :deep(.el-tabs--border-card .el-tabs__item) {
+  color: var(--text-tertiary);
+  font-weight: 500;
+
   &:hover:not(.is-active) {
-    background: rgba(0, 0, 0, 0.2) !important;
+    color: var(--neon-blue);
+    background: rgba(0, 245, 255, 0.05) !important;
   }
 
   &.is-active {
-    background: rgba(0, 0, 0, 0.3) !important;
+    color: var(--neon-blue);
+    background: var(--bg-secondary) !important;
+    border-right-color: var(--border-light);
+    border-left-color: var(--border-light);
   }
 }
 
 :deep(.el-tabs__nav-wrap::after) {
   display: none !important;
+}
+
+:deep(.el-table) {
+  --el-table-bg-color: transparent;
+  --el-table-tr-bg-color: transparent;
+  --el-table-header-bg-color: var(--bg-tertiary);
+  --el-table-row-hover-bg-color: rgba(0, 245, 255, 0.05);
+  --el-table-border-color: var(--border-light);
+  --el-table-text-color: var(--text-secondary);
+  --el-table-header-text-color: var(--text-primary);
+
+  background: transparent !important;
+
+  .el-table__inner-wrapper::before {
+    display: none;
+  }
+
+  th.el-table__cell {
+    background: var(--el-table-header-bg-color) !important;
+    border-bottom: 1px solid var(--el-table-border-color) !important;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  td.el-table__cell {
+    border-bottom: 1px solid var(--el-table-border-color);
+  }
+
+  tr {
+    background: transparent !important;
+  }
+
+  .el-table__body tr:hover > td.el-table__cell {
+    background: var(--el-table-row-hover-bg-color) !important;
+  }
+}
+
+:deep(.el-button) {
+  border-radius: 6px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+
+  &.is-link {
+    color: var(--neon-blue);
+    background: transparent;
+    border: none;
+
+    &:hover {
+      color: var(--neon-purple);
+    }
+  }
 }
 </style>

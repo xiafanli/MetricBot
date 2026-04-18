@@ -325,21 +325,25 @@ onMounted(() => {
 <style lang="less" scoped>
 .topology-wizard {
   padding: 20px;
+  background: var(--bg-primary);
+  min-height: 100%;
+  font-family: var(--font-body);
 }
 
 .wizard-card {
-  background: rgba(0, 0, 0, 0.2);
-  border: 1px solid rgba(255, 215, 0, 0.1);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-light);
   border-radius: 12px;
 
   :deep(.el-card__header) {
-    background: rgba(0, 0, 0, 0.1);
-    border-bottom: 1px solid rgba(255, 215, 0, 0.1);
+    background: var(--bg-tertiary);
+    border-bottom: 1px solid var(--border-light);
     padding: 16px 20px;
   }
 
   :deep(.el-card__body) {
     padding: 20px;
+    background: var(--bg-secondary);
   }
 }
 
@@ -349,16 +353,17 @@ onMounted(() => {
   align-items: center;
 
   .title {
+    font-family: var(--font-display);
     font-size: 18px;
     font-weight: 600;
-    color: #ffd700;
+    color: var(--neon-blue);
   }
 
   .el-button {
-    color: rgba(255, 255, 255, 0.6);
+    color: var(--text-tertiary);
 
     &:hover {
-      color: #ffd700;
+      color: var(--neon-blue);
     }
   }
 }
@@ -371,44 +376,44 @@ onMounted(() => {
   }
 
   :deep(.el-steps--simple) {
-    background: rgba(0, 0, 0, 0.3) !important;
+    background: var(--bg-tertiary) !important;
     border-radius: 8px;
     padding: 13px 20px;
-    border: 1px solid rgba(255, 215, 0, 0.1);
+    border: 1px solid var(--border-light);
   }
 
   :deep(.el-step__title) {
-    color: rgba(255, 255, 255, 0.5) !important;
+    color: var(--text-tertiary) !important;
     font-size: 14px;
 
     &.is-process {
-      color: #ffd700 !important;
+      color: var(--neon-blue) !important;
       font-weight: 600;
     }
 
     &.is-success {
-      color: #67c23a !important;
+      color: var(--neon-green) !important;
     }
 
     &.is-wait {
-      color: rgba(255, 255, 255, 0.4) !important;
+      color: var(--text-tertiary) !important;
     }
   }
 
   :deep(.el-step__head) {
     &.is-process {
-      color: #ffd700;
-      border-color: #ffd700;
+      color: var(--neon-blue);
+      border-color: var(--neon-blue);
     }
 
     &.is-success {
-      color: #67c23a;
-      border-color: #67c23a;
+      color: var(--neon-green);
+      border-color: var(--neon-green);
     }
 
     &.is-wait {
-      color: rgba(255, 255, 255, 0.3);
-      border-color: rgba(255, 255, 255, 0.3);
+      color: var(--text-tertiary);
+      border-color: var(--border-light);
     }
   }
 
@@ -417,32 +422,32 @@ onMounted(() => {
   }
 
   :deep(.el-step__icon-inner) {
-    color: rgba(255, 255, 255, 0.5);
+    color: var(--text-tertiary);
 
     .is-process & {
-      color: #ffd700;
+      color: var(--neon-blue);
     }
 
     .is-success & {
-      color: #67c23a;
+      color: var(--neon-green);
     }
   }
 
   :deep(.el-step__arrow) {
     &::before,
     &::after {
-      background: rgba(255, 255, 255, 0.3);
+      background: var(--border-light);
     }
   }
 
   :deep(.el-step.is-success .el-step__arrow::before),
   :deep(.el-step.is-success .el-step__arrow::after) {
-    background: #67c23a;
+    background: var(--neon-green);
   }
 
   :deep(.el-step.is-process .el-step__arrow::before),
   :deep(.el-step.is-process .el-step__arrow::after) {
-    background: #ffd700;
+    background: var(--neon-blue);
   }
 }
 
@@ -460,6 +465,10 @@ onMounted(() => {
   justify-content: center;
   align-items: center;
   min-height: 200px;
+
+  :deep(.el-empty__description) {
+    color: var(--text-tertiary);
+  }
 }
 
 .step-actions {
@@ -467,7 +476,45 @@ onMounted(() => {
   justify-content: center;
   gap: 20px;
   padding-top: 20px;
-  border-top: 1px solid rgba(255, 215, 0, 0.1);
+  border-top: 1px solid var(--border-light);
+
+  :deep(.el-button) {
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+
+    &.el-button--default {
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-light);
+      color: var(--text-secondary);
+
+      &:hover {
+        border-color: var(--neon-blue);
+        color: var(--neon-blue);
+      }
+    }
+
+    &.el-button--primary {
+      background: var(--gradient-neon);
+      border: none;
+      color: white;
+
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 0 20px rgba(0, 245, 255, 0.5);
+      }
+    }
+
+    &.el-button--success {
+      background: rgba(0, 255, 136, 0.15);
+      border: 1px solid var(--neon-green);
+      color: var(--neon-green);
+
+      &:hover {
+        background: rgba(0, 255, 136, 0.25);
+      }
+    }
+  }
 }
 
 .topology-type-list,
@@ -483,20 +530,21 @@ onMounted(() => {
   min-width: 280px;
   max-width: 400px;
   padding: 20px;
-  border: 2px solid rgba(255, 255, 255, 0.1);
+  border: 2px solid var(--border-light);
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.3s;
-  background: rgba(0, 0, 0, 0.2);
+  background: var(--bg-tertiary);
 
   &:hover {
-    border-color: rgba(255, 215, 0, 0.3);
-    background: rgba(0, 0, 0, 0.3);
+    border-color: var(--border-medium);
+    transform: translateY(-2px);
   }
 
   &.active {
-    border-color: #ffd700;
-    background: rgba(255, 215, 0, 0.05);
+    border-color: var(--neon-blue);
+    background: rgba(0, 245, 255, 0.05);
+    box-shadow: 0 0 20px rgba(0, 245, 255, 0.2);
   }
 }
 
@@ -509,20 +557,21 @@ onMounted(() => {
 }
 
 .check-icon {
-  color: #67c23a;
+  color: var(--neon-green);
   font-size: 20px;
 }
 
 .type-name,
 .scale-name {
+  font-family: var(--font-display);
   font-size: 18px;
   font-weight: bold;
-  color: white;
+  color: var(--text-primary);
 }
 
 .type-desc,
 .scale-desc {
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--text-tertiary);
   margin-bottom: 15px;
 }
 
@@ -534,6 +583,10 @@ onMounted(() => {
 
 .layer-tag {
   margin: 2px;
+  background: rgba(0, 245, 255, 0.15);
+  color: var(--neon-blue);
+  border: none;
+  border-radius: 4px;
 }
 
 .scale-config {
@@ -546,18 +599,19 @@ onMounted(() => {
   display: flex;
   justify-content: space-between;
   padding: 5px 10px;
-  background: rgba(0, 0, 0, 0.3);
+  background: var(--bg-secondary);
   border-radius: 4px;
+  border: 1px solid var(--border-light);
 }
 
 .config-type {
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--text-tertiary);
   font-size: 12px;
 }
 
 .config-count {
   font-weight: bold;
-  color: #ffd700;
+  color: var(--neon-blue);
 }
 
 .component-selection {
@@ -572,27 +626,27 @@ onMounted(() => {
 
 .component-card {
   padding: 15px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--border-light);
   border-radius: 8px;
   transition: all 0.3s;
-  background: rgba(0, 0, 0, 0.2);
+  background: var(--bg-tertiary);
 
   &:hover {
-    border-color: rgba(255, 215, 0, 0.3);
+    border-color: var(--border-medium);
   }
 
   &.selected {
-    border-color: #ffd700;
-    background: rgba(255, 215, 0, 0.05);
+    border-color: var(--neon-blue);
+    background: rgba(0, 245, 255, 0.05);
   }
 
   :deep(.el-checkbox__label) {
-    color: white;
+    color: var(--text-primary);
   }
 
   :deep(.el-checkbox__input.is-checked .el-checkbox__inner) {
-    background-color: #ffd700;
-    border-color: #ffd700;
+    background-color: var(--neon-blue);
+    border-color: var(--neon-blue);
   }
 }
 
@@ -605,17 +659,21 @@ onMounted(() => {
 
 .component-name {
   font-weight: 500;
-  color: white;
+  color: var(--text-primary);
 }
 
 .selection-tip {
   margin-top: 20px;
   text-align: center;
+
+  :deep(.el-text) {
+    color: var(--text-tertiary);
+  }
 }
 
 .ip-tip {
   margin-top: 10px;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--text-tertiary);
   font-size: 12px;
 }
 
@@ -624,18 +682,25 @@ onMounted(() => {
 
   h4 {
     margin-bottom: 20px;
-    color: #ffd700;
+    font-family: var(--font-display);
+    color: var(--neon-blue);
+    font-weight: 600;
   }
 
   :deep(.el-descriptions) {
     .el-descriptions__label {
-      background: rgba(0, 0, 0, 0.3);
-      color: rgba(255, 255, 255, 0.7);
+      background: var(--bg-tertiary);
+      color: var(--text-secondary);
+      font-weight: 500;
     }
 
     .el-descriptions__content {
-      background: rgba(0, 0, 0, 0.2);
-      color: white;
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+    }
+
+    .el-descriptions__cell {
+      border-color: var(--border-light);
     }
   }
 }
@@ -645,12 +710,98 @@ onMounted(() => {
 
   h5 {
     margin-bottom: 10px;
-    color: rgba(255, 255, 255, 0.7);
+    color: var(--text-secondary);
   }
 }
 
 .component-tag {
   margin-right: 10px;
   margin-bottom: 10px;
+  background: rgba(0, 245, 255, 0.15);
+  color: var(--neon-blue);
+  border: none;
+  border-radius: 4px;
+}
+
+:deep(.el-form) {
+  .el-form-item__label {
+    color: var(--text-primary);
+    font-weight: 500;
+  }
+
+  .el-input__wrapper {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-light);
+    box-shadow: none;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+
+    &:hover {
+      border-color: var(--border-medium);
+    }
+
+    &.is-focus {
+      border-color: var(--neon-blue);
+      box-shadow: 0 0 10px rgba(0, 245, 255, 0.2);
+    }
+
+    .el-input__inner {
+      color: var(--text-primary);
+
+      &::placeholder {
+        color: var(--text-tertiary);
+      }
+    }
+  }
+
+  .el-textarea__inner {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-light);
+    color: var(--text-primary);
+    border-radius: 8px;
+
+    &:hover {
+      border-color: var(--border-medium);
+    }
+
+    &:focus {
+      border-color: var(--neon-blue);
+      box-shadow: 0 0 10px rgba(0, 245, 255, 0.2);
+    }
+  }
+}
+
+:deep(.el-alert) {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-light);
+
+  &.el-alert--success {
+    background: rgba(0, 255, 136, 0.1);
+    border-color: rgba(0, 255, 136, 0.3);
+
+    .el-alert__title {
+      color: var(--neon-green);
+    }
+  }
+
+  &.el-alert--warning {
+    background: rgba(255, 165, 0, 0.1);
+    border-color: rgba(255, 165, 0, 0.3);
+
+    .el-alert__title {
+      color: var(--neon-orange);
+    }
+  }
+}
+
+:deep(.el-tag) {
+  border-radius: 4px;
+  font-weight: 500;
+
+  &.el-tag--info {
+    background: rgba(0, 245, 255, 0.15);
+    color: var(--neon-blue);
+    border: none;
+  }
 }
 </style>

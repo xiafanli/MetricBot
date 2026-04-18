@@ -565,12 +565,12 @@ const loadEnvironment = async () => {
 
 const loadTopology = async (envId: number) => {
   try {
-    const [componentsData, relationsData] = await Promise.all([
+    const [componentsRes, relationsRes] = await Promise.all([
       api.getComponents(envId),
       api.getSimulatorRelations(envId)
     ])
-    topologyComponents.value = Array.isArray(componentsData) ? componentsData : []
-    topologyRelations.value = Array.isArray(relationsData) ? relationsData : []
+    topologyComponents.value = Array.isArray(componentsRes.data) ? componentsRes.data : []
+    topologyRelations.value = Array.isArray(relationsRes.data) ? relationsRes.data : []
     nodePositions.value.clear()
   } catch (error) {
     console.error('加载拓扑数据失败:', error)
@@ -648,8 +648,8 @@ const loadEnvironmentStatus = async () => {
   if (!currentEnvironment.value?.id) return
   try {
     const response = await api.getEnvironmentStatus(currentEnvironment.value.id)
-    updateComponentStatus(response.components)
-    activeFaults.value = response.faults || []
+    updateComponentStatus(response.data.components)
+    activeFaults.value = response.data.faults || []
   } catch (error) {
     console.error('Failed to load environment status:', error)
   }
@@ -751,8 +751,8 @@ const showLoadTemplateDialog = async () => {
   loadTemplateDialog.value = true
   loadingTemplates.value = true
   try {
-    const response = await api.getTopologyTemplates() as typeof topologyTemplates.value
-    topologyTemplates.value = response
+    const response = await api.getTopologyTemplates()
+    topologyTemplates.value = response.data as typeof topologyTemplates.value
   } catch (error) {
     console.error('Failed to load templates:', error)
     ElMessage.error('加载模板列表失败')
@@ -784,10 +784,10 @@ const confirmApplyTemplate = async () => {
       name: applyForm.value.name,
       ip_prefix: applyForm.value.ip_prefix,
       description: applyForm.value.description
-    }) as { environment: Environment }
+    })
     ElMessage.success('模板应用成功')
     applyTemplateDialog.value = false
-    currentEnvironment.value = result.environment
+    currentEnvironment.value = result.data.environment
     await loadTopology(currentEnvironment.value.id)
   } catch (error) {
     console.error('Failed to apply template:', error)
@@ -831,6 +831,8 @@ onUnmounted(() => {
   flex-direction: column;
   height: 100%;
   padding: 20px;
+  background: var(--bg-primary);
+  font-family: var(--font-body);
 }
 
 .empty-state {
@@ -838,17 +840,35 @@ onUnmounted(() => {
   justify-content: center;
   align-items: center;
   min-height: 400px;
-  background: rgba(0, 0, 0, 0.2);
-  border: 1px solid rgba(255, 215, 0, 0.1);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-light);
   border-radius: 12px;
   flex: 1;
+
+  :deep(.el-empty__description) {
+    color: var(--text-tertiary);
+  }
+
+  :deep(.el-button--primary) {
+    background: var(--gradient-neon);
+    border: none;
+    color: white;
+    font-weight: 600;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0 20px rgba(0, 245, 255, 0.5);
+    }
+  }
 }
 
 .topology-view {
   display: flex;
   flex-direction: column;
-  background: rgba(0, 0, 0, 0.2);
-  border: 1px solid rgba(255, 215, 0, 0.1);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-light);
   border-radius: 12px;
   flex: 1;
   min-height: 0;
@@ -859,17 +879,19 @@ onUnmounted(() => {
   justify-content: space-between;
   align-items: flex-start;
   padding: 16px 20px;
-  border-bottom: 1px solid rgba(255, 215, 0, 0.08);
+  border-bottom: 1px solid var(--border-light);
   flex-shrink: 0;
 
   .header-info {
     h3 {
-      color: #ffd700;
+      color: var(--neon-blue);
       margin: 0 0 4px 0;
+      font-family: var(--font-display);
       font-size: 16px;
+      font-weight: 600;
     }
     .env-desc {
-      color: rgba(255, 255, 255, 0.5);
+      color: var(--text-tertiary);
       font-size: 13px;
     }
   }
@@ -878,6 +900,90 @@ onUnmounted(() => {
     display: flex;
     align-items: center;
     gap: 10px;
+
+    :deep(.el-tag) {
+      border-radius: 6px;
+      font-weight: 500;
+      border: none;
+
+      &.el-tag--success {
+        background: rgba(0, 255, 136, 0.15);
+        color: var(--neon-green);
+      }
+
+      &.el-tag--info {
+        background: rgba(0, 245, 255, 0.15);
+        color: var(--neon-blue);
+      }
+    }
+
+    :deep(.el-button) {
+      border-radius: 6px;
+      font-weight: 500;
+      transition: all 0.3s ease;
+
+      &.el-button--primary {
+        background: var(--gradient-neon);
+        border: none;
+        color: white;
+
+        &:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 0 20px rgba(0, 245, 255, 0.5);
+        }
+      }
+
+      &.el-button--success {
+        background: rgba(0, 255, 136, 0.15);
+        border: 1px solid var(--neon-green);
+        color: var(--neon-green);
+
+        &:hover {
+          background: rgba(0, 255, 136, 0.25);
+        }
+      }
+
+      &.el-button--danger {
+        background: rgba(255, 0, 153, 0.15);
+        border: 1px solid var(--neon-pink);
+        color: var(--neon-pink);
+
+        &:hover {
+          background: rgba(255, 0, 153, 0.25);
+        }
+      }
+
+      &.el-button--warning {
+        background: rgba(255, 165, 0, 0.15);
+        border: 1px solid var(--neon-orange);
+        color: var(--neon-orange);
+
+        &:hover {
+          background: rgba(255, 165, 0, 0.25);
+        }
+      }
+
+      &.el-button--info {
+        background: rgba(0, 245, 255, 0.15);
+        border: 1px solid var(--neon-blue);
+        color: var(--neon-blue);
+
+        &:hover {
+          background: rgba(0, 245, 255, 0.25);
+        }
+      }
+
+      &.el-button--default {
+        background: var(--bg-tertiary);
+        border: 1px solid var(--border-light);
+        color: var(--text-secondary);
+
+        &:hover {
+          border-color: var(--neon-blue);
+          color: var(--neon-blue);
+        }
+      }
+    }
   }
 }
 
@@ -886,6 +992,10 @@ onUnmounted(() => {
   justify-content: center;
   align-items: center;
   min-height: 300px;
+
+  :deep(.el-empty__description) {
+    color: var(--text-tertiary);
+  }
 }
 
 .topology-container {
@@ -900,8 +1010,8 @@ onUnmounted(() => {
   justify-content: space-between;
   align-items: center;
   padding: 10px 20px;
-  background: rgba(0, 0, 0, 0.3);
-  border-bottom: 1px solid rgba(255, 215, 0, 0.08);
+  background: var(--bg-tertiary);
+  border-bottom: 1px solid var(--border-light);
   flex-shrink: 0;
 
   .toolbar-left {
@@ -915,7 +1025,7 @@ onUnmounted(() => {
     align-items: center;
     gap: 8px;
     font-size: 13px;
-    color: rgba(255, 255, 255, 0.7);
+    color: var(--text-secondary);
   }
 
   .legend-dot {
@@ -924,13 +1034,13 @@ onUnmounted(() => {
     border-radius: 50%;
     
     &.healthy {
-      background: #3b82f6;
-      box-shadow: 0 0 8px rgba(59, 130, 246, 0.6);
+      background: var(--neon-blue);
+      box-shadow: 0 0 8px rgba(0, 245, 255, 0.6);
     }
     
     &.fault {
-      background: #ef4444;
-      box-shadow: 0 0 8px rgba(239, 68, 68, 0.6);
+      background: var(--neon-pink);
+      box-shadow: 0 0 8px rgba(255, 0, 153, 0.6);
     }
   }
 
@@ -942,17 +1052,30 @@ onUnmounted(() => {
 
   .zoom-indicator {
     font-size: 13px;
-    color: rgba(255, 255, 255, 0.6);
+    color: var(--text-tertiary);
     min-width: 45px;
     text-align: center;
-    font-family: 'SF Mono', 'Monaco', monospace;
+    font-family: var(--font-mono);
+  }
+
+  :deep(.el-button-group) {
+    .el-button {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-light);
+      color: var(--text-secondary);
+
+      &:hover {
+        border-color: var(--neon-blue);
+        color: var(--neon-blue);
+      }
+    }
   }
 }
 
 .topology-canvas-wrapper {
   flex: 1;
   min-height: 400px;
-  background: linear-gradient(180deg, rgba(15, 23, 42, 0.95) 0%, rgba(15, 23, 42, 0.98) 100%);
+  background: linear-gradient(180deg, var(--bg-tertiary) 0%, var(--bg-primary) 100%);
   overflow: hidden;
   position: relative;
 }
@@ -967,15 +1090,17 @@ onUnmounted(() => {
   .layer-label-group {
     .layer-label {
       font-size: 12px;
-      fill: rgba(255, 255, 255, 0.4);
+      fill: var(--text-tertiary);
       font-weight: 500;
       text-anchor: end;
+      font-family: var(--font-display);
     }
     
     .layer-separator {
-      stroke: rgba(255, 255, 255, 0.05);
+      stroke: var(--border-light);
       stroke-width: 1;
       stroke-dasharray: 4 4;
+      opacity: 0.5;
     }
   }
 }
@@ -988,11 +1113,11 @@ onUnmounted(() => {
       transition: stroke 0.3s ease;
       
       &.healthy {
-        stroke: #3b82f6;
+        stroke: var(--neon-blue);
       }
       
       &.fault {
-        stroke: #ef4444;
+        stroke: var(--neon-pink);
         stroke-dasharray: 6 3;
         animation: dash-flow 0.5s linear infinite;
       }
@@ -1021,13 +1146,13 @@ onUnmounted(() => {
       stroke-width: 2;
       
       &.healthy {
-        fill: rgba(59, 130, 246, 0.15);
-        stroke: #3b82f6;
+        fill: rgba(0, 245, 255, 0.15);
+        stroke: var(--neon-blue);
       }
       
       &.fault {
-        fill: rgba(239, 68, 68, 0.15);
-        stroke: #ef4444;
+        fill: rgba(255, 0, 153, 0.15);
+        stroke: var(--neon-pink);
         animation: pulse-circle 1.5s ease-in-out infinite;
       }
     }
@@ -1037,20 +1162,20 @@ onUnmounted(() => {
       transition: all 0.3s ease;
       
       &.healthy {
-        color: #3b82f6;
+        color: var(--neon-blue);
       }
       
       &.fault {
-        color: #ef4444;
+        color: var(--neon-pink);
       }
     }
 
     .node-name {
       font-size: 11px;
       font-weight: 500;
-      fill: rgba(255, 255, 255, 0.9);
+      fill: var(--text-primary);
       text-anchor: middle;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-family: var(--font-body);
     }
   }
 }
@@ -1067,8 +1192,8 @@ onUnmounted(() => {
 }
 
 .active-faults-panel {
-  background: rgba(239, 68, 68, 0.08);
-  border-top: 1px solid rgba(239, 68, 68, 0.2);
+  background: rgba(255, 0, 153, 0.08);
+  border-top: 1px solid rgba(255, 0, 153, 0.2);
   padding: 12px 20px;
   flex-shrink: 0;
   max-height: 150px;
@@ -1079,9 +1204,10 @@ onUnmounted(() => {
     align-items: center;
     gap: 8px;
     margin-bottom: 10px;
-    color: #f87171;
+    color: var(--neon-pink);
     font-size: 13px;
     font-weight: 600;
+    font-family: var(--font-display);
   }
 
   .panel-icon {
@@ -1099,9 +1225,9 @@ onUnmounted(() => {
     align-items: center;
     gap: 12px;
     padding: 8px 12px;
-    background: rgba(0, 0, 0, 0.2);
+    background: var(--bg-tertiary);
     border-radius: 6px;
-    border: 1px solid rgba(239, 68, 68, 0.15);
+    border: 1px solid rgba(255, 0, 153, 0.15);
   }
 
   .fault-info {
@@ -1113,46 +1239,105 @@ onUnmounted(() => {
 
   .fault-name {
     font-size: 12px;
-    color: rgba(255, 255, 255, 0.9);
+    color: var(--text-primary);
   }
 
   .fault-component {
     font-size: 11px;
-    color: rgba(255, 255, 255, 0.5);
+    color: var(--text-tertiary);
   }
 
   .fault-time {
     font-size: 11px;
-    color: rgba(255, 255, 255, 0.4);
-    font-family: 'SF Mono', 'Monaco', monospace;
+    color: var(--text-tertiary);
+    font-family: var(--font-mono);
+  }
+
+  :deep(.el-button--success) {
+    background: rgba(0, 255, 136, 0.15);
+    border: 1px solid var(--neon-green);
+    color: var(--neon-green);
+    font-weight: 500;
+    border-radius: 6px;
+
+    &:hover {
+      background: rgba(0, 255, 136, 0.25);
+    }
   }
 }
 
 :deep(.el-dialog) {
-  background: rgba(20, 20, 30, 0.95);
-  border: 1px solid rgba(255, 215, 0, 0.2);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-light);
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
 
   .el-dialog__header {
-    border-bottom: 1px solid rgba(255, 215, 0, 0.1);
+    background: transparent;
+    border-bottom: 1px solid var(--border-light);
+    padding: 20px 24px;
+
+    .el-dialog__title {
+      font-family: var(--font-display);
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
   }
 
-  .el-dialog__title {
-    color: #ffd700;
+  .el-dialog__body {
+    padding: 24px;
+    color: var(--text-secondary);
   }
 
+  .el-dialog__footer {
+    background: transparent;
+    border-top: 1px solid var(--border-light);
+    padding: 16px 24px;
+  }
+}
+
+:deep(.el-form) {
   .el-form-item__label {
-    color: rgba(255, 255, 255, 0.8);
+    color: var(--text-primary);
+    font-weight: 500;
+  }
+
+  .el-input__wrapper,
+  .el-select .el-input__wrapper {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-light);
+    box-shadow: none;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+
+    &:hover {
+      border-color: var(--border-medium);
+    }
+
+    &.is-focus {
+      border-color: var(--neon-blue);
+      box-shadow: 0 0 10px rgba(0, 245, 255, 0.2);
+    }
+
+    .el-input__inner {
+      color: var(--text-primary);
+
+      &::placeholder {
+        color: var(--text-tertiary);
+      }
+    }
   }
 }
 
 :deep(.el-table) {
   --el-table-bg-color: transparent;
   --el-table-tr-bg-color: transparent;
-  --el-table-header-bg-color: rgba(255, 215, 0, 0.08);
-  --el-table-row-hover-bg-color: rgba(255, 215, 0, 0.05);
-  --el-table-border-color: rgba(255, 215, 0, 0.1);
-  --el-table-text-color: rgba(255, 255, 255, 0.85);
-  --el-table-header-text-color: rgba(255, 255, 255, 0.95);
+  --el-table-header-bg-color: var(--bg-tertiary);
+  --el-table-row-hover-bg-color: rgba(0, 245, 255, 0.05);
+  --el-table-border-color: var(--border-light);
+  --el-table-text-color: var(--text-secondary);
+  --el-table-header-text-color: var(--text-primary);
 
   background: transparent !important;
 
@@ -1163,7 +1348,11 @@ onUnmounted(() => {
   th.el-table__cell {
     background: var(--el-table-header-bg-color) !important;
     border-bottom: 1px solid var(--el-table-border-color) !important;
+    font-family: var(--font-display);
     font-weight: 600;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
   }
 
   td.el-table__cell {
@@ -1176,6 +1365,44 @@ onUnmounted(() => {
 
   .el-table__body tr:hover > td.el-table__cell {
     background: var(--el-table-row-hover-bg-color) !important;
+  }
+}
+
+:deep(.el-button) {
+  border-radius: 6px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+
+  &.el-button--primary {
+    background: var(--gradient-neon);
+    border: none;
+    color: white;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0 20px rgba(0, 245, 255, 0.5);
+    }
+  }
+
+  &.el-button--default {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-light);
+    color: var(--text-secondary);
+
+    &:hover {
+      border-color: var(--neon-blue);
+      color: var(--neon-blue);
+    }
+  }
+
+  &.is-link {
+    color: var(--neon-blue);
+    background: transparent;
+    border: none;
+
+    &:hover {
+      color: var(--neon-purple);
+    }
   }
 }
 </style>

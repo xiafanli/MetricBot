@@ -1,7 +1,7 @@
 <template>
   <div class="dashboard-container">
     <div class="stats-row">
-      <div class="stat-card critical">
+      <div class="stat-card cyber-card critical">
         <div class="stat-icon">
           <el-icon :size="28"><WarningFilled /></el-icon>
         </div>
@@ -15,7 +15,7 @@
         </div>
       </div>
       
-      <div class="stat-card warning">
+      <div class="stat-card cyber-card warning">
         <div class="stat-icon">
           <el-icon :size="28"><Warning /></el-icon>
         </div>
@@ -29,7 +29,7 @@
         </div>
       </div>
       
-      <div class="stat-card info">
+      <div class="stat-card cyber-card info">
         <div class="stat-icon">
           <el-icon :size="28"><InfoFilled /></el-icon>
         </div>
@@ -43,7 +43,7 @@
         </div>
       </div>
       
-      <div class="stat-card total">
+      <div class="stat-card cyber-card total">
         <div class="stat-icon">
           <el-icon :size="28"><Bell /></el-icon>
         </div>
@@ -59,7 +59,7 @@
     </div>
 
     <div class="charts-row">
-      <div class="chart-card trend-chart">
+      <div class="chart-card cyber-card">
         <div class="card-header">
           <h3 class="card-title">告警趋势</h3>
           <div class="card-actions">
@@ -84,7 +84,7 @@
         </div>
       </div>
       
-      <div class="chart-card distribution-chart">
+      <div class="chart-card cyber-card">
         <div class="card-header">
           <h3 class="card-title">告警分布</h3>
         </div>
@@ -105,7 +105,7 @@
       </div>
     </div>
 
-    <div class="alerts-section">
+    <div class="alerts-section cyber-card">
       <div class="section-header">
         <h3 class="section-title">实时告警</h3>
         <div class="section-actions">
@@ -132,7 +132,7 @@
         >
           <el-table-column prop="level" label="级别" width="100">
             <template #default="{ row }">
-              <el-tag :type="getLevelType(row.level)" size="small" effect="dark">
+              <el-tag :type="getLevelType(row.level)" size="small">
                 {{ row.level }}
               </el-tag>
             </template>
@@ -310,11 +310,11 @@ const mockTrendData = ref([
 ])
 
 const distributionData = ref([
-  { name: 'CPU使用率', value: 28, percent: 37, color: '#ffd700' },
-  { name: '内存使用', value: 22, percent: 29, color: '#ff6b35' },
-  { name: '磁盘空间', value: 15, percent: 20, color: '#f72585' },
-  { name: '网络延迟', value: 8, percent: 11, color: '#7209b7' },
-  { name: '服务状态', value: 2, percent: 3, color: '#3a0ca3' }
+  { name: 'CPU使用率', value: 28, percent: 37, color: '#00f5ff' },
+  { name: '内存使用', value: 22, percent: 29, color: '#bf00ff' },
+  { name: '磁盘空间', value: 15, percent: 20, color: '#ff0099' },
+  { name: '网络延迟', value: 8, percent: 11, color: '#00ff88' },
+  { name: '服务状态', value: 2, percent: 3, color: '#ff6600' }
 ])
 
 const searchKeyword = ref('')
@@ -339,15 +339,19 @@ const filteredAlerts = computed(() => {
 })
 
 const tableHeaderStyle = {
-  background: 'rgba(255, 215, 0, 0.05)',
-  color: 'rgba(255, 255, 255, 0.9)',
-  borderBottom: '1px solid rgba(255, 215, 0, 0.1)'
+  background: 'rgba(0, 245, 255, 0.05)',
+  color: 'var(--text-primary)',
+  borderBottom: '1px solid var(--border-light)',
+  fontFamily: 'var(--font-display)',
+  fontWeight: '600',
+  textTransform: 'uppercase',
+  letterSpacing: '1px'
 }
 
 const tableCellStyle = {
   background: 'transparent',
-  color: 'rgba(255, 255, 255, 0.8)',
-  borderBottom: '1px solid rgba(255, 215, 0, 0.05)'
+  color: 'var(--text-secondary)',
+  borderBottom: '1px solid var(--border-light)'
 }
 
 const getLevelType = (level: string) => {
@@ -391,33 +395,34 @@ const handleAlert = (row: Alert) => {
   gap: 16px;
   padding: 20px 24px;
   border-radius: 12px;
-  background: rgba(26, 26, 46, 0.6);
-  border: 1px solid rgba(255, 215, 0, 0.1);
-  transition: all 0.2s;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-light);
+  transition: all 0.3s ease;
 
   &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0, 245, 255, 0.15);
+    border-color: var(--border-medium);
   }
 
   &.critical .stat-icon {
-    background: rgba(239, 68, 68, 0.15);
+    background: rgba(239, 68, 68, 0.1);
     color: #ef4444;
   }
 
   &.warning .stat-icon {
-    background: rgba(245, 158, 11, 0.15);
+    background: rgba(245, 158, 11, 0.1);
     color: #f59e0b;
   }
 
   &.info .stat-icon {
-    background: rgba(59, 130, 246, 0.15);
+    background: rgba(59, 130, 246, 0.1);
     color: #3b82f6;
   }
 
   &.total .stat-icon {
-    background: rgba(255, 215, 0, 0.15);
-    color: #ffd700;
+    background: rgba(0, 245, 255, 0.1);
+    color: var(--neon-blue);
   }
 }
 
@@ -436,15 +441,17 @@ const handleAlert = (row: Alert) => {
 }
 
 .stat-value {
+  font-family: var(--font-display);
   font-size: 32px;
   font-weight: 700;
-  color: white;
+  color: var(--text-primary);
   line-height: 1.2;
 }
 
 .stat-label {
+  font-family: var(--font-body);
   font-size: 14px;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--text-tertiary);
   margin-top: 4px;
 }
 
@@ -467,11 +474,11 @@ const handleAlert = (row: Alert) => {
   }
 
   .trend-label {
-    color: rgba(255, 255, 255, 0.5);
+    color: var(--text-tertiary);
   }
 
   .trend-value {
-    color: #ffd700;
+    color: var(--neon-blue);
     font-weight: 600;
   }
 }
@@ -484,8 +491,8 @@ const handleAlert = (row: Alert) => {
 
 .chart-card {
   border-radius: 12px;
-  background: rgba(26, 26, 46, 0.6);
-  border: 1px solid rgba(255, 215, 0, 0.1);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-light);
   overflow: hidden;
 }
 
@@ -494,27 +501,31 @@ const handleAlert = (row: Alert) => {
   justify-content: space-between;
   align-items: center;
   padding: 16px 20px;
-  border-bottom: 1px solid rgba(255, 215, 0, 0.1);
+  border-bottom: 1px solid var(--border-light);
 }
 
 .card-title {
+  font-family: var(--font-display);
   font-size: 16px;
   font-weight: 600;
-  color: white;
+  color: var(--text-primary);
   margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
 .card-actions {
   :deep(.el-radio-button__inner) {
-    background: rgba(255, 215, 0, 0.05);
-    border-color: rgba(255, 215, 0, 0.2);
-    color: rgba(255, 255, 255, 0.7);
+    background: var(--bg-tertiary);
+    border-color: var(--border-light);
+    color: var(--text-secondary);
+    font-family: var(--font-body);
   }
 
   :deep(.el-radio-button__original-radio:checked + .el-radio-button__inner) {
-    background: linear-gradient(135deg, #ffd700 0%, #ff6b35 100%);
-    border-color: #ffd700;
-    color: #0a0a0a;
+    background: var(--gradient-neon);
+    border-color: var(--neon-blue);
+    color: white;
   }
 }
 
@@ -551,14 +562,14 @@ const handleAlert = (row: Alert) => {
 
 .bar {
   width: 32px;
-  background: linear-gradient(180deg, #ffd700 0%, #ff6b35 50%, #f72585 100%);
+  background: var(--gradient-neon);
   border-radius: 4px 4px 0 0;
   transition: height 0.3s ease;
 }
 
 .bar-label {
   font-size: 11px;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--text-tertiary);
 }
 
 .distribution-list {
@@ -584,16 +595,17 @@ const handleAlert = (row: Alert) => {
   width: 8px;
   height: 8px;
   border-radius: 50%;
+  box-shadow: 0 0 8px currentColor;
 }
 
 .dist-name {
   font-size: 13px;
-  color: rgba(255, 255, 255, 0.8);
+  color: var(--text-secondary);
 }
 
 .dist-bar-wrapper {
   height: 8px;
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--bg-tertiary);
   border-radius: 4px;
   overflow: hidden;
 }
@@ -602,19 +614,21 @@ const handleAlert = (row: Alert) => {
   height: 100%;
   border-radius: 4px;
   transition: width 0.3s ease;
+  box-shadow: 0 0 10px currentColor;
 }
 
 .dist-value {
+  font-family: var(--font-display);
   font-size: 14px;
   font-weight: 600;
-  color: white;
+  color: var(--text-primary);
   text-align: right;
 }
 
 .alerts-section {
   border-radius: 12px;
-  background: rgba(26, 26, 46, 0.6);
-  border: 1px solid rgba(255, 215, 0, 0.1);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-light);
   overflow: hidden;
 }
 
@@ -623,14 +637,17 @@ const handleAlert = (row: Alert) => {
   justify-content: space-between;
   align-items: center;
   padding: 16px 20px;
-  border-bottom: 1px solid rgba(255, 215, 0, 0.1);
+  border-bottom: 1px solid var(--border-light);
 }
 
 .section-title {
+  font-family: var(--font-display);
   font-size: 16px;
   font-weight: 600;
-  color: white;
+  color: var(--text-primary);
   margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
 .section-actions {
@@ -643,15 +660,27 @@ const handleAlert = (row: Alert) => {
   width: 240px;
 
   :deep(.el-input__wrapper) {
-    background: rgba(0, 0, 0, 0.3);
-    border: 1px solid rgba(255, 215, 0, 0.2);
+    background: var(--bg-primary);
+    border: 2px solid var(--border-light);
     box-shadow: none;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+
+    &:hover {
+      border-color: var(--border-medium);
+    }
+
+    &.is-focus {
+      border-color: var(--neon-blue);
+      box-shadow: 0 0 0 3px rgba(0, 245, 255, 0.1);
+    }
 
     .el-input__inner {
-      color: white;
+      color: var(--text-primary);
+      font-family: var(--font-body);
 
       &::placeholder {
-        color: rgba(255, 255, 255, 0.3);
+        color: var(--text-tertiary);
       }
     }
   }
@@ -660,18 +689,35 @@ const handleAlert = (row: Alert) => {
 .alerts-table {
   :deep(.el-table) {
     background: transparent;
+    font-family: var(--font-body);
 
     tr {
       background: transparent;
 
       &:hover > td {
-        background: rgba(255, 215, 0, 0.03) !important;
+        background: rgba(0, 245, 255, 0.03) !important;
       }
     }
 
     .el-table__inner-wrapper::before {
       display: none;
     }
+  }
+}
+
+@media (max-width: 1200px) {
+  .stats-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .charts-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .stats-row {
+    grid-template-columns: 1fr;
   }
 }
 </style>

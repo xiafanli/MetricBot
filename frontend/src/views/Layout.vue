@@ -13,9 +13,9 @@
                 <circle cx="50" cy="50" r="8" fill="url(#grad1)"/>
                 <defs>
                   <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" style="stop-color:#ffd700"/>
-                    <stop offset="50%" style="stop-color:#ff6b35"/>
-                    <stop offset="100%" style="stop-color:#f72585"/>
+                    <stop offset="0%" style="stop-color:#00f5ff"/>
+                    <stop offset="50%" style="stop-color:#bf00ff"/>
+                    <stop offset="100%" style="stop-color:#ff0099"/>
                   </linearGradient>
                 </defs>
               </svg>
@@ -276,8 +276,8 @@ const handleCommand = async (command: string) => {
 <style lang="less" scoped>
 .layout-container {
   height: 100vh;
-  background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  background: var(--bg-primary);
+  font-family: var(--font-body);
 }
 
 .main-layout {
@@ -287,13 +287,14 @@ const handleCommand = async (command: string) => {
 
 .sidebar {
   width: 240px;
-  background: linear-gradient(180deg, #0f0f0f 0%, #1a1a1a 100%);
+  background: var(--bg-secondary);
   display: flex;
   flex-direction: column;
-  border-right: 1px solid rgba(255, 215, 0, 0.1);
+  border-right: 1px solid var(--border-light);
   flex-shrink: 0;
   transform: translateZ(0);
   backface-visibility: hidden;
+  box-shadow: 2px 0 8px rgba(0, 245, 255, 0.05);
 
   &.collapsed {
     width: 64px;
@@ -302,7 +303,7 @@ const handleCommand = async (command: string) => {
 
 .sidebar-header {
   padding: 20px;
-  border-bottom: 1px solid rgba(255, 215, 0, 0.1);
+  border-bottom: 1px solid var(--border-light);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -323,29 +324,33 @@ const handleCommand = async (command: string) => {
 }
 
 .logo-text {
+  font-family: var(--font-display);
   font-size: 16px;
   font-weight: 700;
-  background: linear-gradient(135deg, #ffd700 0%, #ff6b35 50%, #f72585 100%);
+  background: var(--gradient-neon);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
   white-space: nowrap;
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
 .collapse-btn, .expand-btn {
   background: transparent;
   border: none;
-  color: rgba(255, 215, 0, 0.6);
+  color: var(--neon-blue);
   cursor: pointer;
   padding: 8px;
   border-radius: 6px;
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: all 0.3s ease;
   
   &:hover {
-    color: #ffd700;
-    background: rgba(255, 215, 0, 0.1);
+    color: var(--neon-purple);
+    background: rgba(0, 245, 255, 0.1);
   }
 }
 
@@ -364,27 +369,29 @@ const handleCommand = async (command: string) => {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 0 44px;
+  padding: 0 16px;
   height: 44px;
   border-radius: 8px;
   cursor: pointer;
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--text-secondary);
   transform: translateZ(0);
+  transition: all 0.3s ease;
 
   &:hover {
-    color: white;
-    background: rgba(255, 215, 0, 0.1);
+    color: var(--neon-blue);
+    background: rgba(0, 245, 255, 0.1);
   }
 
   &.active {
-    color: white;
-    background: linear-gradient(135deg, rgba(255, 215, 0, 0.15) 0%, rgba(247, 37, 133, 0.15) 100%);
-    border-left: 2px solid #ffd700;
+    color: var(--neon-blue);
+    background: linear-gradient(135deg, rgba(0, 245, 255, 0.15) 0%, rgba(191, 0, 255, 0.15) 100%);
+    border-left: 3px solid var(--neon-blue);
+    font-weight: 600;
   }
 
   &.opened {
-    color: white;
-    background: rgba(255, 215, 0, 0.08);
+    color: var(--neon-blue);
+    background: rgba(0, 245, 255, 0.08);
   }
 }
 
@@ -421,6 +428,7 @@ const handleCommand = async (command: string) => {
   max-height: 0;
   overflow: hidden;
   opacity: 0;
+  transition: all 0.3s ease;
 
   &.expanded {
     max-height: 300px;
@@ -444,23 +452,25 @@ const handleCommand = async (command: string) => {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 0 16px 0 44px;
+  padding: 0 16px 0 32px;
   height: 40px;
   margin: 2px 0;
   border-radius: 8px;
   cursor: pointer;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--text-tertiary);
   transform: translateZ(0);
+  transition: all 0.3s ease;
 
   &:hover {
-    color: white;
-    background: rgba(255, 215, 0, 0.1);
+    color: var(--neon-blue);
+    background: rgba(0, 245, 255, 0.1);
   }
 
   &.active {
-    color: white;
-    background: linear-gradient(135deg, rgba(255, 215, 0, 0.2) 0%, rgba(247, 37, 133, 0.2) 100%);
-    border-left: 2px solid #ffd700;
+    color: var(--neon-blue);
+    background: linear-gradient(135deg, rgba(0, 245, 255, 0.2) 0%, rgba(191, 0, 255, 0.2) 100%);
+    border-left: 3px solid var(--neon-blue);
+    font-weight: 600;
   }
 }
 
@@ -476,7 +486,7 @@ const handleCommand = async (command: string) => {
 
 .sidebar-footer {
   padding: 16px;
-  border-top: 1px solid rgba(255, 215, 0, 0.1);
+  border-top: 1px solid var(--border-light);
 }
 
 .user-section {
@@ -485,11 +495,20 @@ const handleCommand = async (command: string) => {
   gap: 12px;
   padding: 12px;
   border-radius: 10px;
-  background: rgba(255, 215, 0, 0.03);
+  background: rgba(0, 245, 255, 0.05);
+  border: 1px solid var(--border-light);
+  transition: all 0.3s ease;
+
+  &:hover {
+    background: rgba(0, 245, 255, 0.1);
+    border-color: var(--border-medium);
+  }
 }
 
 .user-avatar {
-  background: linear-gradient(135deg, #ffd700 0%, #f72585 100%);
+  background: var(--gradient-neon);
+  color: white;
+  font-weight: 600;
 }
 
 .user-info {
@@ -498,14 +517,14 @@ const handleCommand = async (command: string) => {
 }
 
 .user-name {
-  color: white;
+  color: var(--text-primary);
   font-size: 14px;
   font-weight: 600;
   margin-bottom: 4px;
 }
 
 .user-role {
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--text-tertiary);
   font-size: 12px;
 }
 
@@ -518,14 +537,15 @@ const handleCommand = async (command: string) => {
 }
 
 .header {
-  background: linear-gradient(180deg, rgba(26, 26, 46, 0.95) 0%, rgba(22, 33, 62, 0.95) 100%);
-  border-bottom: 1px solid rgba(255, 215, 0, 0.1);
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-light);
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 0 24px;
   height: 60px;
   flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(0, 245, 255, 0.05);
 }
 
 .header-left {
@@ -536,9 +556,12 @@ const handleCommand = async (command: string) => {
 
 .header-left .page-title {
   margin: 0;
+  font-family: var(--font-display);
   font-size: 18px;
   font-weight: 700;
-  color: #fff;
+  color: var(--text-primary);
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
 .header-right {
@@ -548,9 +571,9 @@ const handleCommand = async (command: string) => {
 }
 
 .header-btn {
-  background: rgba(255, 215, 0, 0.05);
-  border: 1px solid rgba(255, 215, 0, 0.2);
-  color: #ffd700;
+  background: rgba(0, 245, 255, 0.05);
+  border: 1px solid var(--border-light);
+  color: var(--neon-blue);
   width: 36px;
   height: 36px;
   border-radius: 50%;
@@ -558,12 +581,13 @@ const handleCommand = async (command: string) => {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s;
+  transition: all 0.3s ease;
 
   &:hover {
-    background: rgba(255, 215, 0, 0.1);
-    border-color: rgba(255, 215, 0, 0.4);
-    color: #ffd700;
+    background: rgba(0, 245, 255, 0.1);
+    border-color: var(--neon-blue);
+    color: var(--neon-purple);
+    box-shadow: 0 0 10px rgba(0, 245, 255, 0.3);
   }
 }
 
@@ -574,18 +598,18 @@ const handleCommand = async (command: string) => {
   cursor: pointer;
   padding: 6px 12px;
   border-radius: 10px;
-  background: rgba(255, 215, 0, 0.03);
-  border: 1px solid rgba(255, 215, 0, 0.1);
-  transition: all 0.2s;
+  background: rgba(0, 245, 255, 0.05);
+  border: 1px solid var(--border-light);
+  transition: all 0.3s ease;
 
   &:hover {
-    background: rgba(255, 215, 0, 0.08);
-    border-color: rgba(255, 215, 0, 0.3);
+    background: rgba(0, 245, 255, 0.1);
+    border-color: var(--border-medium);
   }
 }
 
 .dropdown-arrow {
-  color: rgba(255, 215, 0, 0.5);
+  color: var(--neon-blue);
   font-size: 14px;
 }
 

@@ -246,14 +246,253 @@ onMounted(() => {
 })
 </script>
 
-<style scoped>
+<style scoped lang="less">
 .policy-config {
-  padding: 20px;
+  padding: 24px;
+  background: var(--bg-primary);
+  min-height: 100%;
+  font-family: var(--font-body);
 }
 
 .card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+
+  span {
+    font-family: var(--font-display);
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  .el-button--primary {
+    background: var(--gradient-neon);
+    border: none;
+    color: white;
+    font-weight: 600;
+    border-radius: 8px;
+    padding: 10px 20px;
+    transition: all 0.3s ease;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0 20px rgba(0, 245, 255, 0.5);
+    }
+  }
+}
+
+:deep(.el-card) {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-light);
+  border-radius: 12px;
+  box-shadow: var(--shadow-sm);
+
+  .el-card__header {
+    background: transparent;
+    border-bottom: 1px solid var(--border-light);
+    padding: 16px 20px;
+  }
+}
+
+:deep(.el-table) {
+  background: transparent;
+  --el-table-bg-color: transparent;
+  --el-table-tr-bg-color: transparent;
+  --el-table-header-bg-color: var(--bg-tertiary);
+  --el-table-row-hover-bg-color: rgba(0, 245, 255, 0.05);
+  --el-table-border-color: var(--border-light);
+
+  th.el-table__cell {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  td.el-table__cell {
+    color: var(--text-secondary);
+  }
+
+  .el-table__row:hover td {
+    background: rgba(0, 245, 255, 0.05);
+  }
+}
+
+:deep(.el-tag) {
+  border-radius: 6px;
+  font-weight: 500;
+  border: none;
+
+  &.el-tag--primary {
+    background: rgba(0, 245, 255, 0.15);
+    color: var(--neon-blue);
+  }
+
+  &.el-tag--success {
+    background: rgba(0, 255, 136, 0.15);
+    color: var(--neon-green);
+  }
+
+  &.el-tag--warning {
+    background: rgba(255, 102, 0, 0.15);
+    color: var(--neon-orange);
+  }
+
+  &.el-tag--info {
+    background: rgba(0, 245, 255, 0.15);
+    color: var(--neon-blue);
+  }
+}
+
+:deep(.el-switch) {
+  --el-switch-on-color: var(--neon-blue);
+  --el-switch-off-color: var(--border-medium);
+
+  &.is-checked .el-switch__core {
+    box-shadow: 0 0 10px rgba(0, 245, 255, 0.5);
+  }
+}
+
+:deep(.el-button--primary.is-link) {
+  color: var(--neon-blue);
+  font-weight: 500;
+
+  &:hover {
+    color: var(--neon-purple);
+  }
+}
+
+:deep(.el-button--danger.is-link) {
+  color: var(--neon-pink);
+  font-weight: 500;
+
+  &:hover {
+    color: #ff3399;
+  }
+}
+
+:deep(.el-dialog) {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-light);
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+
+  .el-dialog__header {
+    background: transparent;
+    border-bottom: 1px solid var(--border-light);
+    padding: 20px 24px;
+
+    .el-dialog__title {
+      font-family: var(--font-display);
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+  }
+
+  .el-dialog__body {
+    padding: 24px;
+    color: var(--text-secondary);
+  }
+
+  .el-dialog__footer {
+    background: transparent;
+    border-top: 1px solid var(--border-light);
+    padding: 16px 24px;
+  }
+}
+
+:deep(.el-form) {
+  .el-form-item__label {
+    color: var(--text-primary);
+    font-weight: 500;
+  }
+
+  .el-input__wrapper {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-light);
+    box-shadow: none;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+
+    &:hover {
+      border-color: var(--border-medium);
+    }
+
+    &.is-focus {
+      border-color: var(--neon-blue);
+      box-shadow: 0 0 10px rgba(0, 245, 255, 0.2);
+    }
+  }
+
+  .el-input__inner {
+    color: var(--text-primary);
+
+    &::placeholder {
+      color: var(--text-tertiary);
+    }
+  }
+
+  .el-select {
+    width: 100%;
+
+    .el-input__wrapper {
+      background: var(--bg-tertiary);
+    }
+  }
+
+  .el-input-number {
+    width: 100%;
+
+    .el-input__wrapper {
+      background: var(--bg-tertiary);
+    }
+  }
+
+  .el-slider {
+    .el-slider__runway {
+      background: var(--bg-tertiary);
+    }
+
+    .el-slider__bar {
+      background: var(--gradient-neon);
+    }
+
+    .el-slider__button {
+      border-color: var(--neon-blue);
+    }
+  }
+}
+
+:deep(.el-button) {
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+
+  &.el-button--default {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-light);
+    color: var(--text-secondary);
+
+    &:hover {
+      border-color: var(--neon-blue);
+      color: var(--neon-blue);
+    }
+  }
+
+  &.el-button--primary {
+    background: var(--gradient-neon);
+    border: none;
+    color: white;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0 20px rgba(0, 245, 255, 0.5);
+    }
+  }
 }
 </style>

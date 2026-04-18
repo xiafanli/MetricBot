@@ -201,60 +201,220 @@ onMounted(() => {
 })
 </script>
 
-<style scoped>
+<style scoped lang="less">
 .alert-list {
-  padding: 20px;
+  padding: 24px;
+  background: var(--bg-primary);
+  min-height: 100%;
+  font-family: var(--font-body);
 }
 
 .stats-row {
-  margin-bottom: 20px;
+  margin-bottom: 24px;
 }
 
 .stat-card {
   text-align: center;
-  padding: 10px 0;
+  padding: 20px 16px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-light);
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--gradient-neon);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0, 245, 255, 0.15);
+    border-color: var(--border-medium);
+
+    &::before {
+      opacity: 1;
+    }
+  }
+
+  :deep(.el-card__body) {
+    padding: 20px 16px;
+  }
 }
 
 .stat-value {
-  font-size: 28px;
-  font-weight: bold;
-  color: #409eff;
+  font-family: var(--font-display);
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--neon-blue);
+  line-height: 1.2;
+  text-shadow: 0 0 10px rgba(0, 245, 255, 0.3);
 }
 
 .stat-card.critical .stat-value {
-  color: #f56c6c;
+  color: var(--neon-pink);
+  text-shadow: 0 0 10px rgba(255, 0, 153, 0.3);
 }
 
 .stat-card.warning .stat-value {
-  color: #e6a23c;
+  color: var(--neon-orange);
+  text-shadow: 0 0 10px rgba(255, 102, 0, 0.3);
 }
 
 .stat-card.info .stat-value {
-  color: #909399;
+  color: var(--text-secondary);
+  text-shadow: none;
 }
 
 .stat-card.active .stat-value {
-  color: #f56c6c;
+  color: var(--neon-pink);
+  text-shadow: 0 0 10px rgba(255, 0, 153, 0.3);
 }
 
 .stat-card.resolved .stat-value {
-  color: #67c23a;
+  color: var(--neon-green);
+  text-shadow: 0 0 10px rgba(0, 255, 136, 0.3);
 }
 
 .stat-label {
   font-size: 14px;
-  color: #909399;
-  margin-top: 5px;
+  color: var(--text-secondary);
+  margin-top: 8px;
+  font-weight: 500;
 }
 
 .card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+
+  span {
+    font-family: var(--font-display);
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
 }
 
 .filter-group {
   display: flex;
-  gap: 10px;
+  gap: 12px;
+
+  :deep(.el-radio-button__inner) {
+    background: var(--bg-tertiary);
+    border-color: var(--border-light);
+    color: var(--text-secondary);
+    font-weight: 500;
+    transition: all 0.3s ease;
+
+    &:hover {
+      color: var(--neon-blue);
+      border-color: var(--neon-blue);
+    }
+  }
+
+  :deep(.el-radio-button__original-radio:checked + .el-radio-button__inner) {
+    background: var(--gradient-neon);
+    border-color: transparent;
+    color: white;
+    box-shadow: 0 0 15px rgba(0, 245, 255, 0.4);
+  }
+}
+
+:deep(.el-card) {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-light);
+  border-radius: 12px;
+  box-shadow: var(--shadow-sm);
+
+  .el-card__header {
+    background: transparent;
+    border-bottom: 1px solid var(--border-light);
+    padding: 16px 20px;
+  }
+}
+
+:deep(.el-table) {
+  background: transparent;
+  --el-table-bg-color: transparent;
+  --el-table-tr-bg-color: transparent;
+  --el-table-header-bg-color: var(--bg-tertiary);
+  --el-table-row-hover-bg-color: rgba(0, 245, 255, 0.05);
+  --el-table-border-color: var(--border-light);
+
+  th.el-table__cell {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  td.el-table__cell {
+    color: var(--text-secondary);
+  }
+
+  .el-table__row:hover td {
+    background: rgba(0, 245, 255, 0.05);
+  }
+}
+
+:deep(.el-tag) {
+  border-radius: 6px;
+  font-weight: 500;
+  border: none;
+
+  &.el-tag--danger {
+    background: rgba(255, 0, 153, 0.15);
+    color: var(--neon-pink);
+  }
+
+  &.el-tag--warning {
+    background: rgba(255, 102, 0, 0.15);
+    color: var(--neon-orange);
+  }
+
+  &.el-tag--success {
+    background: rgba(0, 255, 136, 0.15);
+    color: var(--neon-green);
+  }
+
+  &.el-tag--info {
+    background: rgba(0, 245, 255, 0.15);
+    color: var(--neon-blue);
+  }
+}
+
+:deep(.el-button--primary) {
+  background: transparent;
+  border: none;
+  color: var(--neon-blue);
+  font-weight: 500;
+
+  &:hover {
+    color: var(--neon-purple);
+    background: rgba(191, 0, 255, 0.1);
+  }
+}
+
+:deep(.el-button--success) {
+  background: transparent;
+  border: none;
+  color: var(--neon-green);
+  font-weight: 500;
+
+  &:hover {
+    background: rgba(0, 255, 136, 0.1);
+  }
 }
 </style>

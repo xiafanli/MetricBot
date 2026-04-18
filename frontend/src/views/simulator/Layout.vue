@@ -54,6 +54,8 @@ const goToWizard = () => {
   display: flex;
   flex-direction: column;
   height: 100%;
+  background: var(--bg-primary);
+  font-family: var(--font-body);
 }
 
 .sub-tabs-header {
@@ -61,8 +63,8 @@ const goToWizard = () => {
   justify-content: space-between;
   align-items: center;
   padding: 0 20px;
-  background: rgba(0, 0, 0, 0.2);
-  border-bottom: 1px solid rgba(255, 215, 0, 0.1);
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-light);
   flex-shrink: 0;
 }
 
@@ -76,21 +78,22 @@ const goToWizard = () => {
   align-items: center;
   gap: 6px;
   padding: 14px 20px;
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--text-tertiary);
   font-size: 14px;
   text-decoration: none;
   border-bottom: 2px solid transparent;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
+  font-weight: 500;
 
   &:hover {
-    color: rgba(255, 255, 255, 0.9);
-    background: rgba(255, 215, 0, 0.05);
+    color: var(--text-primary);
+    background: rgba(0, 245, 255, 0.05);
   }
 
   &.active {
-    color: #ffd700;
-    border-bottom-color: #ffd700;
-    background: rgba(255, 215, 0, 0.08);
+    color: var(--neon-blue);
+    border-bottom-color: var(--neon-blue);
+    background: rgba(0, 245, 255, 0.08);
   }
 
   .el-icon {
@@ -102,11 +105,26 @@ const goToWizard = () => {
   display: flex;
   align-items: center;
   gap: 12px;
+
+  .el-button--primary {
+    background: var(--gradient-neon);
+    border: none;
+    color: white;
+    font-weight: 600;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0 20px rgba(0, 245, 255, 0.5);
+    }
+  }
 }
 
 .sub-tabs-content {
   flex: 1;
   min-height: 0;
   overflow: auto;
+  background: var(--bg-primary);
 }
 </style>
