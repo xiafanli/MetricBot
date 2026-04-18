@@ -17,6 +17,15 @@ secrets/
 .env.local
 .env.*.local
 
+# 临时文件和截图
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.bmp
+*.tmp
+*.temp
+
 node_modules/
 /test-results/
 /playwright-report/
