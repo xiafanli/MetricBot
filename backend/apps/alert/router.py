@@ -219,6 +219,8 @@ def get_alert_stats(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_user),
 ):
+    from datetime import datetime, timedelta
+    
     total = db.query(Alert).count()
     critical = db.query(Alert).filter(Alert.severity == "critical").count()
     warning = db.query(Alert).filter(Alert.severity == "warning").count()
@@ -226,13 +228,25 @@ def get_alert_stats(
     resolved = db.query(Alert).filter(Alert.resolved == True).count()
     active = db.query(Alert).filter(Alert.resolved == False).count()
     
+    now = datetime.now()
+    today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    week_start = today_start - timedelta(days=now.weekday())
+    
+    today = db.query(Alert).filter(Alert.created_at >= today_start).count()
+    week = db.query(Alert).filter(Alert.created_at >= week_start).count()
+    
+    resolution_rate = (resolved / total * 100) if total > 0 else 0.0
+    
     return AlertStatsResponse(
         total=total,
         critical=critical,
         warning=warning,
         info=info,
         resolved=resolved,
-        active=active
+        active=active,
+        today=today,
+        week=week,
+        resolution_rate=round(resolution_rate, 2)
     )
 
 

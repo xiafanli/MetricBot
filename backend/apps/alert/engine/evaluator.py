@@ -47,6 +47,9 @@ class AlertEvaluator:
             self.db.add(alert)
             self.db.commit()
             self.db.refresh(alert)
+            
+            self._broadcast_alert(alert)
+            
             return alert
         else:
             existing_alert = self.db.query(Alert).filter(
@@ -58,8 +61,45 @@ class AlertEvaluator:
                 existing_alert.resolved = True
                 existing_alert.resolved_at = datetime.now()
                 self.db.commit()
+                self._broadcast_alert_resolved(existing_alert)
             
             return None
+
+    def _broadcast_alert(self, alert: Alert):
+        try:
+            import asyncio
+            from common.core.websocket import manager
+            
+            alert_data = {
+                "id": alert.id,
+                "rule_id": alert.rule_id,
+                "rule_name": alert.rule_name,
+                "severity": alert.severity,
+                "metric_value": float(alert.metric_value) if alert.metric_value else None,
+                "threshold": float(alert.threshold) if alert.threshold else None,
+                "message": alert.message,
+                "resolved": alert.resolved,
+                "created_at": alert.created_at.isoformat() if alert.created_at else None
+            }
+            
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            loop.run_until_complete(manager.broadcast_alert(alert_data))
+            loop.close()
+        except Exception as e:
+            print(f"广播告警失败: {e}")
+
+    def _broadcast_alert_resolved(self, alert: Alert):
+        try:
+            import asyncio
+            from common.core.websocket import manager
+            
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            loop.run_until_complete(manager.broadcast_alert_update(alert.id, "resolved"))
+            loop.close()
+        except Exception as e:
+            print(f"广播告警恢复失败: {e}")
 
     def _query_metric(self, datasource: Datasource, query: str) -> Optional[float]:
         try:

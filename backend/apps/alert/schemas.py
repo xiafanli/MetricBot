@@ -90,6 +90,9 @@ class AlertStatsResponse(BaseModel):
     info: int = Field(0, description="信息")
     resolved: int = Field(0, description="已恢复")
     active: int = Field(0, description="进行中")
+    today: int = Field(0, description="今日告警")
+    week: int = Field(0, description="本周告警")
+    resolution_rate: float = Field(0.0, description="处理率")
 
 
 class AlertEventBase(BaseModel):

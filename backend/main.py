@@ -1,6 +1,6 @@
 __version__ = "0.1.0"
 
-from fastapi import FastAPI, APIRouter
+from fastapi import FastAPI, APIRouter, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from apps.auth.router import router as auth_router
 from apps.model.router import router as model_router
@@ -12,6 +12,7 @@ from apps.simulator import router as simulator_router
 from apps.simulator.tasks import scheduler
 from apps.alert.engine import alert_scheduler
 from common.core.database import engine, Base
+from common.core.websocket import manager
 
 # 导入所有模型以确保它们被注册到 Base.metadata
 from apps.auth.models import User
@@ -56,6 +57,23 @@ def read_root():
 @api_router.get("/health")
 def health_check():
     return {"status": "healthy", "message": "Backend is running"}
+
+
+@app.websocket("/ws/alerts")
+async def websocket_endpoint(websocket: WebSocket):
+    await manager.connect(websocket)
+    try:
+        while True:
+            data = await websocket.receive_text()
+            try:
+                import json
+                message = json.loads(data)
+                if message.get("type") == "ping":
+                    await manager.send_personal_message({"type": "pong"}, websocket)
+            except:
+                pass
+    except WebSocketDisconnect:
+        manager.disconnect(websocket)
 
 
 # 注册API路由

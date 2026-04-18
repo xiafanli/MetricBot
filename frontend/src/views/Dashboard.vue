@@ -165,7 +165,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import {
   WarningFilled,
@@ -188,10 +188,113 @@ interface Alert {
 }
 
 const alertStats = ref({
-  critical: 5,
-  warning: 23,
-  info: 47,
-  total: 75
+  critical: 0,
+  warning: 0,
+  info: 0,
+  total: 0,
+  today: 0,
+  week: 0,
+  resolution_rate: 0
+})
+
+const loadAlertStats = async () => {
+  try {
+    const response = await fetch('http://localhost:8000/api/v1/alerts/stats', {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      }
+    })
+    if (response.ok) {
+      const data = await response.json()
+      alertStats.value = data
+    }
+  } catch (error) {
+    console.error('加载告警统计失败:', error)
+  }
+}
+
+onMounted(() => {
+  connectWebSocket()
+  loadAlertStats()
+})
+
+let ws: WebSocket | null = null
+let reconnectTimer: number | null = null
+
+const connectWebSocket = () => {
+  const wsUrl = `ws://localhost:8000/ws/alerts`
+  
+  ws = new WebSocket(wsUrl)
+  
+  ws.onopen = () => {
+    console.log('WebSocket连接已建立')
+    ElMessage.success('实时告警连接已建立')
+  }
+  
+  ws.onmessage = (event) => {
+    try {
+      const data = JSON.parse(event.data)
+      handleWebSocketMessage(data)
+    } catch (error) {
+      console.error('解析WebSocket消息失败:', error)
+    }
+  }
+  
+  ws.onerror = (error) => {
+    console.error('WebSocket错误:', error)
+  }
+  
+  ws.onclose = () => {
+    console.log('WebSocket连接已关闭')
+    if (!reconnectTimer) {
+      reconnectTimer = window.setTimeout(() => {
+        console.log('尝试重新连接WebSocket...')
+        connectWebSocket()
+        reconnectTimer = null
+      }, 5000)
+    }
+  }
+}
+
+const handleWebSocketMessage = (data: any) => {
+  if (data.type === 'alert') {
+    const alert = data.data
+    ElMessage({
+      type: alert.severity === 'critical' ? 'error' : alert.severity === 'warning' ? 'warning' : 'info',
+      message: `新告警: ${alert.message}`,
+      duration: 5000
+    })
+    
+    alertStats.value.total++
+    if (alert.severity === 'critical') {
+      alertStats.value.critical++
+    } else if (alert.severity === 'warning') {
+      alertStats.value.warning++
+    } else {
+      alertStats.value.info++
+    }
+  } else if (data.type === 'alert_update') {
+    if (data.status === 'resolved') {
+      ElMessage.success('告警已恢复')
+    }
+  } else if (data.type === 'stats_update') {
+    alertStats.value = data.data
+  }
+}
+
+const disconnectWebSocket = () => {
+  if (reconnectTimer) {
+    clearTimeout(reconnectTimer)
+    reconnectTimer = null
+  }
+  if (ws) {
+    ws.close()
+    ws = null
+  }
+}
+
+onUnmounted(() => {
+  disconnectWebSocket()
 })
 
 const trendRange = ref('24h')
